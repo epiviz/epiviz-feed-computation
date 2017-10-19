@@ -47,7 +47,6 @@ def methy_format_gene(start_seq, end_seq, chromosome, measurements,
                       downstream=3000, upstream=1000):
     exp_data = dict()
     methy_data = dict()
-    corr_res = []
     exp_measurements = []
     methy_measurements = []
     exp_datasource = 'gene_expression_barcode_subtype'
@@ -84,7 +83,7 @@ def methy_format_gene(start_seq, end_seq, chromosome, measurements,
 
     # use pandas to get the data
     exp_pd = pd.DataFrame(exp_data)
-    methy_mean = pd.DataFrame(columns=methy_measurements )
+    methy_mean = pd.DataFrame(columns=methy_measurements)
 
     for i in range(len(exp_pd)):
         exp_start = exp_pd.iloc[i]['start'] - downstream
