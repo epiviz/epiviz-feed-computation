@@ -30,83 +30,98 @@ def gene_in_block(block_data, block_tissue, gene_start, gene_end):
     return False
 
 
-# gene expression correlations and t tests
-def correlation_computation(exp_data, exp_type):
-    corr_list = []
-    pvalue_list = []
-    correlation_coefficients = exp_data[exp_type].corr()
-    for exp1, exp2 in itertools.combinations(exp_type, 2):
-        col_one = exp_data[exp1]
-        col_two = exp_data[exp2]
-        correlation_coefficient = correlation_coefficients.loc[exp1][exp2]
-        t_value, p_value = ttest_ind(col_one, col_two,
-                                     equal_var=False)
-        corr_obj = build_obj('correlation', 'expression', 'expression',
-                             True, exp1,
-                             exp2, correlation_coefficient)
-        corr_list.append(corr_obj)
-        corr_list = sorted(corr_list, key=lambda x: x['value'],
-                           reverse=True)
-        ttest_obj = build_obj('ttest', 'expression', 'expression', True,
-                              exp1, exp2, p_value)
-        pvalue_list.append(ttest_obj)
-        pvalue_list = sorted(pvalue_list, key=lambda x: x['value'],
-                             reverse=True)
-    return corr_list, pvalue_list
+def ttest_block_expression(exp_data, block_data, exp_datasource,
+                           datasource_types):
 
-
-def ttest_block_expression(exp_data, block_data, exp_types, datasource_types):
     ttest_res = []
     gene_expression_block = dict()
     gene_expression_nonblock = dict()
-    block_types = [datasource_type["id"] for datasource_type in
-                   datasource_types]
-    tissue_types = [exp_type["id"] for exp_type in exp_types]
-    for block_type in block_types:
+    exp_types = [exp_id["id"] for exp_id in exp_datasource]
+    # loop through block of different tissue types
+    for block_type, block_dataframe in block_data.items():
+        if not block_dataframe.empty:
+            # loop through each start, end in the block
+            gene_expression_block[block_type] = pd.DataFrame(columns=exp_types)
+            gene_expression_nonblock[block_type] = pd.DataFrame(
+                columns=exp_types)
+            for ind, row in block_dataframe.iterrows():
+                start = row["start"]
+                end = row["end"]
+                exp_block = pd.DataFrame(columns=exp_types)
+                exp_block = exp_block.append(exp_data[(start <= exp_data[
+                    "start"]) & (exp_data["start"] <= end)][exp_types])
+                exp_block = exp_block.append(exp_data[(start <= exp_data["end"])
+                    & (exp_data["end"] <= end)][exp_types])
+                exp_block = exp_block.append(exp_data[(exp_data["start"] <=
+                            start) & (start <= exp_data["end"])][exp_types])
 
-        gene_start_seq = exp_data['start']
-        gene_end_seq = exp_data['end']
-        # loop through gene expression
-        for gene_ind in range(0, len(gene_start_seq)):
-            gene_start = gene_start_seq[gene_ind]
-            gene_end = gene_end_seq[gene_ind]
-            if gene_in_block(block_data, block_type, gene_start, gene_end):
-                add_to_block(tissue_types, gene_expression_block,
-                             exp_data,
-                             block_type, gene_ind)
-            else:
-                add_to_block(tissue_types, gene_expression_nonblock,
-                             exp_data,
-                             block_type, gene_ind)
+                exp_block = exp_block.append(exp_data[((exp_data["start"] <=
+                end) & (end <= exp_data["end"]))][exp_types])
+
+                exp_nonblock = exp_data[(exp_data["end"] < start) | (exp_data[
+                    "start"] > end)][exp_types]
+
+                gene_expression_block[block_type] = gene_expression_block[
+                    block_type].append(exp_block)
+                gene_expression_nonblock[block_type] = gene_expression_nonblock[
+                    block_type].append(exp_nonblock)
+
+    pd_block = pd.DataFrame(datasource_types)
+    pd_expression = pd.DataFrame(exp_datasource)
+
+    # for datasource_type in datasource_types:
+    #     block_type = datasource_type['id']
+    #     gene_start_seq = exp_data['start']
+    #     gene_end_seq = exp_data['end']
+    #     # loop through gene expression
+    #     for gene_ind in range(0, len(gene_start_seq)):
+    #         gene_start = gene_start_seq[gene_ind]
+    #         gene_end = gene_end_seq[gene_ind]
+    #         if gene_in_block(block_data, block_type, gene_start, gene_end):
+    #             add_to_block(exp_types, gene_expression_block,
+    #                          exp_data,
+    #                          block_type, gene_ind)
+    #         else:
+    #             add_to_block(exp_types, gene_expression_nonblock,
+    #                          exp_data,
+    #                          block_type, gene_ind)
 
     # calculate t test between block and non-block gene expression of the same
     # tissue type
-    for key, gene_block_exp in gene_expression_block.items():
-        if key not in gene_expression_nonblock:
-            break
-        gene_nonblock_exp = gene_expression_nonblock[key]
-        print key
-        t_value, p_value = ttest_ind(gene_block_exp, gene_nonblock_exp,
-                                     equal_var=False)
-        print p_value
-        gene_type = key.split('|')[0]
-        block_type = key.split('|')[1]
-        ttest_obj = build_obj('ttest', 'expression', 'block', False,
-                              gene_type, block_type, p_value)
-        # ttest_res.append(['expression ' + gene_type, 'block ' + block_type,
-        #                   p_value])
-        ttest_res.append(ttest_obj)
-        ttest_res = sorted(ttest_res, key=lambda x: x['value'],
-                           reverse=True)
+    for block_type, gene_per_block_exp in gene_expression_block.items():
+
+        gene_per_nonblock_exp = gene_expression_nonblock[block_type]
+        for exp_type in gene_per_block_exp:
+            gene_block_exp = gene_per_block_exp[exp_type]
+            if gene_block_exp.empty:
+                continue
+            gene_nonblock_exp = gene_per_nonblock_exp[exp_type]
+
+            t_value, p_value = ttest_ind(gene_block_exp, gene_nonblock_exp,
+                                         equal_var=False)
+            print "block:" + block_type + ", gene:" + exp_type
+            print p_value
+            gene_ds = json.loads(pd_expression.loc[pd_expression['id'] ==
+                                   exp_type].to_json(orient='records')[1:-1])
+            block_ds = json.loads(pd_block.loc[pd_block['id'] ==
+                                    block_type].to_json(orient='records')[1:-1])
+            ttest_obj = build_obj('ttest', 'expression', 'block', False,
+                                  gene_ds, block_ds, p_value)
+
+            ttest_res.append(ttest_obj)
+
+    ttest_res = sorted(ttest_res, key=lambda x: x['value'], reverse=True)
 
     return ttest_res
 
 
 def block_overlap_percent(data_sources, block_data):
     block_overlap = []
-    tissue_types = [d['id'] for d in data_sources]
-    for tissue_type_one, tissue_type_two in itertools.combinations(
-            tissue_types, 2):
+    # tissue_types = [d['id'] for d in data_sources]
+    for data_source_one, data_source_two in itertools.combinations(
+            data_sources, 2):
+        tissue_type_one = data_source_one["id"]
+        tissue_type_two = data_source_two["id"]
         block_tissue_one = block_data[tissue_type_one]
         block_tissue_two = block_data[tissue_type_two]
         block_one_ind = 0
@@ -157,7 +172,7 @@ def block_overlap_percent(data_sources, block_data):
         overlap = sum(overlap_region)
         union = sum(block_one_region) + sum(block_two_region) - overlap
         overlap_obj = build_obj('overlap', 'block', 'block', False,
-                                tissue_type_one, tissue_type_two,
+                                data_source_one, data_source_two,
                                 overlap * 1.0 / union)
         block_overlap.append(overlap_obj)
 
@@ -166,28 +181,6 @@ def block_overlap_percent(data_sources, block_data):
     print 'overlap done!'
     return block_overlap
 
-#
-# def methy_correlation(tissue_types, methy_data):
-#     methy_corr_res = []
-#     correlation_coefficients = methy_data[tissue_types].corr()
-#     for tissue_type1, tissue_type2 in itertools.combinations(tissue_types, 2):
-#         correlation_coefficient = correlation_coefficients.loc[tissue_type1][
-#             tissue_type2]
-#         data_range = {
-#             'attr-one': [min(methy_data[tissue_type1]), max(methy_data[
-#                                                                   tissue_type1])],
-#             'attr-two': [min(methy_data[tissue_type2]), max(methy_data[
-#                                                                   tissue_type2])]
-#         }
-#         corr_obj = build_obj('correlation', 'methylation',
-#                              'methylation', True, tissue_type1, tissue_type2,
-#                              correlation_coefficient[0], ranges=data_range)
-#         methy_corr_res.append(corr_obj)
-#         methy_corr_res = sorted(methy_corr_res, key=lambda x: x['value'],
-#                           reverse=True)
-#
-#     return methy_corr_res
-
 
 def expression_methy_correlation(exp_data, datasource_gene_types,
                                  datasource_methy_types,
@@ -195,7 +188,7 @@ def expression_methy_correlation(exp_data, datasource_gene_types,
     print "expression_methy_correlation"
     methy_types = [datasource_type["id"] for datasource_type in
                    datasource_methy_types]
-    gene_types = [gene_type["id"] for gene_type in datasource_gene_types]
+    # gene_types = [gene_type["id"] for gene_type in datasource_gene_types]
     methy_mean = pd.DataFrame(columns=methy_types)
     corr_res = []
 
@@ -209,7 +202,8 @@ def expression_methy_correlation(exp_data, datasource_gene_types,
                                        ignore_index=True)
 
     # for now do not compute expression difference
-    for tissue_type in gene_types:
+    for datasource_gene_type in datasource_gene_types:
+        tissue_type = datasource_gene_type["id"]
         # use the difference of types (normal and tumor) for the same tissue
         # expression_type1 = tissue_type + '___normal'
         # expression_type2 = tissue_type + '___tumor'
@@ -218,7 +212,9 @@ def expression_methy_correlation(exp_data, datasource_gene_types,
         #                               exp_data['expression'][
         #                                   expression_type2])
         expression_diff = exp_data[tissue_type]
-        for methy_type in methy_mean:
+        for datasource_methy_type in datasource_methy_types:
+            methy_type = datasource_methy_type["id"]
+        # for methy_type in methy_mean:
 
             print tissue_type, methy_type
             correlation_coefficient = pearsonr(methy_mean[methy_type],
@@ -236,7 +232,8 @@ def expression_methy_correlation(exp_data, datasource_gene_types,
                              max(methy_mean[methy_type])]
             }
             corr_obj = build_obj('correlation', 'expression',
-                                 'methylation', True, tissue_type, methy_type,
+                                 'methylation', True, datasource_gene_type,
+                                 datasource_methy_type,
                                  correlation_coefficient[0],
                                  data=data, ranges=data_range)
             corr_res.append(corr_obj)
@@ -255,104 +252,14 @@ def format_exp_methy_output(attr1, attr2, type1, type2):
         data.append(point)
 
     return data
-    # methy_diff = dict()
-    # for tissue_type in tissue_types:
-    #     methy_diff[tissue_type] = []
-    # methy_diff_by_ind = dict()
-    #
-    # gene_start_seq = exp_data['start']
-    # gene_end_seq = exp_data['end']
-    # methy_start_seq = methy_data['start']
-    # methy_end_seq = methy_data['end']
-    # gene_ind = 0
-    # methy_ind = 0
-    #
-    # while gene_ind < len(gene_start_seq):
-    #     if methy_ind >= len(methy_start_seq):
-    #         break
-    #     methy_start = methy_start_seq[methy_ind]
-    #     methy_end = methy_end_seq[methy_ind]
-    #     gene_start = gene_start_seq[gene_ind] - 3000
-    #     gene_end = gene_end_seq[gene_ind] + 1000
-    #
-    #     # methy is before gene expression
-    #     if gene_start > methy_end:
-    #         methy_ind += 1
-    #     # methy is after gene expression
-    #     elif gene_end < methy_start:
-    #         gene_ind += 1
-    #     # methy is in between
-    #     elif gene_start <= methy_end <= gene_end or \
-    #                             gene_start <= methy_start <= gene_end or methy_start < gene_start < \
-    #             methy_end or methy_start < gene_end < methy_end:
-    #         if gene_ind not in methy_diff_by_ind:
-    #             methy_diff_by_ind[gene_ind] = []
-    #         methy_diff_by_ind[gene_ind].append(methy_ind)
-    #         methy_ind += 1
-    #
-    # gene_ind = 0
-    # while gene_ind < len(gene_start_seq):
-    #     if gene_ind not in methy_diff_by_ind:
-    #         for tissue_type in tissue_types:
-    #             methy_diff[tissue_type].append(0)
-    #     else:
-    #         for tissue_type in tissue_types:
-    #             target_sublist = [methy_data[tissue_type][i] for i in
-    #                               methy_diff_by_ind[gene_ind]]
-    #             methy_diff[tissue_type].append(np.mean(target_sublist))
-    #     gene_ind += 1
-    #
-    # for tissue_type in tissue_types:
-    #     for key, methy_value in methy_diff.items():
-    #         # use the difference of types (normal and tumor) for the same tissue
-    #         expression_type1 = tissue_type + '___normal'
-    #         expression_type2 = tissue_type + '___tumor'
-    #         expression_diff = np.subtract(exp_data['expression']
-    #                                       [expression_type1],
-    #                                       exp_data['expression'][
-    #                                           expression_type2])
-    #
-    #         print tissue_type, key
-    #         correlation_coefficient = pearsonr(methy_value,
-    #                                            expression_diff)
-    #         print correlation_coefficient[0]
-    #
-    #         # format the data into list of json objects for plots
-    #         data = []
-    #         for exp, methy in zip(expression_diff, methy_value):
-    #             point = {}
-    #             point['expression_' + tissue_type] = exp
-    #             point['methylation_' + key] = methy
-    #             data.append(point)
-    #
-    #         data_range = {
-    #             'attr-one': [min(expression_diff),
-    #                            max(expression_diff)],
-    #             'attr-two': [min(methy_value), max(methy_value)]
-    #         }
-    #         corr_obj = build_obj('correlation', 'expression',
-    #                              'methylation', True, tissue_type, key,
-    #                              correlation_coefficient[0],
-    #                              data=data, ranges=data_range)
-    #         corr_res.append(corr_obj)
-    #         corr_res = sorted(corr_res, key=lambda x: x['value'],
-    #                           reverse=True)
-    #         # corr_res.append(['expression ' + tissue_type, 'methylation '
-    #         #                  'diff ' + key, correlation_coefficient[0]])
-    #
-    # return corr_res
 
 
 def computation_request(start_seq, end_seq, chromosome, measurements=None):
-    # skip pancreas for now, since we do not have that data
-    # tissue_types = ['breast', 'colon', 'lung', 'thyroid']
-    # start_seq = 3947953
-    # end_seq = 7164991
-
     # extract data from measurements
     gene_types = []
     block_types = []
     methylation_types = []
+    # categorize measurements into different types
     for measurement in measurements:
         data_obj = {
             "id": measurement["id"],
@@ -381,12 +288,14 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
         return_results.extend(block_overlap)
 
     if has_methy:
-        methy_types = [methylation_type["id"] for methylation_type in methylation_types]
         methy_raw = get_methy_data(start_seq, end_seq, chromosome,
                                    methylation_types)
         methy_corr_res = []
         # loop through every possible combinations of methylation
-        for type1, type2 in itertools.combinations(methy_types, 2):
+        for data_source_one, data_source_two in itertools.combinations(
+                methylation_types, 2):
+            type1 = data_source_one["id"]
+            type2 = data_source_two["id"]
             correlation_coefficient = pearsonr(methy_raw[type1], methy_raw[
                 type2])
             data_range = {
@@ -394,8 +303,8 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
                 'attr-two': [min(methy_raw[type2]), max(methy_raw[type2])]
             }
             corr_obj = build_obj('correlation', 'methylation',
-                                 'methylation', True, type1,
-                                 type2,
+                                 'methylation', True, data_source_one,
+                                 data_source_two,
                                  correlation_coefficient[0], ranges=data_range)
             methy_corr_res.append(corr_obj)
             methy_corr_res = sorted(methy_corr_res, key=lambda x: x['value'],
@@ -404,29 +313,29 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
         return_results.extend(methy_corr_res)
 
     if has_gene:
-        exp_types = [gene_type["id"] for gene_type in gene_types]
+        # exp_types = [gene_type["id"] for gene_type in gene_types]
         expression_data = get_gene_data(start_seq, end_seq, chromosome,
                                         gene_types)
 
-        # corr_exp, ttest_exp = correlation_computation(expression_data,
-        #                                               gene_types)
-
         corr_list = []
         pvalue_list = []
-        for exp1, exp2 in itertools.combinations(exp_types, 2):
+        for data_source_one, data_source_two in itertools.combinations(
+                gene_types, 2):
+            exp1 = data_source_one['id']
+            exp2 = data_source_two['id']
             col_one = expression_data[exp1]
             col_two = expression_data[exp2]
 
             correlation_coefficient = pearsonr(col_one, col_two)
             corr_obj = build_obj('correlation', 'expression', 'expression',
-                                 True, exp1,
-                                 exp2, correlation_coefficient)
+                                 True, data_source_one,
+                                 data_source_two, correlation_coefficient)
             corr_list.append(corr_obj)
 
             t_value, p_value = ttest_ind(col_one, col_two,
                                          equal_var=False)
             ttest_obj = build_obj('ttest', 'expression', 'expression', True,
-                                  exp1, exp2, p_value)
+                                  data_source_one, data_source_two, p_value)
             pvalue_list.append(ttest_obj)
 
         pvalue_list = sorted(pvalue_list, key=lambda x: x['value'],

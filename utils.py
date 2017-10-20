@@ -25,19 +25,22 @@ def get_source_id(data_type, attribute_type):
 def build_obj(comp_type, data_one, data_two, show_chart, attr_one, attr_two,
               value, data=None, ranges=None):
 
-    source_id_one = get_source_id(data_one, attr_one)
-    source_id_two = get_source_id(data_two, attr_two)
+    id_one = attr_one['id']
+    id_two = attr_two['id']
+    data_source_one = attr_one['datasourceId']
+    data_source_two = attr_two['datasourceId']
+    # source_id_two = get_source_id(data_two, attr_two)
     attr_one_range = [0, 1]
     attr_two_range = [0, 1]
     if ranges is not None:
         attr_one_range = ranges['attr-one']
         attr_two_range = ranges['attr-two']
     data_source = [{
-        "id": source_id_one if data_one else attr_one,
-        "name": attr_one,
+        "id": id_one,
+        "name": id_one,
         "type": "feature",
-        "datasourceId": source_id_one,
-        "datasourceGroup": source_id_one,
+        "datasourceId": data_source_one,
+        "datasourceGroup": data_source_one,
         "dataprovider": "umd",
         "formula": None,
         "defaultChartType": None,
@@ -46,11 +49,11 @@ def build_obj(comp_type, data_one, data_two, show_chart, attr_one, attr_two,
         "maxValue": attr_one_range[1],
         "metadata": ["probe"]
     }, {
-        "id": source_id_two if data_two else attr_two,
-        "name": attr_two,
+        "id": id_two,
+        "name": id_two,
         "type": "feature",
-        "datasourceId": source_id_two,
-        "datasourceGroup": source_id_two,
+        "datasourceId": data_source_two,
+        "datasourceGroup": data_source_two,
         "dataprovider": "umd",
         "formula": None,
         "defaultChartType": None,
@@ -64,8 +67,8 @@ def build_obj(comp_type, data_one, data_two, show_chart, attr_one, attr_two,
         'data-type-one': data_one,
         'data-type-two': data_two,
         'show-chart': show_chart,
-        'attribute-one': attr_one,
-        'attribute-two': attr_two,
+        'attribute-one': id_one,
+        'attribute-two': id_two,
         'value': value,
         'data': data,
         'data-source': data_source
@@ -81,7 +84,8 @@ def add_to_list(block, expression, tissue_key, block_key, ind):
 
 
 def add_to_block(tissue_types, gene_block, gene_expression, block_type, ind):
-    for tissue in tissue_types:
+    for tissue_type in tissue_types:
+        tissue = tissue_type['id']
         add_to_list(gene_block, gene_expression,
                     tissue, block_type, ind)
         # if tissue != 'pancreas':

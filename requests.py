@@ -58,9 +58,15 @@ def get_block_data(start, end, chromosome, block_measurements):
         url_data = get_url_data(data_source=block_measurement["datasourceId"],
                                 chromosome=chromosome, start_seq=start,
                                 end_seq=end)
-        block_data[block_measurement["id"]] = url_data['rows']['values']
+        # only keep start and end fields,  remove other data columns
+        block_data[block_measurement["id"]] = pd.DataFrame(columns=["start",
+                                                                    "end"])
+        block_data[block_measurement["id"]]["start"] = url_data['rows'][
+            'values']["start"]
+        block_data[block_measurement["id"]]["end"] = url_data['rows'][
+            'values']["end"]
 
-    return pd.DataFrame(block_data)
+    return block_data
 
 
 def get_methy_data(start_seq, end_seq, chromosome, methylation_measurements):
