@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, stream_with_context, Response
 from computation_request import computation_request
 import json
 app = Flask(__name__)
@@ -16,9 +16,18 @@ def feed(start, end, chromosome):
     # tissue_types = ['breast', 'colon', 'thyroid', 'lung']
     results = computation_request(start, end, chromosome,
                                   measurements=measurements)
+
+    # def generator():
+    #     computation_request(start, end,
+    #                         chromosome,
+    #                         measurements=measurements)
+
     print 'finished!'
+    # return stream_with_context(computation_request(start, end,
+    #                         chromosome,
+    #                         measurements=measurements))
     return json.dumps(results)
-    # return results
+    return results
     # return render_template('feed.html', results=results)
 
 
