@@ -243,11 +243,15 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
     has_methy = len(methylation_types) > 0
     has_gene = len(gene_types) > 0
 
+    # stream the returning results
+    # yield return_results
+
     if has_block:
         block_data = get_block_data(start_seq, end_seq, chromosome, block_types)
 
         # block overlap percentage
         block_overlap = block_overlap_percent(block_types, block_data)
+        yield block_overlap
         return_results.extend(block_overlap)
         # yield json.dumps(return_results)
     if has_methy:
@@ -270,9 +274,9 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
                                  data_source_two,
                                  correlation_coefficient[0], ranges=data_range)
             methy_corr_res.append(corr_obj)
-            methy_corr_res = sorted(methy_corr_res, key=lambda x: x['value'],
-                                    reverse=True)
-
+        methy_corr_res = sorted(methy_corr_res, key=lambda x: x['value'],
+                                reverse=True)
+        yield methy_corr_res
         return_results.extend(methy_corr_res)
 
     if has_gene:
@@ -304,7 +308,8 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
                              reverse=True)
         corr_list = sorted(corr_list, key=lambda x: x['value'],
                            reverse=True)
-
+        yield pvalue_list
+        yield corr_list
         return_results.extend(corr_list)
         return_results.extend(pvalue_list)
 
@@ -313,6 +318,7 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
         ttest_block_exp = ttest_block_expression(expression_data, block_data,
                                                  gene_types, block_types)
         return_results.extend(ttest_block_exp)
+        yield ttest_block_exp
 
     if has_gene and has_methy:
         # correlation between methylation difference and gene expression
@@ -322,6 +328,7 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
                           methy_raw)
 
         return_results.extend(corr_methy_gene)
+        yield corr_methy_gene
         # yield json.dumps(return_results)
 
-    return return_results
+    # yield return_results

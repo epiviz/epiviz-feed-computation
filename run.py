@@ -14,21 +14,24 @@ def feed(start, end, chromosome):
     #               'thyroid___normal', 'thyroid___tumor']
     #
     # tissue_types = ['breast', 'colon', 'thyroid', 'lung']
-    results = computation_request(start, end, chromosome,
-                                  measurements=measurements)
+    # results = computation_request(start, end, chromosome,
+    #                               measurements=measurements)
 
-    # def generator():
-    #     computation_request(start, end,
-    #                         chromosome,
-    #                         measurements=measurements)
+    def generate():
+        results = computation_request(start, end,
+                                      chromosome,
+                                      measurements=measurements)
+        print results
+        # while results.next() is not None:
+        for result in results:
+            yield json.dumps(result)
+            # results = results.next()
 
-    print 'finished!'
-    # return stream_with_context(computation_request(start, end,
-    #                         chromosome,
-    #                         measurements=measurements))
-    return json.dumps(results)
-    return results
-    # return render_template('feed.html', results=results)
+    return Response(generate(), mimetype='text/json')
+    # print 'finished!'
+
+    # return json.dumps(results)
+    # return results
 
 
 @app.after_request
@@ -96,6 +99,6 @@ def test_measurements(expression=True, block=True, methylation=True):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='127.0.0.1', port=5001)
+    app.run(threaded=True, debug=True, host='127.0.0.1', port=5001)
 
 
