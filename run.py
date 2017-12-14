@@ -14,23 +14,23 @@ def feed(start, end, chromosome):
     #               'thyroid___normal', 'thyroid___tumor']
     #
     # tissue_types = ['breast', 'colon', 'thyroid', 'lung']
-    # results = computation_request(start, end, chromosome,
-    #                               measurements=measurements)
+    results = computation_request(start, end, chromosome,
+                                  measurements=measurements)
 
-    def generate():
-        results = computation_request(start, end,
-                                      chromosome,
-                                      measurements=measurements)
-        print results
+    # def generate():
+    #     results = computation_request(start, end,
+    #                                   chromosome,
+    #                                   measurements=measurements)
+    #     print results
         # while results.next() is not None:
-        for result in results:
-            yield json.dumps(result)
+        # for result in results:
+        #     yield json.dumps(result)
             # results = results.next()
 
-    return Response(generate(), mimetype='text/json')
-    # print 'finished!'
+    # return Response(generate(), mimetype='text/json')
+    print 'finished!'
 
-    # return json.dumps(results)
+    return json.dumps(results)
     # return results
 
 

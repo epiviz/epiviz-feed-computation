@@ -23,7 +23,7 @@ def get_source_id(data_type, attribute_type):
 
 
 def build_obj(comp_type, data_one, data_two, show_chart, attr_one, attr_two,
-              value, data=None, ranges=None):
+              value, pvalue, data=None, ranges=None):
 
     id_one = attr_one['id']
     id_two = attr_two['id']
@@ -69,7 +69,8 @@ def build_obj(comp_type, data_one, data_two, show_chart, attr_one, attr_two,
         'show-chart': show_chart,
         'attribute-one': id_one,
         'attribute-two': id_two,
-        'value': value,
+        'value': round(value, 2),
+        'pvalue': round(pvalue, 2),
         'data': data,
         'data-source': data_source
     }
@@ -88,7 +89,3 @@ def add_to_block(tissue_types, gene_block, gene_expression, block_type, ind):
         tissue = tissue_type['id']
         add_to_list(gene_block, gene_expression,
                     tissue, block_type, ind)
-        # if tissue != 'pancreas':
-        #     add_to_list(gene_block, gene_expression, tissue +
-        #                 '___normal', block_type, ind)
-

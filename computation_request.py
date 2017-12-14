@@ -6,13 +6,16 @@
 import numpy as np
 import pandas as pd
 from scipy.stats.stats import pearsonr
-from scipy.stats import ttest_ind
+from scipy.stats import ttest_ind, fisher_exact
+from scipy.io import savemat
 from utils import build_obj, add_to_block
 from requests import get_methy_data, get_block_data, get_gene_data
 
 import urllib2
 import json
 import itertools
+
+import matlab.engine
 
 
 def ttest_block_expression(exp_data, block_data, exp_datasource,
@@ -73,8 +76,8 @@ def ttest_block_expression(exp_data, block_data, exp_datasource,
                                    exp_type].to_json(orient='records')[1:-1])
             block_ds = json.loads(pd_block.loc[pd_block['id'] ==
                                     block_type].to_json(orient='records')[1:-1])
-            ttest_obj = build_obj('ttest', 'expression', 'block', False,
-                                  gene_ds, block_ds, p_value)
+            ttest_obj = build_obj('t-test', 'expression', 'block', False,
+                                  gene_ds, block_ds, p_value, p_value)
 
             ttest_res.append(ttest_obj)
 
@@ -83,8 +86,9 @@ def ttest_block_expression(exp_data, block_data, exp_datasource,
     return ttest_res
 
 
-def block_overlap_percent(data_sources, block_data):
+def block_overlap_percent(data_sources, block_data, start_seq, end_seq):
     block_overlap = []
+
     for data_source_one, data_source_two in itertools.combinations(
             data_sources, 2):
         tissue_type_one = data_source_one["id"]
@@ -125,8 +129,10 @@ def block_overlap_percent(data_sources, block_data):
                tissue_two_start < tissue_one_end <= tissue_two_end:
                 overlap_region.append(min(tissue_two_end, tissue_one_end) - max(
                                      tissue_one_start, tissue_two_start))
-                # generally we can do this for either block
-                block_one_ind += 1
+                if tissue_two_end < tissue_one_end:
+                    block_two_ind += 1
+                else:
+                    block_one_ind += 1
             # block tissue two is larger
             elif tissue_two_start >= tissue_one_end:
                 block_one_ind += 1
@@ -136,9 +142,17 @@ def block_overlap_percent(data_sources, block_data):
 
         overlap = sum(overlap_region)
         union = sum(block_one_region) + sum(block_two_region) - overlap
+        block_one_only = sum(block_one_region) - overlap
+        block_two_only = sum(block_two_region) - overlap
+        non_block = int(end_seq) - int(start_seq) - union
+        fisher_table = np.array([[overlap, block_one_only],
+                                            [block_two_only, non_block]])
+        odds_ratio, p_value = fisher_exact(fisher_table)
+        print 'p value is ' + str(p_value)
+        print 'odds ratio is ' + str(odds_ratio)
         overlap_obj = build_obj('overlap', 'block', 'block', False,
                                 data_source_one, data_source_two,
-                                overlap * 1.0 / union)
+                                overlap * 1.0 / union, p_value)
         block_overlap.append(overlap_obj)
 
     block_overlap = sorted(block_overlap, key=lambda x : x['value'],
@@ -198,6 +212,7 @@ def expression_methy_correlation(exp_data, datasource_gene_types,
                                  'methylation', True, datasource_gene_type,
                                  datasource_methy_type,
                                  correlation_coefficient[0],
+                                 correlation_coefficient[1],
                                  data=data, ranges=data_range)
             corr_res.append(corr_obj)
             corr_res = sorted(corr_res, key=lambda x: x['value'],
@@ -250,8 +265,9 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
         block_data = get_block_data(start_seq, end_seq, chromosome, block_types)
 
         # block overlap percentage
-        block_overlap = block_overlap_percent(block_types, block_data)
-        yield block_overlap
+        block_overlap = block_overlap_percent(block_types, block_data,
+                                              start_seq, end_seq)
+        # yield block_overlap
         return_results.extend(block_overlap)
         # yield json.dumps(return_results)
     if has_methy:
@@ -272,11 +288,13 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
             corr_obj = build_obj('correlation', 'methylation',
                                  'methylation', True, data_source_one,
                                  data_source_two,
-                                 correlation_coefficient[0], ranges=data_range)
+                                 correlation_coefficient[0],
+                                 correlation_coefficient[1],
+                                 ranges=data_range)
             methy_corr_res.append(corr_obj)
         methy_corr_res = sorted(methy_corr_res, key=lambda x: x['value'],
                                 reverse=True)
-        yield methy_corr_res
+        # yield methy_corr_res
         return_results.extend(methy_corr_res)
 
     if has_gene:
@@ -295,21 +313,23 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
             correlation_coefficient = pearsonr(col_one, col_two)
             corr_obj = build_obj('correlation', 'expression', 'expression',
                                  True, data_source_one,
-                                 data_source_two, correlation_coefficient[0])
+                                 data_source_two, correlation_coefficient[0],
+                                 correlation_coefficient[1])
             corr_list.append(corr_obj)
 
             t_value, p_value = ttest_ind(col_one, col_two,
                                          equal_var=False)
-            ttest_obj = build_obj('ttest', 'expression', 'expression', True,
-                                  data_source_one, data_source_two, p_value)
+            ttest_obj = build_obj('t-test', 'expression', 'expression', True,
+                                  data_source_one, data_source_two, p_value,
+                                  p_value)
             pvalue_list.append(ttest_obj)
 
         pvalue_list = sorted(pvalue_list, key=lambda x: x['value'],
                              reverse=True)
         corr_list = sorted(corr_list, key=lambda x: x['value'],
                            reverse=True)
-        yield pvalue_list
-        yield corr_list
+        # yield pvalue_list
+        # yield corr_list
         return_results.extend(corr_list)
         return_results.extend(pvalue_list)
 
@@ -318,7 +338,7 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
         ttest_block_exp = ttest_block_expression(expression_data, block_data,
                                                  gene_types, block_types)
         return_results.extend(ttest_block_exp)
-        yield ttest_block_exp
+        # yield ttest_block_exp
 
     if has_gene and has_methy:
         # correlation between methylation difference and gene expression
@@ -328,7 +348,7 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
                           methy_raw)
 
         return_results.extend(corr_methy_gene)
-        yield corr_methy_gene
+        # yield corr_methy_gene
         # yield json.dumps(return_results)
 
-    # yield return_results
+    return return_results
