@@ -15,9 +15,6 @@ import urllib2
 import json
 import itertools
 
-import matlab.engine
-
-
 def ttest_block_expression(exp_data, block_data, exp_datasource,
                            datasource_types):
 
