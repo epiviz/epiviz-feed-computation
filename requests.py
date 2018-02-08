@@ -27,7 +27,7 @@ def get_url_data(data_source, measurements=None, chromosome=None,
             sql_url += measurements
 
     if chromosome is not None:
-        sql_url += '&seqName=chr' + str(chromosome)
+        sql_url += '&seqName=' + str(chromosome)
 
     if start_seq is not None:
         sql_url += '&start=' + str(start_seq)
