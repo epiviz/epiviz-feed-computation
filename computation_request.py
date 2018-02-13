@@ -15,6 +15,7 @@ import urllib2
 import json
 import itertools
 
+
 def ttest_block_expression(exp_data, block_data, exp_datasource,
                            datasource_types):
 
@@ -107,17 +108,23 @@ def block_overlap_percent(data_sources, block_data, start_seq, end_seq):
         # union regions should be the sum of these regions minus overlap region
         for start, end in zip(block_tissue_one['start'], block_tissue_one[
             'end']):
-            block_one_region.append(end - start)
+            block_one_region.append(min(end, float(end_seq)) -
+                                    max(start, float(start_seq)))
 
         for start, end in zip(block_tissue_two['start'], block_tissue_two[
             'end']):
-            block_two_region.append(end - start)
+            block_two_region.append(min(end, float(end_seq)) -
+                                    max(start, float(start_seq)))
 
         while block_one_ind < block_one_len and block_two_ind < block_two_len:
-            tissue_one_start = block_tissue_one['start'][block_one_ind]
-            tissue_two_start = block_tissue_two['start'][block_two_ind]
-            tissue_one_end = block_tissue_one['end'][block_one_ind]
-            tissue_two_end = block_tissue_two['end'][block_two_ind]
+            tissue_one_start = max(float(start_seq), block_tissue_one['start'][
+                                block_one_ind])
+            tissue_two_start = max(float(start_seq), block_tissue_two['start'][
+                                block_two_ind])
+            tissue_one_end = min(float(end_seq), block_tissue_one['end'][
+                                block_one_ind])
+            tissue_two_end = min(float(end_seq), block_tissue_two['end'][
+                                block_two_ind])
 
             # there is an overlap
             if tissue_one_start <= tissue_two_start < tissue_one_end or \
