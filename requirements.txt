@@ -4,13 +4,15 @@ Flask-SQLAlchemy==2.2
 itsdangerous==0.24
 Jinja2==2.9.6
 MarkupSafe==1.0
-numpy==1.13.1+mkl
+# numpy==1.13.1+mkl this is required on windows to install scipy
+numpy==1.13.1
 pandas==0.20.3
 PyMySQL==0.7.11
 python-dateutil==2.6.1
 pytz==2017.2
 scikit-learn==0.19.0
-scipy==1.0.0b1
+# scipy==1.0.0b1 this is required on windows to install scipy
+scipy==1.0.0
 six==1.11.0
 SQLAlchemy==1.1.14
 ujson==1.35
