@@ -1,10 +1,14 @@
-from flask import Flask, stream_with_context, Response
+from flask import Flask
 from computation_request import computation_request
+from flask_cache import Cache
 import json
+
 app = Flask(__name__)
+cache = Cache(app, config={'CACHE_TYPE': 'simple', 'CACHE_DEFAULT_TIMEOUT': 0})
 
-
+# NOTE: cache.memoize() should be RIGHT above the function definition!
 @app.route('/chr=<chromosome>&start=<start>&end=<end>', methods=['GET', 'OPTIONS'])
+@cache.memoize()
 def feed(start, end, chromosome):
     # for testing purpose only
 
