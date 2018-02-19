@@ -254,7 +254,6 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
         elif measurement["defaultChartType"] == "line":
             methylation_types.append(data_obj)
 
-    return_results = []
     block_data = None
     methy_raw = None
     expression_data = None
@@ -262,18 +261,13 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
     has_methy = len(methylation_types) > 0
     has_gene = len(gene_types) > 0
 
-    # stream the returning results
-    # yield return_results
-
     if has_block:
         block_data = get_block_data(start_seq, end_seq, chromosome, block_types)
 
         # block overlap percentage
         block_overlap = block_overlap_percent(block_types, block_data,
                                               start_seq, end_seq)
-        # yield block_overlap
-        return_results.extend(block_overlap)
-        # yield json.dumps(return_results)
+        yield block_overlap
     if has_methy:
         methy_raw = get_methy_data(start_seq, end_seq, chromosome,
                                    methylation_types)
@@ -298,8 +292,7 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
             methy_corr_res.append(corr_obj)
         methy_corr_res = sorted(methy_corr_res, key=lambda x: x['value'],
                                 reverse=True)
-        # yield methy_corr_res
-        return_results.extend(methy_corr_res)
+        yield methy_corr_res
 
     if has_gene:
         expression_data = get_gene_data(start_seq, end_seq, chromosome,
@@ -330,19 +323,17 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
 
         pvalue_list = sorted(pvalue_list, key=lambda x: x['value'],
                              reverse=True)
+        yield pvalue_list
+
         corr_list = sorted(corr_list, key=lambda x: x['value'],
                            reverse=True)
-        # yield pvalue_list
-        # yield corr_list
-        return_results.extend(corr_list)
-        return_results.extend(pvalue_list)
+        yield corr_list
 
     if has_gene and has_block:
         # gene expression and block independency test
         ttest_block_exp = ttest_block_expression(expression_data, block_data,
                                                  gene_types, block_types)
-        return_results.extend(ttest_block_exp)
-        # yield ttest_block_exp
+        yield ttest_block_exp
 
     if has_gene and has_methy:
         # correlation between methylation difference and gene expression
@@ -351,8 +342,4 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
                          (expression_data, gene_types, methylation_types,
                           methy_raw)
 
-        return_results.extend(corr_methy_gene)
-        # yield corr_methy_gene
-        # yield json.dumps(return_results)
-
-    return return_results
+        yield corr_methy_gene
