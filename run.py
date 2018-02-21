@@ -1,49 +1,50 @@
-from flask import Flask
+from flask import Flask, Response
 from computation_request import computation_request
 from flask_cache import Cache
-import json
+from flask_sockets import Sockets
+import time
+
+import ujson
 
 app = Flask(__name__)
 cache = Cache(app, config={'CACHE_TYPE': 'simple', 'CACHE_DEFAULT_TIMEOUT': 0})
 
-# NOTE: cache.memoize() should be RIGHT above the function definition!
-@app.route('/chr=<chromosome>&start=<start>&end=<end>', methods=['GET', 'OPTIONS'])
-@cache.memoize()
-def feed(start, end, chromosome):
-    # for testing purpose only
+sockets = Sockets(app)
+# socketio = SocketIO(app)
 
+# @socketio.on('get_data_event', namespace='/getdata')
+@sockets.route('/getdata')
+def feed(websocket):
+    message = ujson.loads(websocket.receive())
     measurements = test_measurements()
-    # gene_types = ['breast___normal', 'breast___tumor', 'colon___normal',
-    #               'colon___tumor', 'lung___normal', 'lung___tumor',
-    #               'thyroid___normal', 'thyroid___tumor']
-    #
-    # tissue_types = ['breast', 'colon', 'thyroid', 'lung']
-    results = computation_request(start, end, chromosome,
+    print message
+    data = message['data']
+    start = data['start']
+    end = data['end']
+    chromosome = data['chr']
+    seqID = message['seq']
+    print "parameters"
+    key = chromosome + '-' + str(start) + '-' + str(end)
+    cached = cache.get(key)
+    if cached:
+        websocket.send(ujson.dumps(cached))
+        return
+    results = computation_request(start, end,
+                                  chromosome,
                                   measurements=measurements)
+    cache_results = []
+    print results
+    for result in results:
+        print "send back!"
+        print time.time()
+        print "\n"
+        # emit('returned_results', result)
+        cache_results.extend(result)
+        websocket.send(ujson.dumps(result))
 
-    # def generate():
-    #     results = computation_request(start, end,
-    #                                   chromosome,
-    #                                   measurements=measurements)
-    #     print results
-        # while results.next() is not None:
-        # for result in results:
-        #     yield json.dumps(result)
-            # results = results.next()
+    cache.set(key, cache_results)
 
-    # return Response(generate(), mimetype='text/json')
-    print 'finished!'
-
-    return json.dumps(results)
-    # return results
-
-
-@app.after_request
-def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-    return response
+    websocket.send(ujson.dumps(seqID))
 
 
 # just for testing purposes
@@ -158,7 +159,11 @@ def roadmap_measurements(expression=True, block=True, methylation=True):
     return measurements
 
 
-if __name__ == '__main__':
-    app.run(threaded=True, debug=True, host='127.0.0.1', port=5001)
+if __name__ == "__main__":
+    from gevent import pywsgi
+    from geventwebsocket.handler import WebSocketHandler
+    server = pywsgi.WSGIServer(('', 5001), app, handler_class=WebSocketHandler)
+    print "Server Starts!"
+    server.serve_forever()
 
 
