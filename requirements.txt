@@ -2,7 +2,10 @@ click==6.7
 enum34==1.1.6
 Flask==0.12.2
 Flask-Cache==0.13.1
+Flask-Sockets==0.2.1
 Flask-SQLAlchemy==2.2
+gevent==1.2.2
+gevent-websocket==0.10.1
 greenlet==0.4.13
 itsdangerous==0.24
 Jinja2==2.9.6
