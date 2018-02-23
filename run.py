@@ -28,6 +28,7 @@ def feed(websocket):
     cached = cache.get(key)
     if cached:
         websocket.send(ujson.dumps(cached))
+        websocket.send(ujson.dumps(seqID))
         return
     results = computation_request(start, end,
                                   chromosome,
