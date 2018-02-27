@@ -75,7 +75,7 @@ def ttest_block_expression(exp_data, block_data, exp_datasource,
             block_ds = json.loads(pd_block.loc[pd_block['id'] ==
                                     block_type].to_json(orient='records')[1:-1])
             ttest_obj = build_obj('t-test', 'expression', 'block', False,
-                                  gene_ds, block_ds, p_value, p_value)
+                                  gene_ds, block_ds, t_value, p_value)
 
             ttest_res.append(ttest_obj)
 
@@ -98,11 +98,12 @@ def block_overlap_percent(data_sources, block_data, start_seq, end_seq):
         block_one_len = len(block_tissue_one['start'])
         block_two_len = len(block_tissue_two['start'])
 
-        if block_one_len < 1 or block_two_len < 1:
-            continue
         overlap_region = []
         block_one_region = []
         block_two_region = []
+
+        # if block_one_len < 1 or block_two_len < 1:
+        #     continue
 
         # calculate regions for each of the block tissues separately
         # union regions should be the sum of these regions minus overlap region
@@ -317,7 +318,7 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
             t_value, p_value = ttest_ind(col_one, col_two,
                                          equal_var=False)
             ttest_obj = build_obj('t-test', 'expression', 'expression', True,
-                                  data_source_one, data_source_two, p_value,
+                                  data_source_one, data_source_two, t_value,
                                   p_value)
             pvalue_list.append(ttest_obj)
 
