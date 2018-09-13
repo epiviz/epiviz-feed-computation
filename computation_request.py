@@ -102,20 +102,19 @@ def block_overlap_percent(data_sources, block_data, start_seq, end_seq):
         block_one_region = []
         block_two_region = []
 
-        # if block_one_len < 1 or block_two_len < 1:
-        #     continue
-
         # calculate regions for each of the block tissues separately
         # union regions should be the sum of these regions minus overlap region
         for start, end in zip(block_tissue_one['start'], block_tissue_one[
             'end']):
-            block_one_region.append(min(end, float(end_seq)) -
-                                    max(start, float(start_seq)))
+            if min(end, float(end_seq)) > max(start, float(start_seq)):
+                block_one_region.append(min(end, float(end_seq)) -
+                                        max(start, float(start_seq)))
 
         for start, end in zip(block_tissue_two['start'], block_tissue_two[
             'end']):
-            block_two_region.append(min(end, float(end_seq)) -
-                                    max(start, float(start_seq)))
+            if min(end, float(end_seq)) > max(start, float(start_seq)):
+                block_two_region.append(min(end, float(end_seq)) -
+                                        max(start, float(start_seq)))
 
         while block_one_ind < block_one_len and block_two_ind < block_two_len:
             tissue_one_start = max(float(start_seq), block_tissue_one['start'][
@@ -152,6 +151,7 @@ def block_overlap_percent(data_sources, block_data, start_seq, end_seq):
         non_block = int(end_seq) - int(start_seq) - union
         fisher_table = np.array([[overlap, block_one_only],
                                             [block_two_only, non_block]])
+
         odds_ratio, p_value = fisher_exact(fisher_table)
         print 'p value is ' + str(p_value)
         print 'odds ratio is ' + str(odds_ratio)
