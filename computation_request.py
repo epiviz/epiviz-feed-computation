@@ -14,6 +14,7 @@ from requests import get_methy_data, get_block_data, get_gene_data
 import urllib2
 import json
 import itertools
+import math
 
 
 def ttest_block_expression(exp_data, block_data, exp_datasource,
