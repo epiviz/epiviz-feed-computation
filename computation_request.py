@@ -151,10 +151,12 @@ def block_overlap_percent(data_sources, block_data, start_seq, end_seq):
         non_block = int(end_seq) - int(start_seq) - union
         fisher_table = np.array([[overlap, block_one_only],
                                             [block_two_only, non_block]])
-
+        if math.isnan(odds_ratio):
+            continue
         odds_ratio, p_value = fisher_exact(fisher_table)
         print 'p value is ' + str(p_value)
         print 'odds ratio is ' + str(odds_ratio)
+        overlap_percent = 0.0 if union == 0.0 else overlap * 1.0 / union
         overlap_obj = build_obj('overlap', 'block', 'block', False,
                                 data_source_one, data_source_two,
                                 overlap * 1.0 / union, p_value)
