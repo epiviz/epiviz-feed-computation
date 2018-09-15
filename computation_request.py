@@ -132,8 +132,10 @@ def block_overlap_percent(data_sources, block_data, start_seq, end_seq):
                tissue_one_start < tissue_two_end <= tissue_one_end or \
                tissue_two_start <= tissue_one_start < tissue_two_end or \
                tissue_two_start < tissue_one_end <= tissue_two_end:
-                overlap_region.append(min(tissue_two_end, tissue_one_end) - max(
-                                     tissue_one_start, tissue_two_start))
+                common_end = min(tissue_two_end, tissue_one_end)
+                common_start = max(tissue_one_start, tissue_two_start)
+                if common_end > common_start:
+                    overlap_region.append(common_end - common_start)
                 if tissue_two_end < tissue_one_end:
                     block_two_ind += 1
                 else:
@@ -147,14 +149,15 @@ def block_overlap_percent(data_sources, block_data, start_seq, end_seq):
 
         overlap = sum(overlap_region)
         union = sum(block_one_region) + sum(block_two_region) - overlap
-        block_one_only = sum(block_one_region) - overlap
-        block_two_only = sum(block_two_region) - overlap
-        non_block = int(end_seq) - int(start_seq) - union
+        block_one_only = max(sum(block_one_region) - overlap, 0)
+        block_two_only = max(sum(block_two_region) - overlap, 0)
+        non_block = max(int(end_seq) - int(start_seq) - union, 0)
         fisher_table = np.array([[overlap, block_one_only],
                                             [block_two_only, non_block]])
+
+        odds_ratio, p_value = fisher_exact(fisher_table)
         if math.isnan(odds_ratio):
             continue
-        odds_ratio, p_value = fisher_exact(fisher_table)
         print 'p value is ' + str(p_value)
         print 'odds ratio is ' + str(odds_ratio)
         overlap_percent = 0.0 if union == 0.0 else overlap * 1.0 / union
@@ -184,7 +187,8 @@ def expression_methy_correlation(exp_data, datasource_gene_types,
         methy_filtered = methy_data[((exp_start <= methy_data.start) & (
             methy_data.start <= exp_end)) | ((exp_start <= methy_data.end)
                                   & (methy_data.end <= exp_end))]
-        methy_mean = methy_mean.append(methy_filtered[methy_types].mean(),
+        mean = methy_filtered[methy_types].mean().fillna(0)
+        methy_mean = methy_mean.append(mean,
                                        ignore_index=True)
 
     # for now do not compute expression difference
@@ -204,6 +208,9 @@ def expression_methy_correlation(exp_data, datasource_gene_types,
             print tissue_type, methy_type
             correlation_coefficient = pearsonr(methy_mean[methy_type],
                                                expression_diff)
+
+            if math.isnan(correlation_coefficient[0]):
+                continue
             print correlation_coefficient[0]
 
             # format the data into list of json objects for plots

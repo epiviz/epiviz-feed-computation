@@ -17,10 +17,12 @@ import itertools
 def get_url_data(data_source, measurements=None, chromosome=None,
                  start_seq=None, end_seq=None):
     # construct url
-    sql_url = 'http://epiviz-dev.cbcb.umd.edu/api/?requestId=10&version=4&' \
-              'action=getData&datasource=' + data_source
+    # sql_url = 'http://epiviz-dev.cbcb.umd.edu/api/?requestId=10&version=4&' \
+    #           'action=getData&datasource=' + data_source
     # sql_url = 'http://localhost:5000/?requestId=10&version=4&action=getData' \
     #           '&datasource=' + data_source
+    sql_url = 'http://54.157.53.251/api/?requestId=10&version=4&action=getData'\
+                  '&datasource=' + data_source
     if measurements is not None:
         sql_url += '&measurement='
         if type(measurements) is list:
