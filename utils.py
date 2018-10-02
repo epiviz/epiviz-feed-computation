@@ -89,3 +89,24 @@ def add_to_block(tissue_types, gene_block, gene_expression, block_type, ind):
         tissue = tissue_type['id']
         add_to_list(gene_block, gene_expression,
                     tissue, block_type, ind)
+
+
+def format_expression_block_data(gene_block_exp, gene_nonblock_exp):
+    res = []
+    for data_point in gene_block_exp:
+        data_json = {
+            "alphaDiversity": data_point,
+            "name": "Block"
+        }
+        res.append(data_json)
+
+    for data_point in gene_nonblock_exp:
+        data_json = {
+            "alphaDiversity": data_point,
+            "name": "Non-Block"
+        }
+        res.append(data_json)
+
+    # print res
+
+    return res

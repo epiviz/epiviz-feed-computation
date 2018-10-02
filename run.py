@@ -13,6 +13,8 @@ sockets = Sockets(app)
 # socketio = SocketIO(app)
 
 # @socketio.on('get_data_event', namespace='/getdata')
+
+
 @sockets.route('/getdata')
 def feed(websocket):
     message = ujson.loads(websocket.receive())
@@ -56,6 +58,10 @@ def test_measurements(expression=True, block=True, methylation=True):
                   'thyroid___normal', 'thyroid___tumor']
 
     tissue_types = ['breast', 'colon', 'thyroid', 'lung']
+
+    methylation_types = ['breast_normal', 'breast_cancer', 'colon_normal',
+                         'colon_cancer', 'lung_normal', 'lung_cancer',
+                         'thyroid_normal', 'thyroid_cancer']
     if expression:
         for gene_type in gene_types:
             measurements.append({
@@ -87,6 +93,7 @@ def test_measurements(expression=True, block=True, methylation=True):
             })
 
     if methylation:
+        # for methylation difference
         for tissue_type in tissue_types:
             measurements.append({
                 "id": tissue_type,
@@ -99,6 +106,20 @@ def test_measurements(expression=True, block=True, methylation=True):
                 "defaultChartType": "line",
                 "annotation": None,
                 "metadata": ["probe"]
+            })
+
+        for methylation_type in methylation_types:
+            measurements.append({
+                "id": methylation_type,
+                "name": methylation_type,
+                "type": "feature",
+                "datasourceId": 'timp2014_probelevel_beta',
+                "datasourceGroup": 'timp2014_probelevel_beta',
+                "dataprovider": "umd",
+                "formula": None,
+                "defaultChartType": "line",
+                "annotation": None,
+                "metadata": []
             })
 
     return measurements
@@ -166,5 +187,3 @@ if __name__ == "__main__":
     server = pywsgi.WSGIServer(('', 5001), app, handler_class=WebSocketHandler)
     print "Server Starts!"
     server.serve_forever()
-
-

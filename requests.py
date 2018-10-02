@@ -22,7 +22,7 @@ def get_url_data(data_source, measurements=None, chromosome=None,
     # sql_url = 'http://localhost:5000/?requestId=10&version=4&action=getData' \
     #           '&datasource=' + data_source
     sql_url = 'http://54.157.53.251/api/?requestId=10&version=4&action=getData'\
-                  '&datasource=' + data_source
+        '&datasource=' + data_source
     if measurements is not None:
         sql_url += '&measurement='
         if type(measurements) is list:
@@ -43,7 +43,9 @@ def get_url_data(data_source, measurements=None, chromosome=None,
     response = urllib2.urlopen(req)
     a = json.loads(response.read())
     url_data = a['data']
-    relative_to_absolute(url_data['rows']['values'])
+
+    if url_data['rows']['useOffset']:
+        relative_to_absolute(url_data['rows']['values'])
     # resolve the relative start and end position of the response
     # print url_data
     return url_data
@@ -83,6 +85,7 @@ def get_methy_data(start_seq, end_seq, chromosome, methylation_measurements):
                                 measurements=methy_id,
                                 chromosome=chromosome,
                                 start_seq=start_seq, end_seq=end_seq)
+
         # extract expected format here
         methy_raw['start'] = url_data['rows']['values']['start']
         methy_raw['end'] = url_data['rows']['values']['end']

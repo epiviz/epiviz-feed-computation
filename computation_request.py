@@ -8,7 +8,7 @@ import pandas as pd
 from scipy.stats.stats import pearsonr
 from scipy.stats import ttest_ind, fisher_exact
 from scipy.io import savemat
-from utils import build_obj, add_to_block
+from utils import build_obj, add_to_block, format_expression_block_data
 from requests import get_methy_data, get_block_data, get_gene_data
 
 import urllib2
@@ -38,12 +38,12 @@ def ttest_block_expression(exp_data, block_data, exp_datasource,
                 exp_block = exp_block.append(exp_data[(start <= exp_data[
                     "start"]) & (exp_data["start"] <= end)][exp_types])
                 exp_block = exp_block.append(exp_data[(start <= exp_data["end"])
-                    & (exp_data["end"] <= end)][exp_types])
+                                                      & (exp_data["end"] <= end)][exp_types])
                 exp_block = exp_block.append(exp_data[(exp_data["start"] <=
-                            start) & (start <= exp_data["end"])][exp_types])
+                                                       start) & (start <= exp_data["end"])][exp_types])
 
                 exp_block = exp_block.append(exp_data[((exp_data["start"] <=
-                end) & (end <= exp_data["end"]))][exp_types])
+                                                        end) & (end <= exp_data["end"]))][exp_types])
 
                 exp_nonblock = exp_data[(exp_data["end"] < start) | (exp_data[
                     "start"] > end)][exp_types]
@@ -72,11 +72,15 @@ def ttest_block_expression(exp_data, block_data, exp_datasource,
             print "block:" + block_type + ", gene:" + exp_type
             print p_value
             gene_ds = json.loads(pd_expression.loc[pd_expression['id'] ==
-                                   exp_type].to_json(orient='records')[1:-1])
+                                                   exp_type].to_json(orient='records')[1:-1])
             block_ds = json.loads(pd_block.loc[pd_block['id'] ==
-                                    block_type].to_json(orient='records')[1:-1])
+                                               block_type].to_json(orient='records')[1:-1])
+
+            data = format_expression_block_data(
+                gene_block_exp, gene_nonblock_exp)
+
             ttest_obj = build_obj('t-test', 'expression', 'block', False,
-                                  gene_ds, block_ds, t_value, p_value)
+                                  gene_ds, block_ds, t_value, p_value, data)
 
             ttest_res.append(ttest_obj)
 
@@ -106,26 +110,26 @@ def block_overlap_percent(data_sources, block_data, start_seq, end_seq):
         # calculate regions for each of the block tissues separately
         # union regions should be the sum of these regions minus overlap region
         for start, end in zip(block_tissue_one['start'], block_tissue_one[
-            'end']):
+                'end']):
             if min(end, float(end_seq)) > max(start, float(start_seq)):
                 block_one_region.append(min(end, float(end_seq)) -
                                         max(start, float(start_seq)))
 
         for start, end in zip(block_tissue_two['start'], block_tissue_two[
-            'end']):
+                'end']):
             if min(end, float(end_seq)) > max(start, float(start_seq)):
                 block_two_region.append(min(end, float(end_seq)) -
                                         max(start, float(start_seq)))
 
         while block_one_ind < block_one_len and block_two_ind < block_two_len:
             tissue_one_start = max(float(start_seq), block_tissue_one['start'][
-                                block_one_ind])
+                block_one_ind])
             tissue_two_start = max(float(start_seq), block_tissue_two['start'][
-                                block_two_ind])
+                block_two_ind])
             tissue_one_end = min(float(end_seq), block_tissue_one['end'][
-                                block_one_ind])
+                block_one_ind])
             tissue_two_end = min(float(end_seq), block_tissue_two['end'][
-                                block_two_ind])
+                block_two_ind])
 
             # there is an overlap
             if tissue_one_start <= tissue_two_start < tissue_one_end or \
@@ -153,7 +157,7 @@ def block_overlap_percent(data_sources, block_data, start_seq, end_seq):
         block_two_only = max(sum(block_two_region) - overlap, 0)
         non_block = max(int(end_seq) - int(start_seq) - union, 0)
         fisher_table = np.array([[overlap, block_one_only],
-                                            [block_two_only, non_block]])
+                                 [block_two_only, non_block]])
 
         odds_ratio, p_value = fisher_exact(fisher_table)
         if math.isnan(odds_ratio):
@@ -166,16 +170,16 @@ def block_overlap_percent(data_sources, block_data, start_seq, end_seq):
                                 overlap * 1.0 / union, p_value)
         block_overlap.append(overlap_obj)
 
-    block_overlap = sorted(block_overlap, key=lambda x : x['value'],
+    block_overlap = sorted(block_overlap, key=lambda x: x['value'],
                            reverse=True)
     print 'overlap done!'
     return block_overlap
 
 
-def expression_methy_correlation(exp_data, datasource_gene_types,
-                                 datasource_methy_types,
-                                 methy_data, downstream=3000, upstream=1000):
-    print "expression_methy_correlation"
+def expression_methydiff_correlation(exp_data, datasource_gene_types,
+                                     datasource_methy_types,
+                                     methy_data, downstream=3000, upstream=1000):
+    print "expression_methydiff_correlation"
     methy_types = [datasource_type["id"] for datasource_type in
                    datasource_methy_types]
     methy_mean = pd.DataFrame(columns=methy_types)
@@ -184,18 +188,21 @@ def expression_methy_correlation(exp_data, datasource_gene_types,
     for i in range(len(exp_data)):
         exp_start = exp_data.iloc[i]['start'] - downstream
         exp_end = exp_data.iloc[i]['end'] + upstream
+
         methy_filtered = methy_data[((exp_start <= methy_data.start) & (
             methy_data.start <= exp_end)) | ((exp_start <= methy_data.end)
-                                  & (methy_data.end <= exp_end))]
+                                             & (methy_data.end <= exp_end))]
+
         mean = methy_filtered[methy_types].mean().fillna(0)
         methy_mean = methy_mean.append(mean,
                                        ignore_index=True)
 
     # for now do not compute expression difference
+    # tissue_types = ["breast", "colon", "thyroid", "lung"]
     for datasource_gene_type in datasource_gene_types:
         tissue_type = datasource_gene_type["id"]
         # use the difference of types (normal and tumor) for the same tissue
-        # expression_type1 = tissue_type + '___normal'
+        # expression_type1 = tissue_type.split("___") + '___normal'
         # expression_type2 = tissue_type + '___tumor'
         # expression_diff = np.subtract(exp_data['expression']
         #                               [expression_type1],
@@ -214,12 +221,70 @@ def expression_methy_correlation(exp_data, datasource_gene_types,
             print correlation_coefficient[0]
 
             # format the data into list of json objects for plots
-            data = format_exp_methy_output(expression_diff, methy_mean[
+            data = format_exp_methy_diff_output(expression_diff, methy_mean[
                 methy_type], tissue_type, methy_type)
 
             data_range = {
                 'attr-one': [min(expression_diff),
                              max(expression_diff)],
+                'attr-two': [min(methy_mean[methy_type]),
+                             max(methy_mean[methy_type])]
+            }
+            corr_obj = build_obj('correlation', 'expression diff',
+                                 'methylation diff', True, datasource_gene_type,
+                                 datasource_methy_type,
+                                 correlation_coefficient[0],
+                                 correlation_coefficient[1],
+                                 data=data, ranges=data_range)
+            corr_res.append(corr_obj)
+            corr_res = sorted(corr_res, key=lambda x: x['value'],
+                              reverse=True)
+
+    return corr_res
+
+
+def expression_methy_correlation(exp_data, datasource_gene_types,
+                                 datasource_methy_types,
+                                 methy_data, downstream=3000, upstream=1000):
+    print "expression_methy_correlation"
+    methy_types = [datasource_type["id"] for datasource_type in
+                   datasource_methy_types]
+
+    methy_mean = pd.DataFrame(columns=methy_types)
+    corr_res = []
+
+    for i in range(len(exp_data)):
+        exp_start = exp_data.iloc[i]['start'] - downstream
+        exp_end = exp_data.iloc[i]['end'] + upstream
+        methy_filtered = methy_data[((exp_start <= methy_data.start) & (
+            methy_data.start <= exp_end)) | ((exp_start <= methy_data.end)
+                                             & (methy_data.end <= exp_end))]
+        mean = methy_filtered[methy_types].mean().fillna(0)
+        methy_mean = methy_mean.append(mean,
+                                       ignore_index=True)
+
+    # for now do not compute expression difference
+    for datasource_gene_type in datasource_gene_types:
+        tissue_type = datasource_gene_type["id"]
+        expression = exp_data[tissue_type]
+
+        for datasource_methy_type in datasource_methy_types:
+            methy_type = datasource_methy_type["id"]
+
+            correlation_coefficient = pearsonr(methy_mean[methy_type],
+                                               expression)
+            print tissue_type, methy_type
+            if math.isnan(correlation_coefficient[0]):
+                continue
+            print correlation_coefficient[0]
+
+            # format the data into list of json objects for plots
+            data = format_exp_methy_output(expression, methy_mean[
+                methy_type], tissue_type, methy_type)
+
+            data_range = {
+                'attr-one': [min(expression),
+                             max(expression)],
                 'attr-two': [min(methy_mean[methy_type]),
                              max(methy_mean[methy_type])]
             }
@@ -247,11 +312,24 @@ def format_exp_methy_output(attr1, attr2, type1, type2):
     return data
 
 
+def format_exp_methy_diff_output(attr1, attr2, type1, type2):
+    data = []
+    for exp, methy in zip(attr1, attr2):
+        point = dict()
+        point['expression diff_' + type1] = exp
+        point['methylation diff_' + type2] = methy
+        data.append(point)
+
+    return data
+
+
 def computation_request(start_seq, end_seq, chromosome, measurements=None):
     # extract data from measurements
     gene_types = []
     block_types = []
+
     methylation_types = []
+    methylation_diff_types = []
     # categorize measurements into different types
     for measurement in measurements:
         data_obj = {
@@ -263,33 +341,72 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
         elif measurement["defaultChartType"] == "block":
             block_types.append(data_obj)
         elif measurement["defaultChartType"] == "line":
-            methylation_types.append(data_obj)
+            if measurement["datasourceId"] == "timp2014_probelevel_beta":
+                methylation_types.append(data_obj)
+            else:
+                methylation_diff_types.append(data_obj)
 
     block_data = None
     methy_raw = None
+    methy_raw_diff = None
     expression_data = None
     has_block = len(block_types) > 0
     has_methy = len(methylation_types) > 0
+    has_methy_diff = len(methylation_diff_types) > 0
     has_gene = len(gene_types) > 0
 
     if has_block:
-        block_data = get_block_data(start_seq, end_seq, chromosome, block_types)
+        block_data = get_block_data(
+            start_seq, end_seq, chromosome, block_types)
 
         # block overlap percentage
         block_overlap = block_overlap_percent(block_types, block_data,
                                               start_seq, end_seq)
         yield block_overlap
+
+    if has_methy_diff:
+        methy_raw_diff = get_methy_data(start_seq, end_seq, chromosome,
+                                        methylation_diff_types)
+        methy_corr_res = []
+        # loop through every possible combinations of methylation
+        for data_source_one, data_source_two in itertools.combinations(
+                methylation_diff_types, 2):
+            type1 = data_source_one["id"]
+            type2 = data_source_two["id"]
+            correlation_coefficient = pearsonr(methy_raw_diff[type1], methy_raw_diff[
+                type2])
+            data_range = {
+                'attr-one': [min(methy_raw_diff[type1]), max(methy_raw_diff[type1])],
+                'attr-two': [min(methy_raw_diff[type2]), max(methy_raw_diff[type2])]
+            }
+            corr_obj = build_obj('correlation', 'methylation diff',
+                                 'methylation diff', True, data_source_one,
+                                 data_source_two,
+                                 correlation_coefficient[0],
+                                 correlation_coefficient[1],
+                                 ranges=data_range)
+            methy_corr_res.append(corr_obj)
+        methy_corr_res = sorted(methy_corr_res, key=lambda x: x['value'],
+                                reverse=True)
+        yield methy_corr_res
+
     if has_methy:
         methy_raw = get_methy_data(start_seq, end_seq, chromosome,
                                    methylation_types)
         methy_corr_res = []
-        # loop through every possible combinations of methylation
+
+        # loop through normal/tumor of each tissue type
         for data_source_one, data_source_two in itertools.combinations(
-                methylation_types, 2):
+                methylation_diff_types, 2):
             type1 = data_source_one["id"]
             type2 = data_source_two["id"]
+            if type1.split("_")[0] != type2.split("_")[0]:
+                continue
+
             correlation_coefficient = pearsonr(methy_raw[type1], methy_raw[
                 type2])
+
+            print type1, type2
             data_range = {
                 'attr-one': [min(methy_raw[type1]), max(methy_raw[type1])],
                 'attr-two': [min(methy_raw[type2]), max(methy_raw[type2])]
@@ -310,7 +427,7 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
                                         gene_types)
 
         corr_list = []
-        pvalue_list = []
+        # pvalue_list = []
         for data_source_one, data_source_two in itertools.combinations(
                 gene_types, 2):
             exp1 = data_source_one['id']
@@ -327,14 +444,14 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
 
             t_value, p_value = ttest_ind(col_one, col_two,
                                          equal_var=False)
-            ttest_obj = build_obj('t-test', 'expression', 'expression', True,
-                                  data_source_one, data_source_two, t_value,
-                                  p_value)
-            pvalue_list.append(ttest_obj)
+            # ttest_obj = build_obj('t-test', 'expression', 'expression', True,
+            #                       data_source_one, data_source_two, t_value,
+            #                       p_value)
+            # pvalue_list.append(ttest_obj)
 
-        pvalue_list = sorted(pvalue_list, key=lambda x: x['value'],
-                             reverse=True)
-        yield pvalue_list
+        # pvalue_list = sorted(pvalue_list, key=lambda x: x['value'],
+        #                      reverse=True)
+        # yield pvalue_list
 
         corr_list = sorted(corr_list, key=lambda x: x['value'],
                            reverse=True)
@@ -347,10 +464,17 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
         yield ttest_block_exp
 
     if has_gene and has_methy:
+        # correlation between methylation and gene expression
+        # with the same tissue type
+        corr_methy_gene = expression_methy_correlation(expression_data, gene_types, methylation_types,
+                                                       methy_raw)
+
+        yield corr_methy_gene
+
+    if has_gene and has_methy_diff:
         # correlation between methylation difference and gene expression
         # difference
-        corr_methy_gene = expression_methy_correlation\
-                         (expression_data, gene_types, methylation_types,
-                          methy_raw)
+        corr_methy_gene = expression_methydiff_correlation(expression_data, gene_types, methylation_diff_types,
+                                                           methy_raw_diff)
 
         yield corr_methy_gene
