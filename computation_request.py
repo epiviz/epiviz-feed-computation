@@ -23,11 +23,16 @@ def ttest_block_expression(exp_data, block_data, exp_datasource,
     ttest_res = []
     gene_expression_block = dict()
     gene_expression_nonblock = dict()
-    exp_types = [exp_id["id"] for exp_id in exp_datasource]
+
     # loop through block of different tissue types
     for block_type, block_dataframe in block_data.items():
         if not block_dataframe.empty:
             # loop through each start, end in the block
+            # only with tissues that align with block types
+            # get tissue type from block id
+            tissue_type = block_type.split("_")[1]
+            exp_types = [tissue_type + "___normal", tissue_type + "___tumor"]
+
             gene_expression_block[block_type] = pd.DataFrame(columns=exp_types)
             gene_expression_nonblock[block_type] = pd.DataFrame(
                 columns=exp_types)
@@ -334,6 +339,7 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
     for measurement in measurements:
         data_obj = {
             "id": measurement["id"],
+            "name": measurement["name"],
             "datasourceId": measurement["datasourceId"]
         }
         if measurement["defaultChartType"] == "scatterplot":
