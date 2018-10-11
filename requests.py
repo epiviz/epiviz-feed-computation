@@ -118,6 +118,57 @@ def get_gene_data(start_seq, end_seq, chromosome, gene_measurements):
     return pd.DataFrame(expression_data)
 
 
+def get_gene_exact_pos(chromosome, gene_name):
+    # construct url
+    sql_url = 'http://54.157.53.251/api/?requestId=0&maxResults=5&type=exact&action=search&q=' + gene_name
+
+    # get data
+    req = urllib2.Request(sql_url)
+    response = urllib2.urlopen(req)
+    a = json.loads(response.read())
+    url_data = a['data']
+    values_obj = dict()
+
+    # loop through top 5 results
+    for result in url_data:
+        if result['chr'] == chromosome:
+            values_obj['start'] = result['start']
+            values_obj['end'] = result['end']
+            break
+
+    return url_data
+
+
+def get_sample_counts(measurements, start_seq, end_seq, chromosome):
+    # construct url
+    sql_url = 'http://54.157.53.251/api/?requestId=11&version=5&action=getValues&datasourceGroup=umd&datasource=gene_expression_barcode_subtype_count&metadata[]=gene'
+
+    gene_exp_measurements = []
+    for gene_measurement in measurements:
+        gene_exp_measurements.append(gene_measurement["id"])
+
+    sql_url += '&measurement='
+    if type(gene_exp_measurements) is list:
+        sql_url += ','.join(gene_exp_measurements)
+    else:
+        sql_url += gene_exp_measurements
+
+    if chromosome is not None:
+        sql_url += '&seqName=' + str(chromosome)
+
+    if start_seq is not None:
+        sql_url += '&start=' + str(start_seq)
+    if end_seq is not None:
+        sql_url += '&end=' + str(end_seq)
+
+    # get data
+    req = urllib2.Request(sql_url)
+    response = urllib2.urlopen(req)
+    a = json.loads(response.read())
+
+    return a['data']['values']['values']
+
+
 # convert relative values of start/end sequence number to absolute
 def relative_to_absolute(raw_data):
     raw_data['start'] = np.cumsum(raw_data['start'])

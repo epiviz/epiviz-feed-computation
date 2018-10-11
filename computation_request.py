@@ -8,8 +8,8 @@ import pandas as pd
 from scipy.stats.stats import pearsonr
 from scipy.stats import ttest_ind, fisher_exact
 from scipy.io import savemat
-from utils import build_obj, build_exp_methy_obj, add_to_block, format_expression_block_data
-from requests import get_methy_data, get_block_data, get_gene_data
+from utils import build_obj, build_exp_methy_obj, add_to_block, format_expression_block_data, build_exp_singlegene_obj
+from requests import get_methy_data, get_block_data, get_gene_data, get_gene_exact_pos, get_sample_counts
 
 import urllib2
 import json
@@ -202,15 +202,12 @@ def expression_methydiff_correlation(exp_data, datasource_gene_types,
         methy_mean = methy_mean.append(mean,
                                        ignore_index=True)
 
-    # for now do not compute expression difference
     tissue_types = [["breast___normal", "breast___tumor"],
                     ['colon___normal', 'colon___tumor'],
                     ['lung___normal', 'lung___tumor'],
                     ['thyroid___normal', 'thyroid___tumor']]
     for tissue_pair in tissue_types:
 
-        # for datasource_gene_type in datasource_gene_types:
-        #     tissue_type = datasource_gene_type["id"]
         # use the difference of types (normal and tumor) for the same tissue
         expression_type1 = tissue_pair[0]
         expression_type2 = tissue_pair[1]
@@ -218,39 +215,38 @@ def expression_methydiff_correlation(exp_data, datasource_gene_types,
 
         expression_diff = np.subtract(exp_data[expression_type1],
                                       exp_data[expression_type2])
-        # expression_diff = exp_data[tissue_type]
-        for datasource_methy_type in datasource_methy_types:
-            methy_type = datasource_methy_type["id"]
 
-            # print tissue_type, methy_type
-            print tissue_pair, methy_type
-            correlation_coefficient = pearsonr(methy_mean[methy_type],
-                                               expression_diff)
+        # for datasource_methy_type in datasource_methy_types:
+        methy_type = tissue_type
 
-            if math.isnan(correlation_coefficient[0]):
-                continue
-            print correlation_coefficient[0]
+        print tissue_pair, methy_type
+        correlation_coefficient = pearsonr(methy_mean[methy_type],
+                                           expression_diff)
 
-            # format the data into list of json objects for plots
-            data = format_exp_methy_output(expression_diff, methy_mean[
-                methy_type], "Expression diff " + tissue_type,  datasource_methy_type["name"])
+        if math.isnan(correlation_coefficient[0]):
+            continue
+        print correlation_coefficient[0]
 
-            data_range = {
-                'attr-one': [min(expression_diff),
-                             max(expression_diff)],
-                'attr-two': [min(methy_mean[methy_type]),
-                             max(methy_mean[methy_type])]
-            }
+        # format the data into list of json objects for plots
+        data = format_exp_methy_output(expression_diff, methy_mean[
+            methy_type], "Expression diff " + tissue_type,  'Collapsed Methylation Diff ' + tissue_type)
 
-            corr_obj = build_exp_methy_obj('correlation', 'expression diff',
-                                         'methylation diff', True, "Expression diff " + tissue_type,
-                                         datasource_methy_type["name"],
-                                         correlation_coefficient[0],
-                                         correlation_coefficient[1],
-                                         data=data, ranges=data_range)
-            corr_res.append(corr_obj)
-            corr_res = sorted(corr_res, key=lambda x: x['value'],
-                              reverse=True)
+        data_range = {
+            'attr-one': [min(expression_diff),
+                         max(expression_diff)],
+            'attr-two': [min(methy_mean[methy_type]),
+                         max(methy_mean[methy_type])]
+        }
+
+        corr_obj = build_exp_methy_obj('correlation', 'expression diff',
+                                       'methylation diff', True, "Expression diff " + tissue_type,
+                                       'Collapsed Methylation Diff ' + tissue_type,
+                                       correlation_coefficient[0],
+                                       correlation_coefficient[1],
+                                       data=data, ranges=data_range)
+        corr_res.append(corr_obj)
+        corr_res = sorted(corr_res, key=lambda x: x['value'],
+                          reverse=True)
 
     return corr_res
 
@@ -300,11 +296,11 @@ def expression_methy_correlation(exp_data, datasource_gene_types,
                              max(methy_mean[methy_type])]
             }
             corr_obj = build_exp_methy_obj('correlation', 'expression',
-                                         'methylation', True, datasource_gene_type["name"],
-                                         datasource_methy_type["name"],
-                                         correlation_coefficient[0],
-                                         correlation_coefficient[1],
-                                         data=data, ranges=data_range)
+                                           'methylation', True, datasource_gene_type["name"],
+                                           datasource_methy_type["name"],
+                                           correlation_coefficient[0],
+                                           correlation_coefficient[1],
+                                           data=data, ranges=data_range)
             corr_res.append(corr_obj)
             corr_res = sorted(corr_res, key=lambda x: x['value'],
                               reverse=True)
@@ -323,7 +319,49 @@ def format_exp_methy_output(attr1, attr2, type1, type2):
     return data
 
 
-def computation_request(start_seq, end_seq, chromosome, measurements=None):
+def ttest_expression_per_gene(gene_types, gene_name, chromosome, start_seq, end_seq):
+    print "ttest per single gene!"
+    # print chromosome, gene_name
+    # get expression for single gene
+    gene_pos = get_gene_exact_pos(chromosome, gene_name)
+    gene_pos = gene_pos[0]
+
+    expression_exact = get_gene_data(
+        gene_pos['start'], gene_pos['end'], chromosome, gene_types)
+
+    sample_counts = get_sample_counts(
+        gene_types, gene_pos['start'], gene_pos['end'], chromosome)
+
+    ttest_results = []
+    for data_source_one, data_source_two in itertools.combinations(
+            gene_types, 2):
+        exp1 = data_source_one['id']
+        exp2 = data_source_two['id']
+        one = expression_exact[exp1][0]
+        two = expression_exact[exp2][0]
+
+        ttest_value = math.sqrt(one * (1 - one) / sample_counts[exp1][0]) + math.sqrt(
+            two * (1 - two) / sample_counts[exp2][0])
+
+        data = [{
+            "type": data_source_one["name"],
+            "value": one
+        }, {
+            "type": data_source_two["name"],
+            "value": two
+        }]
+
+        corr_obj = build_exp_singlegene_obj('per gene t-test', 'expression',                                        'expression', True, data_source_one,
+                                            data_source_two, ttest_value, ttest_value, data=data)
+        ttest_results.append(corr_obj)
+
+    ttest_results = sorted(ttest_results, key=lambda x: x['value'],
+                           reverse=True)
+
+    return ttest_results
+
+
+def computation_request(start_seq, end_seq, chromosome, gene_name,                                      measurements=None):
     # extract data from measurements
     gene_types = []
     block_types = []
@@ -346,6 +384,11 @@ def computation_request(start_seq, end_seq, chromosome, measurements=None):
                 methylation_types.append(data_obj)
             else:
                 methylation_diff_types.append(data_obj)
+
+    per_gene_ttest = ttest_expression_per_gene(gene_types, gene_name,
+                                               chromosome, start_seq, end_seq)
+
+    yield per_gene_ttest
 
     block_data = None
     methy_raw = None

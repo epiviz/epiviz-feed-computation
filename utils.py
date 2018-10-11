@@ -93,6 +93,24 @@ def build_exp_methy_obj(comp_type, data_one, data_two, show_chart, attr_one,    
     return target_obj
 
 
+def build_exp_singlegene_obj(comp_type, data_one, data_two, show_chart,                                      attr_one, attr_two, value, pvalue=None, data=None,                              ranges=None):
+
+    p_value = 0.0
+
+    target_obj = {
+        'computation-type': comp_type,
+        'data-type-one': data_one,
+        'data-type-two': data_two,
+        'show-chart': show_chart,
+        'attribute-one': attr_one['name'],
+        'attribute-two': attr_two['name'],
+        'value': round(value, 2),
+        'pvalue': round(p_value, 2),
+        'data': data
+    }
+    return target_obj
+
+
 def add_to_list(block, expression, tissue_key, block_key, ind):
     key = tissue_key + '|' + block_key
     if key not in block:

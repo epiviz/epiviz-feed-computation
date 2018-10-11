@@ -24,6 +24,7 @@ def feed(websocket):
     start = data['start']
     end = data['end']
     chromosome = data['chr']
+    gene_name = data['gene']
     seqID = message['seq']
     print "parameters"
     key = chromosome + '-' + str(start) + '-' + str(end)
@@ -32,8 +33,7 @@ def feed(websocket):
         websocket.send(ujson.dumps(cached))
         websocket.send(ujson.dumps(seqID))
         return
-    results = computation_request(start, end,
-                                  chromosome,
+    results = computation_request(start, end, chromosome, gene_name,
                                   measurements=measurements)
     cache_results = []
     print results
