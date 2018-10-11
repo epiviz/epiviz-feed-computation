@@ -8,7 +8,7 @@ import pandas as pd
 from scipy.stats.stats import pearsonr
 from scipy.stats import ttest_ind, fisher_exact
 from scipy.io import savemat
-from utils import build_obj, add_to_block, format_expression_block_data
+from utils import build_obj, build_exp_methy_obj, add_to_block, format_expression_block_data
 from requests import get_methy_data, get_block_data, get_gene_data
 
 import urllib2
@@ -203,21 +203,27 @@ def expression_methydiff_correlation(exp_data, datasource_gene_types,
                                        ignore_index=True)
 
     # for now do not compute expression difference
-    # tissue_types = ["breast", "colon", "thyroid", "lung"]
-    for datasource_gene_type in datasource_gene_types:
-        tissue_type = datasource_gene_type["id"]
+    tissue_types = [["breast___normal", "breast___tumor"],
+                    ['colon___normal', 'colon___tumor'],
+                    ['lung___normal', 'lung___tumor'],
+                    ['thyroid___normal', 'thyroid___tumor']]
+    for tissue_pair in tissue_types:
+
+        # for datasource_gene_type in datasource_gene_types:
+        #     tissue_type = datasource_gene_type["id"]
         # use the difference of types (normal and tumor) for the same tissue
-        # expression_type1 = tissue_type.split("___") + '___normal'
-        # expression_type2 = tissue_type + '___tumor'
-        # expression_diff = np.subtract(exp_data['expression']
-        #                               [expression_type1],
-        #                               exp_data['expression'][
-        #                                   expression_type2])
-        expression_diff = exp_data[tissue_type]
+        expression_type1 = tissue_pair[0]
+        expression_type2 = tissue_pair[1]
+        tissue_type = expression_type1.split("___")[0]
+
+        expression_diff = np.subtract(exp_data[expression_type1],
+                                      exp_data[expression_type2])
+        # expression_diff = exp_data[tissue_type]
         for datasource_methy_type in datasource_methy_types:
             methy_type = datasource_methy_type["id"]
 
-            print tissue_type, methy_type
+            # print tissue_type, methy_type
+            print tissue_pair, methy_type
             correlation_coefficient = pearsonr(methy_mean[methy_type],
                                                expression_diff)
 
@@ -226,8 +232,8 @@ def expression_methydiff_correlation(exp_data, datasource_gene_types,
             print correlation_coefficient[0]
 
             # format the data into list of json objects for plots
-            data = format_exp_methy_diff_output(expression_diff, methy_mean[
-                methy_type], tissue_type, methy_type)
+            data = format_exp_methy_output(expression_diff, methy_mean[
+                methy_type], "Expression diff " + tissue_type,  datasource_methy_type["name"])
 
             data_range = {
                 'attr-one': [min(expression_diff),
@@ -235,12 +241,13 @@ def expression_methydiff_correlation(exp_data, datasource_gene_types,
                 'attr-two': [min(methy_mean[methy_type]),
                              max(methy_mean[methy_type])]
             }
-            corr_obj = build_obj('correlation', 'expression diff',
-                                 'methylation diff', True, datasource_gene_type,
-                                 datasource_methy_type,
-                                 correlation_coefficient[0],
-                                 correlation_coefficient[1],
-                                 data=data, ranges=data_range)
+
+            corr_obj = build_exp_methy_obj('correlation', 'expression diff',
+                                         'methylation diff', True, "Expression diff " + tissue_type,
+                                         datasource_methy_type["name"],
+                                         correlation_coefficient[0],
+                                         correlation_coefficient[1],
+                                         data=data, ranges=data_range)
             corr_res.append(corr_obj)
             corr_res = sorted(corr_res, key=lambda x: x['value'],
                               reverse=True)
@@ -268,7 +275,6 @@ def expression_methy_correlation(exp_data, datasource_gene_types,
         methy_mean = methy_mean.append(mean,
                                        ignore_index=True)
 
-    # for now do not compute expression difference
     for datasource_gene_type in datasource_gene_types:
         tissue_type = datasource_gene_type["id"]
         expression = exp_data[tissue_type]
@@ -285,7 +291,7 @@ def expression_methy_correlation(exp_data, datasource_gene_types,
 
             # format the data into list of json objects for plots
             data = format_exp_methy_output(expression, methy_mean[
-                methy_type], tissue_type, methy_type)
+                methy_type], datasource_gene_type["name"], datasource_methy_type["name"])
 
             data_range = {
                 'attr-one': [min(expression),
@@ -293,12 +299,12 @@ def expression_methy_correlation(exp_data, datasource_gene_types,
                 'attr-two': [min(methy_mean[methy_type]),
                              max(methy_mean[methy_type])]
             }
-            corr_obj = build_obj('correlation', 'expression',
-                                 'methylation', True, datasource_gene_type,
-                                 datasource_methy_type,
-                                 correlation_coefficient[0],
-                                 correlation_coefficient[1],
-                                 data=data, ranges=data_range)
+            corr_obj = build_exp_methy_obj('correlation', 'expression',
+                                         'methylation', True, datasource_gene_type["name"],
+                                         datasource_methy_type["name"],
+                                         correlation_coefficient[0],
+                                         correlation_coefficient[1],
+                                         data=data, ranges=data_range)
             corr_res.append(corr_obj)
             corr_res = sorted(corr_res, key=lambda x: x['value'],
                               reverse=True)
@@ -310,19 +316,8 @@ def format_exp_methy_output(attr1, attr2, type1, type2):
     data = []
     for exp, methy in zip(attr1, attr2):
         point = dict()
-        point['expression_' + type1] = exp
-        point['methylation_' + type2] = methy
-        data.append(point)
-
-    return data
-
-
-def format_exp_methy_diff_output(attr1, attr2, type1, type2):
-    data = []
-    for exp, methy in zip(attr1, attr2):
-        point = dict()
-        point['expression diff_' + type1] = exp
-        point['methylation diff_' + type2] = methy
+        point[type1] = exp
+        point[type2] = methy
         data.append(point)
 
     return data
