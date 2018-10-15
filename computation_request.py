@@ -6,10 +6,10 @@
 import numpy as np
 import pandas as pd
 from scipy.stats.stats import pearsonr
-from scipy.stats import ttest_ind, fisher_exact
+from scipy.stats import ttest_ind, fisher_exact, norm
 from scipy.io import savemat
 from utils import build_obj, build_exp_methy_obj, add_to_block, format_expression_block_data, build_exp_singlegene_obj
-from requests import get_methy_data, get_block_data, get_gene_data, get_gene_exact_pos, get_sample_counts
+from requests import get_methy_data, get_block_data, get_gene_data, get_sample_counts
 
 import urllib2
 import json
@@ -96,6 +96,8 @@ def ttest_block_expression(exp_data, block_data, exp_datasource,
 
 def block_overlap_percent(data_sources, block_data, start_seq, end_seq):
     block_overlap = []
+    if not block_data:
+        return block_overlap
 
     for data_source_one, data_source_two in itertools.combinations(
             data_sources, 2):
@@ -172,7 +174,7 @@ def block_overlap_percent(data_sources, block_data, start_seq, end_seq):
         overlap_percent = 0.0 if union == 0.0 else overlap * 1.0 / union
         overlap_obj = build_obj('overlap', 'block', 'block', False,
                                 data_source_one, data_source_two,
-                                overlap * 1.0 / union, p_value)
+                                overlap_percent, p_value)
         block_overlap.append(overlap_obj)
 
     block_overlap = sorted(block_overlap, key=lambda x: x['value'],
@@ -319,46 +321,126 @@ def format_exp_methy_output(attr1, attr2, type1, type2):
     return data
 
 
-def ttest_expression_per_gene(gene_types, gene_name, chromosome, start_seq, end_seq):
+def ttest_expression_per_gene(gene_types, exp_data, chromosome, start_seq, end_seq):
     print "ttest per single gene!"
-    # print chromosome, gene_name
-    # get expression for single gene
-    gene_pos = get_gene_exact_pos(chromosome, gene_name)
-    gene_pos = gene_pos[0]
-
-    expression_exact = get_gene_data(
-        gene_pos['start'], gene_pos['end'], chromosome, gene_types)
 
     sample_counts = get_sample_counts(
-        gene_types, gene_pos['start'], gene_pos['end'], chromosome)
+        gene_types, start_seq, end_seq, chromosome)
 
     ttest_results = []
-    for data_source_one, data_source_two in itertools.combinations(
-            gene_types, 2):
-        exp1 = data_source_one['id']
-        exp2 = data_source_two['id']
-        one = expression_exact[exp1][0]
-        two = expression_exact[exp2][0]
 
-        ttest_value = math.sqrt(one * (1 - one) / sample_counts[exp1][0]) + math.sqrt(
-            two * (1 - two) / sample_counts[exp2][0])
+    if exp_data.empty or not sample_counts:
+        return ttest_results
 
-        data = [{
-            "type": data_source_one["name"],
-            "value": one
-        }, {
-            "type": data_source_two["name"],
-            "value": two
-        }]
+    gene_pairs = [["breast___normal", "breast___tumor"],
+                  ['colon___normal', 'colon___tumor'],
+                  ['lung___normal', 'lung___tumor'],
+                  ['thyroid___normal', 'thyroid___tumor']]
+    for gene_pair in gene_pairs:
+        exp1 = gene_pair[0]
+        exp2 = gene_pair[1]
+        data_source_one = [
+            element for element in gene_types if element["id"] == exp1][0]
+        data_source_two = [
+            element for element in gene_types if element["id"] == exp2][0]
 
-        corr_obj = build_exp_singlegene_obj('per gene t-test', 'expression',                                        'expression', True, data_source_one,
-                                            data_source_two, ttest_value, ttest_value, data=data)
-        ttest_results.append(corr_obj)
+        for index, row in exp_data.iterrows():
+            print index
+
+            one = row[exp1]
+            two = row[exp2]
+
+            variance_threshold = 0.05 * 0.95
+
+            var_one = variance_threshold if (
+                one * (1 - one)) < variance_threshold else (one * (1 - one))
+
+            var_two = variance_threshold if (
+                two * (1 - two)) < variance_threshold else (two * (1 - two))
+
+            denominator = math.sqrt(var_one / sample_counts[exp1][0] +
+                                    var_two / sample_counts[exp2][0])
+
+            ttest_value = (one - two) / denominator
+
+            p_value = 1 - norm.cdf(ttest_value)
+
+            data = [{
+                "type": data_source_one["name"],
+                "value": one
+            }, {
+                "type": data_source_two["name"],
+                "value": two
+            }]
+
+            corr_obj = build_exp_singlegene_obj('Binomial test difference in proportions', 'expression',                                        'expression', True, data_source_one,
+                                                data_source_two, ttest_value, pvalue=p_value, gene=row['gene'], data=data)
+            ttest_results.append(corr_obj)
 
     ttest_results = sorted(ttest_results, key=lambda x: x['value'],
                            reverse=True)
 
     return ttest_results
+
+
+def methy_diff_correlation(methy_diff_data, methylation_diff_types):
+    methy_corr_res = []
+    if methy_diff_data.empty:
+        return methy_corr_res
+    # loop through every possible combinations of methylation
+    for data_source_one, data_source_two in itertools.combinations(
+            methylation_diff_types, 2):
+        type1 = data_source_one["id"]
+        type2 = data_source_two["id"]
+        correlation_coefficient = pearsonr(methy_diff_data[type1], methy_diff_data[
+            type2])
+        data_range = {
+            'attr-one': [min(methy_diff_data[type1]), max(methy_diff_data[type1])],
+            'attr-two': [min(methy_diff_data[type2]), max(methy_diff_data[type2])]
+        }
+        corr_obj = build_obj('correlation', 'methylation diff',
+                             'methylation diff', True, data_source_one,
+                             data_source_two,
+                             correlation_coefficient[0],
+                             correlation_coefficient[1],
+                             ranges=data_range)
+        methy_corr_res.append(corr_obj)
+    methy_corr_res = sorted(methy_corr_res, key=lambda x: x['value'],
+                            reverse=True)
+    return methy_corr_res
+
+
+def methy_correlation(methy_raw, methylation_diff_types):
+    methy_corr_res = []
+
+    if methy_raw.empty:
+        return methy_corr_res
+    # loop through normal/tumor of each tissue type
+    for data_source_one, data_source_two in itertools.combinations(
+            methylation_diff_types, 2):
+        type1 = data_source_one["id"]
+        type2 = data_source_two["id"]
+        if type1.split("_")[0] != type2.split("_")[0]:
+            continue
+
+        correlation_coefficient = pearsonr(methy_raw[type1], methy_raw[
+            type2])
+
+        print type1, type2
+        data_range = {
+            'attr-one': [min(methy_raw[type1]), max(methy_raw[type1])],
+            'attr-two': [min(methy_raw[type2]), max(methy_raw[type2])]
+        }
+        corr_obj = build_obj('correlation', 'methylation',
+                             'methylation', True, data_source_one,
+                             data_source_two,
+                             correlation_coefficient[0],
+                             correlation_coefficient[1],
+                             ranges=data_range)
+        methy_corr_res.append(corr_obj)
+    methy_corr_res = sorted(methy_corr_res, key=lambda x: x['value'],
+                            reverse=True)
+    return methy_corr_res
 
 
 def computation_request(start_seq, end_seq, chromosome, gene_name,                                      measurements=None):
@@ -385,11 +467,6 @@ def computation_request(start_seq, end_seq, chromosome, gene_name,              
             else:
                 methylation_diff_types.append(data_obj)
 
-    per_gene_ttest = ttest_expression_per_gene(gene_types, gene_name,
-                                               chromosome, start_seq, end_seq)
-
-    yield per_gene_ttest
-
     block_data = None
     methy_raw = None
     methy_raw_diff = None
@@ -398,6 +475,15 @@ def computation_request(start_seq, end_seq, chromosome, gene_name,              
     has_methy = len(methylation_types) > 0
     has_methy_diff = len(methylation_diff_types) > 0
     has_gene = len(gene_types) > 0
+
+    expression_data = get_gene_data(start_seq, end_seq, chromosome,
+                                    gene_types)
+    print expression_data
+
+    per_gene_ttest = ttest_expression_per_gene(gene_types, expression_data,
+                                               chromosome, start_seq, end_seq)
+
+    yield per_gene_ttest
 
     if has_block:
         block_data = get_block_data(
@@ -411,64 +497,22 @@ def computation_request(start_seq, end_seq, chromosome, gene_name,              
     if has_methy_diff:
         methy_raw_diff = get_methy_data(start_seq, end_seq, chromosome,
                                         methylation_diff_types)
-        methy_corr_res = []
-        # loop through every possible combinations of methylation
-        for data_source_one, data_source_two in itertools.combinations(
-                methylation_diff_types, 2):
-            type1 = data_source_one["id"]
-            type2 = data_source_two["id"]
-            correlation_coefficient = pearsonr(methy_raw_diff[type1], methy_raw_diff[
-                type2])
-            data_range = {
-                'attr-one': [min(methy_raw_diff[type1]), max(methy_raw_diff[type1])],
-                'attr-two': [min(methy_raw_diff[type2]), max(methy_raw_diff[type2])]
-            }
-            corr_obj = build_obj('correlation', 'methylation diff',
-                                 'methylation diff', True, data_source_one,
-                                 data_source_two,
-                                 correlation_coefficient[0],
-                                 correlation_coefficient[1],
-                                 ranges=data_range)
-            methy_corr_res.append(corr_obj)
-        methy_corr_res = sorted(methy_corr_res, key=lambda x: x['value'],
-                                reverse=True)
-        yield methy_corr_res
+
+        methy_diff_corr_res = methy_diff_correlation(
+            methy_raw_diff, methylation_diff_types)
+
+        yield methy_diff_corr_res
 
     if has_methy:
         methy_raw = get_methy_data(start_seq, end_seq, chromosome,
                                    methylation_types)
-        methy_corr_res = []
+        methy_corr_res = methy_correlation(methy_raw, methylation_diff_types)
 
-        # loop through normal/tumor of each tissue type
-        for data_source_one, data_source_two in itertools.combinations(
-                methylation_diff_types, 2):
-            type1 = data_source_one["id"]
-            type2 = data_source_two["id"]
-            if type1.split("_")[0] != type2.split("_")[0]:
-                continue
-
-            correlation_coefficient = pearsonr(methy_raw[type1], methy_raw[
-                type2])
-
-            print type1, type2
-            data_range = {
-                'attr-one': [min(methy_raw[type1]), max(methy_raw[type1])],
-                'attr-two': [min(methy_raw[type2]), max(methy_raw[type2])]
-            }
-            corr_obj = build_obj('correlation', 'methylation',
-                                 'methylation', True, data_source_one,
-                                 data_source_two,
-                                 correlation_coefficient[0],
-                                 correlation_coefficient[1],
-                                 ranges=data_range)
-            methy_corr_res.append(corr_obj)
-        methy_corr_res = sorted(methy_corr_res, key=lambda x: x['value'],
-                                reverse=True)
         yield methy_corr_res
 
     if has_gene:
-        expression_data = get_gene_data(start_seq, end_seq, chromosome,
-                                        gene_types)
+        # expression_data = get_gene_data(start_seq, end_seq, chromosome,
+        #                                 gene_types)
 
         corr_list = []
         # pvalue_list = []

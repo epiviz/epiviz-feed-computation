@@ -15,7 +15,7 @@ import itertools
 
 # http request to get data
 def get_url_data(data_source, measurements=None, chromosome=None,
-                 start_seq=None, end_seq=None):
+                 start_seq=None, end_seq=None, metadata=None):
     # construct url
     # sql_url = 'http://epiviz-dev.cbcb.umd.edu/api/?requestId=10&version=4&' \
     #           'action=getData&datasource=' + data_source
@@ -38,10 +38,18 @@ def get_url_data(data_source, measurements=None, chromosome=None,
     if end_seq is not None:
         sql_url += '&end=' + str(end_seq)
 
+    if metadata is not None:
+        sql_url += '&metadata[]=' + str(metadata)
+
     # get data
     req = urllib2.Request(sql_url)
     response = urllib2.urlopen(req)
     a = json.loads(response.read())
+
+    # check if it's an error message in the response, if it is, there's nothing coming back, we should skip the computation
+    if a['error'] is not None and len(a['error']) > 1:
+        return ""
+
     url_data = a['data']
 
     if url_data['rows']['useOffset']:
@@ -64,6 +72,10 @@ def get_block_data(start, end, chromosome, block_measurements):
         url_data = get_url_data(data_source=block_measurement["datasourceId"],
                                 chromosome=chromosome, start_seq=start,
                                 end_seq=end)
+
+        if not url_data:
+            return block_data
+
         # only keep start and end fields,  remove other data columns
         block_data[block_measurement["id"]] = pd.DataFrame(columns=["start",
                                                                     "end"])
@@ -86,6 +98,9 @@ def get_methy_data(start_seq, end_seq, chromosome, methylation_measurements):
                                 chromosome=chromosome,
                                 start_seq=start_seq, end_seq=end_seq)
 
+        if not url_data:
+            return pd.DataFrame(methy_raw)
+
         # extract expected format here
         methy_raw['start'] = url_data['rows']['values']['start']
         methy_raw['end'] = url_data['rows']['values']['end']
@@ -107,10 +122,13 @@ def get_gene_data(start_seq, end_seq, chromosome, gene_measurements):
     exp_url_data = get_url_data(data_source=gene_exp_data_source,
                                 measurements=gene_exp_measurements,
                                 chromosome=chromosome, start_seq=start_seq,
-                                end_seq=end_seq)
+                                end_seq=end_seq, metadata="gene")
+    if not exp_url_data:
+        return pd.DataFrame(expression_data)
     # extract expected format here
     expression_data['start'] = exp_url_data['rows']['values']['start']
     expression_data['end'] = exp_url_data['rows']['values']['end']
+    expression_data['gene'] = exp_url_data['rows']['values']['metadata']['gene']
     for tissue_type in gene_exp_measurements:
         expression_data[tissue_type] = exp_url_data['values'][
             'values'][tissue_type]
@@ -118,25 +136,28 @@ def get_gene_data(start_seq, end_seq, chromosome, gene_measurements):
     return pd.DataFrame(expression_data)
 
 
-def get_gene_exact_pos(chromosome, gene_name):
-    # construct url
-    sql_url = 'http://54.157.53.251/api/?requestId=0&maxResults=5&type=exact&action=search&q=' + gene_name
+# def get_gene_exact_pos(chromosome, gene_name):
+#     # construct url
+#     sql_url = 'http://54.157.53.251/api/?requestId=0&maxResults=5&type=exact&action=search&q=' + gene_name
 
-    # get data
-    req = urllib2.Request(sql_url)
-    response = urllib2.urlopen(req)
-    a = json.loads(response.read())
-    url_data = a['data']
-    values_obj = dict()
+#     # get data
+#     req = urllib2.Request(sql_url)
+#     response = urllib2.urlopen(req)
+#     a = json.loads(response.read())
+#     url_data = a['data']
+#     values_obj = dict()
 
-    # loop through top 5 results
-    for result in url_data:
-        if result['chr'] == chromosome:
-            values_obj['start'] = result['start']
-            values_obj['end'] = result['end']
-            break
+#     if a['error'] is not None and len(a['error']) > 1:
+#         return values_obj
 
-    return url_data
+#     # loop through top 5 results
+#     for result in url_data:
+#         if result['chr'] == chromosome:
+#             values_obj['start'] = result['start']
+#             values_obj['end'] = result['end']
+#             break
+
+#     return url_data
 
 
 def get_sample_counts(measurements, start_seq, end_seq, chromosome):
@@ -165,6 +186,9 @@ def get_sample_counts(measurements, start_seq, end_seq, chromosome):
     req = urllib2.Request(sql_url)
     response = urllib2.urlopen(req)
     a = json.loads(response.read())
+
+    if a["error"]:
+        return ""
 
     return a['data']['values']['values']
 
