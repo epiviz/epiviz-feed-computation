@@ -115,7 +115,7 @@ def test_measurements(expression=True, block=True, methylation=True):
         for methylation_type in methylation_types:
             measurements.append({
                 "id": methylation_type,
-                "name": 'Probelevel Meth ' + methylation_type,
+                "name": ' Average Probe level Meth ' + methylation_type,
                 "type": "feature",
                 "datasourceId": 'timp2014_probelevel_beta',
                 "datasourceGroup": 'timp2014_probelevel_beta',
