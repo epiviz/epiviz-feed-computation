@@ -103,8 +103,13 @@ def block_overlap_percent(data_sources, block_data, start_seq, end_seq):
             data_sources, 2):
         tissue_type_one = data_source_one["id"]
         tissue_type_two = data_source_two["id"]
+
+        if tissue_type_one not in block_data or tissue_type_two not in block_data:
+            continue
+
         block_tissue_one = block_data[tissue_type_one]
         block_tissue_two = block_data[tissue_type_two]
+
         block_one_ind = 0
         block_two_ind = 0
         block_one_len = len(block_tissue_one['start'])
@@ -345,7 +350,6 @@ def ttest_expression_per_gene(gene_types, exp_data, chromosome, start_seq, end_s
             element for element in gene_types if element["id"] == exp2][0]
 
         for index, row in exp_data.iterrows():
-            print index
 
             one = row[exp1]
             two = row[exp2]
@@ -392,6 +396,11 @@ def methy_diff_correlation(methy_diff_data, methylation_diff_types):
             methylation_diff_types, 2):
         type1 = data_source_one["id"]
         type2 = data_source_two["id"]
+
+        # check if there's data for these two methy types
+        if type1 not in methy_diff_data.columns or type2 not in methy_diff_data.columns:
+            continue
+
         correlation_coefficient = pearsonr(methy_diff_data[type1], methy_diff_data[
             type2])
         data_range = {
@@ -420,7 +429,7 @@ def methy_correlation(methy_raw, methylation_diff_types):
             methylation_diff_types, 2):
         type1 = data_source_one["id"]
         type2 = data_source_two["id"]
-        if type1.split("_")[0] != type2.split("_")[0]:
+        if type1.split("_")[0] != type2.split("_")[0] or type1 not in methy_raw.columns or type2 not in methy_raw.columns:
             continue
 
         correlation_coefficient = pearsonr(methy_raw[type1], methy_raw[
@@ -478,7 +487,6 @@ def computation_request(start_seq, end_seq, chromosome, gene_name,              
 
     expression_data = get_gene_data(start_seq, end_seq, chromosome,
                                     gene_types)
-    print expression_data
 
     per_gene_ttest = ttest_expression_per_gene(gene_types, expression_data,
                                                chromosome, start_seq, end_seq)
@@ -520,6 +528,10 @@ def computation_request(start_seq, end_seq, chromosome, gene_name,              
                 gene_types, 2):
             exp1 = data_source_one['id']
             exp2 = data_source_two['id']
+
+            if exp1 not in expression_data.columns or exp2 not in expression_data.columns:
+                continue
+
             col_one = expression_data[exp1]
             col_two = expression_data[exp2]
 

@@ -73,8 +73,9 @@ def get_block_data(start, end, chromosome, block_measurements):
                                 chromosome=chromosome, start_seq=start,
                                 end_seq=end)
 
+        # if there is no block data for this tissue type, just skip it
         if not url_data:
-            return block_data
+            continue
 
         # only keep start and end fields,  remove other data columns
         block_data[block_measurement["id"]] = pd.DataFrame(columns=["start",
@@ -98,8 +99,9 @@ def get_methy_data(start_seq, end_seq, chromosome, methylation_measurements):
                                 chromosome=chromosome,
                                 start_seq=start_seq, end_seq=end_seq)
 
+        # if there is no methy data for this tissue type, just skip it
         if not url_data:
-            return pd.DataFrame(methy_raw)
+            continue
 
         # extract expected format here
         methy_raw['start'] = url_data['rows']['values']['start']
@@ -123,13 +125,15 @@ def get_gene_data(start_seq, end_seq, chromosome, gene_measurements):
                                 measurements=gene_exp_measurements,
                                 chromosome=chromosome, start_seq=start_seq,
                                 end_seq=end_seq, metadata="gene")
-    if not exp_url_data:
-        return pd.DataFrame(expression_data)
+
     # extract expected format here
     expression_data['start'] = exp_url_data['rows']['values']['start']
     expression_data['end'] = exp_url_data['rows']['values']['end']
     expression_data['gene'] = exp_url_data['rows']['values']['metadata']['gene']
     for tissue_type in gene_exp_measurements:
+        # if there is no expression data for this tissue type, just skip it
+        # if expression_data[tissue_type] is None:
+        #     continue
         expression_data[tissue_type] = exp_url_data['values'][
             'values'][tissue_type]
 
