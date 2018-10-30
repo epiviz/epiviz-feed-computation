@@ -19,13 +19,13 @@ sockets = Sockets(app)
 def feed(websocket):
     message = ujson.loads(websocket.receive())
     measurements = test_measurements()
-    print message
+    print(message)
     data = message['data']
     start = data['start']
     end = data['end']
     chromosome = data['chr']
     seqID = message['seq']
-    print "parameters"
+    print ("parameters")
     key = chromosome + '-' + str(start) + '-' + str(end)
     cached = cache.get(key)
     if cached:
@@ -36,11 +36,11 @@ def feed(websocket):
                                   chromosome,
                                   measurements=measurements)
     cache_results = []
-    print results
+    print (results)
     for result in results:
-        print "send back!"
-        print time.time()
-        print "\n"
+        print ("send back!")
+        print (time.time())
+        print ("\n")
         # emit('returned_results', result)
         cache_results.extend(result)
         websocket.send(ujson.dumps(result))
@@ -185,5 +185,6 @@ if __name__ == "__main__":
     from gevent import pywsgi
     from geventwebsocket.handler import WebSocketHandler
     server = pywsgi.WSGIServer(('', 5001), app, handler_class=WebSocketHandler)
-    print "Server Starts!"
+    print ("Server Starts!")
+    print(test_measurements()[1])
     server.serve_forever()

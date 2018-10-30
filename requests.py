@@ -8,7 +8,7 @@ import pandas as pd
 from scipy.stats.stats import pearsonr
 from scipy.stats import ttest_ind
 
-import urllib2
+from urllib.request import urlopen
 import json
 import itertools
 
@@ -39,8 +39,8 @@ def get_url_data(data_source, measurements=None, chromosome=None,
         sql_url += '&end=' + str(end_seq)
 
     # get data
-    req = urllib2.Request(sql_url)
-    response = urllib2.urlopen(req)
+    req = sql_url
+    response = urlopen(req)
     a = json.loads(response.read())
     url_data = a['data']
 
