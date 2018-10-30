@@ -37,7 +37,7 @@ def build_obj(comp_type, data_one, data_two, show_chart, attr_one, attr_two,
         attr_two_range = ranges['attr-two']
     data_source = [{
         "id": id_one,
-        "name": id_one,
+        "name": attr_one['name'],
         "type": "feature",
         "datasourceId": data_source_one,
         "datasourceGroup": data_source_one,
@@ -50,7 +50,7 @@ def build_obj(comp_type, data_one, data_two, show_chart, attr_one, attr_two,
         "metadata": ["probe"]
     }, {
         "id": id_two,
-        "name": id_two,
+        "name": attr_two['name'],
         "type": "feature",
         "datasourceId": data_source_two,
         "datasourceGroup": data_source_two,
@@ -67,12 +67,45 @@ def build_obj(comp_type, data_one, data_two, show_chart, attr_one, attr_two,
         'data-type-one': data_one,
         'data-type-two': data_two,
         'show-chart': show_chart,
-        'attribute-one': id_one,
-        'attribute-two': id_two,
+        'attribute-one': attr_one['name'],
+        'attribute-two': attr_two['name'],
         'value': round(value, 2),
         'pvalue': round(pvalue, 2),
         'data': data,
         'data-source': data_source
+    }
+    return target_obj
+
+
+def build_exp_methy_obj(comp_type, data_one, data_two, show_chart, attr_one,                            attr_two, value, pvalue, data=None, ranges=None):
+
+    target_obj = {
+        'computation-type': comp_type,
+        'data-type-one': data_one,
+        'data-type-two': data_two,
+        'show-chart': show_chart,
+        'attribute-one': attr_one,
+        'attribute-two': attr_two,
+        'value': round(value, 2),
+        'pvalue': round(pvalue, 2),
+        'data': data
+    }
+    return target_obj
+
+
+def build_exp_singlegene_obj(comp_type, data_one, data_two, show_chart,                                      attr_one, attr_two, value, pvalue=None, gene=None, data=None,                              ranges=None):
+
+    target_obj = {
+        'computation-type': comp_type,
+        'data-type-one': data_one,
+        'data-type-two': data_two,
+        'show-chart': show_chart,
+        'attribute-one': attr_one['name'],
+        'attribute-two': attr_two['name'],
+        'value': round(value, 2),
+        'pvalue': round(pvalue, 2),
+        'data': data,
+        'gene': gene
     }
     return target_obj
 

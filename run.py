@@ -24,6 +24,7 @@ def feed(websocket):
     start = data['start']
     end = data['end']
     chromosome = data['chr']
+    gene_name = data['gene']
     seqID = message['seq']
     print ("parameters")
     key = chromosome + '-' + str(start) + '-' + str(end)
@@ -32,8 +33,7 @@ def feed(websocket):
         websocket.send(ujson.dumps(cached))
         websocket.send(ujson.dumps(seqID))
         return
-    results = computation_request(start, end,
-                                  chromosome,
+    results = computation_request(start, end, chromosome, gene_name,
                                   measurements=measurements)
     cache_results = []
     print (results)
@@ -57,16 +57,20 @@ def test_measurements(expression=True, block=True, methylation=True):
                   'colon___tumor', 'lung___normal', 'lung___tumor',
                   'thyroid___normal', 'thyroid___tumor']
 
+    gene_names = ['breast_normal', 'breast_tumor', 'colon_normal',
+                  'colon_tumor', 'lung_normal', 'lung_tumor',
+                  'thyroid_normal', 'thyroid_tumor']
+
     tissue_types = ['breast', 'colon', 'thyroid', 'lung']
 
     methylation_types = ['breast_normal', 'breast_cancer', 'colon_normal',
                          'colon_cancer', 'lung_normal', 'lung_cancer',
                          'thyroid_normal', 'thyroid_cancer']
     if expression:
-        for gene_type in gene_types:
+        for gene_type, gene_name in zip(gene_types, gene_names):
             measurements.append({
                 "id": gene_type,
-                "name": gene_type,
+                "name": 'Expression ' + gene_name,
                 "type": "feature",
                 "datasourceId": "gene_expression_barcode_subtype",
                 "datasourceGroup": "gene_expression_barcode_subtype",
@@ -81,7 +85,7 @@ def test_measurements(expression=True, block=True, methylation=True):
         for tissue_type in tissue_types:
             measurements.append({
                 "id": 'timp2014_' + tissue_type + '_blocks',
-                "name": 'timp2014_' + tissue_type + '_blocks',
+                "name": tissue_type + ' blocks',
                 "type": "feature",
                 "datasourceId": 'timp2014_' + tissue_type + '_blocks',
                 "datasourceGroup": 'timp2014_' + tissue_type + '_blocks',
@@ -97,7 +101,7 @@ def test_measurements(expression=True, block=True, methylation=True):
         for tissue_type in tissue_types:
             measurements.append({
                 "id": tissue_type,
-                "name": tissue_type,
+                "name": 'Collapsed Methylation Diff ' + tissue_type,
                 "type": "feature",
                 "datasourceId": 'timp2014_collapsed_diff',
                 "datasourceGroup": 'timp2014_collapsed_diff',
@@ -111,7 +115,7 @@ def test_measurements(expression=True, block=True, methylation=True):
         for methylation_type in methylation_types:
             measurements.append({
                 "id": methylation_type,
-                "name": methylation_type,
+                "name": ' Average Probe level Meth ' + methylation_type,
                 "type": "feature",
                 "datasourceId": 'timp2014_probelevel_beta',
                 "datasourceGroup": 'timp2014_probelevel_beta',
