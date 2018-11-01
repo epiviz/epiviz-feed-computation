@@ -191,7 +191,9 @@ def block_overlap_percent(data_sources, block_data, start_seq, end_seq):
 def expression_methydiff_correlation(exp_data, datasource_gene_types,
                                      datasource_methy_types,
                                      methy_data, downstream=3000, upstream=1000):
+    
     print ("expression_methydiff_correlation")
+    
     methy_types = [datasource_type["id"] for datasource_type in
                    datasource_methy_types]
     methy_mean = pd.DataFrame(columns=methy_types)
@@ -220,7 +222,6 @@ def expression_methydiff_correlation(exp_data, datasource_gene_types,
         expression_type2 = tissue_pair[1]
         tissue_type = expression_type1.split("___")[0]
 
-<<<<<<< HEAD
             print (tissue_type, methy_type)
             correlation_coefficient = pearsonr(methy_mean[methy_type],
                                                expression_diff)
@@ -228,14 +229,12 @@ def expression_methydiff_correlation(exp_data, datasource_gene_types,
             if math.isnan(correlation_coefficient[0]):
                 continue
             print (correlation_coefficient[0])
-=======
+
         expression_diff = np.subtract(exp_data[expression_type1],
                                       exp_data[expression_type2])
 
         # for datasource_methy_type in datasource_methy_types:
         methy_type = tissue_type
->>>>>>> 55bf4cc3c65cacc03a18a805a97f6cedf2bb6212
-
         print tissue_pair, methy_type
         correlation_coefficient = pearsonr(methy_mean[methy_type],
                                            expression_diff)
@@ -462,7 +461,7 @@ def methy_correlation(methy_raw, methylation_diff_types):
     return methy_corr_res
 
 
-def computation_request(start_seq, end_seq, chromosome, gene_name,                                      measurements=None):
+def computation_request(start_seq, end_seq, chromosome, gene_name, measurements=None):
     # extract data from measurements
     gene_types = []
     block_types = []
@@ -526,7 +525,6 @@ def computation_request(start_seq, end_seq, chromosome, gene_name,              
                                    methylation_types)
         methy_corr_res = methy_correlation(methy_raw, methylation_diff_types)
 
-<<<<<<< HEAD
         # loop through normal/tumor of each tissue type
         for data_source_one, data_source_two in itertools.combinations(
                 methylation_diff_types, 2):
@@ -552,8 +550,6 @@ def computation_request(start_seq, end_seq, chromosome, gene_name,              
             methy_corr_res.append(corr_obj)
         methy_corr_res = sorted(methy_corr_res, key=lambda x: x['value'],
                                 reverse=True)
-=======
->>>>>>> 55bf4cc3c65cacc03a18a805a97f6cedf2bb6212
         yield methy_corr_res
 
     if has_gene:
