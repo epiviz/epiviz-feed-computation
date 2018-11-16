@@ -3,7 +3,6 @@ from computation_request import computation_request
 from flask_cache import Cache
 from flask_sockets import Sockets
 import time
-
 import ujson
 
 app = Flask(__name__)
@@ -13,7 +12,6 @@ sockets = Sockets(app)
 # socketio = SocketIO(app)
 
 # @socketio.on('get_data_event', namespace='/getdata')
-
 
 @sockets.route('/getdata')
 def feed(websocket):
@@ -190,5 +188,4 @@ if __name__ == "__main__":
     from geventwebsocket.handler import WebSocketHandler
     server = pywsgi.WSGIServer(('', 5001), app, handler_class=WebSocketHandler)
     print ("Server Starts!")
-    print(test_measurements()[1])
     server.serve_forever()

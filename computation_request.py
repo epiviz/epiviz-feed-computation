@@ -12,6 +12,7 @@ from utils import build_obj, build_exp_methy_obj, add_to_block, format_expressio
 from requests import get_methy_data, get_block_data, get_gene_data, get_sample_counts
 
 from urllib.request import urlopen
+
 import json
 import itertools
 import math
@@ -191,9 +192,9 @@ def block_overlap_percent(data_sources, block_data, start_seq, end_seq):
 def expression_methydiff_correlation(exp_data, datasource_gene_types,
                                      datasource_methy_types,
                                      methy_data, downstream=3000, upstream=1000):
-    
+
     print ("expression_methydiff_correlation")
-    
+
     methy_types = [datasource_type["id"] for datasource_type in
                    datasource_methy_types]
     methy_mean = pd.DataFrame(columns=methy_types)
@@ -222,12 +223,11 @@ def expression_methydiff_correlation(exp_data, datasource_gene_types,
         expression_type2 = tissue_pair[1]
         tissue_type = expression_type1.split("___")[0]
 
-            print (tissue_type, methy_type)
-            correlation_coefficient = pearsonr(methy_mean[methy_type],
-                                               expression_diff)
+        print (tissue_type, methy_type)
+        correlation_coefficient = pearsonr(methy_mean[methy_type], expression_diff)
 
-            if math.isnan(correlation_coefficient[0]):
-                continue
+        if math.isnan(correlation_coefficient[0]):
+            continue
             print (correlation_coefficient[0])
 
         expression_diff = np.subtract(exp_data[expression_type1],
@@ -235,13 +235,13 @@ def expression_methydiff_correlation(exp_data, datasource_gene_types,
 
         # for datasource_methy_type in datasource_methy_types:
         methy_type = tissue_type
-        print tissue_pair, methy_type
+        print (tissue_pair, methy_type)
         correlation_coefficient = pearsonr(methy_mean[methy_type],
                                            expression_diff)
 
         if math.isnan(correlation_coefficient[0]):
             continue
-        print correlation_coefficient[0]
+        print (correlation_coefficient[0])
 
         # format the data into list of json objects for plots
         data = format_exp_methy_output(expression_diff, methy_mean[
@@ -336,7 +336,7 @@ def format_exp_methy_output(attr1, attr2, type1, type2):
 
 
 def ttest_expression_per_gene(gene_types, exp_data, chromosome, start_seq, end_seq):
-    print "ttest per single gene!"
+    print ("ttest per single gene!")
 
     sample_counts = get_sample_counts(
         gene_types, start_seq, end_seq, chromosome)
@@ -444,7 +444,7 @@ def methy_correlation(methy_raw, methylation_diff_types):
         correlation_coefficient = pearsonr(methy_raw[type1], methy_raw[
             type2])
 
-        print type1, type2
+        print (type1, type2)
         data_range = {
             'attr-one': [min(methy_raw[type1]), max(methy_raw[type1])],
             'attr-two': [min(methy_raw[type2]), max(methy_raw[type2])]
