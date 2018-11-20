@@ -9,3 +9,8 @@ methy_format_gene.py
 test_methy_format.py
 templates/
 static/
+
+bin/
+include/
+lib/
+share/
