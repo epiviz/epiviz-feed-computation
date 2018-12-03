@@ -31,7 +31,7 @@ def feed(websocket):
         websocket.send(ujson.dumps(cached))
         websocket.send(ujson.dumps(seqID))
         return
-    results = computation_request(start, end, chromosome, gene_name,
+    results = comp_req(start, end, chromosome, gene_name,
                                   measurements=measurements)
     cache_results = []
     print (results)

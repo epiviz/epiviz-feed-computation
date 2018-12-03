@@ -496,7 +496,7 @@ def computation_request(start_seq, end_seq, chromosome, gene_name, measurements=
 
     expression_data = get_gene_data(start_seq, end_seq, chromosome,
                                     gene_types)
-
+    print(expression_data)
     per_gene_ttest = ttest_expression_per_gene(gene_types, expression_data,
                                                chromosome, start_seq, end_seq)
 

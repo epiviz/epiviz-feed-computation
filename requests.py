@@ -8,7 +8,7 @@ import pandas as pd
 from scipy.stats.stats import pearsonr
 from scipy.stats import ttest_ind
 
-from urllib.request import urlopen
+import urllib.request as urllib_req
 import json
 import itertools
 
@@ -23,6 +23,7 @@ def get_url_data(data_source, measurements=None, chromosome=None,
     #           '&datasource=' + data_source
     sql_url = 'http://54.157.53.251/api/?requestId=10&version=4&action=getData'\
         '&datasource=' + data_source
+    print(sql_url)
     if measurements is not None:
         sql_url += '&measurement='
         if type(measurements) is list:
@@ -42,8 +43,9 @@ def get_url_data(data_source, measurements=None, chromosome=None,
         sql_url += '&metadata[]=' + str(metadata)
 
     # get data
-    req = sql_url
-    response = urlopen(req)
+    print(sql_url)
+    req = urllib_req.Request(sql_url)
+    response = urllib_req.urlopen(req)
     a = json.loads(response.read())
 
     # check if it's an error message in the response, if it is, there's nothing coming back, we should skip the computation
@@ -187,8 +189,9 @@ def get_sample_counts(measurements, start_seq, end_seq, chromosome):
         sql_url += '&end=' + str(end_seq)
 
     # get data
-    req = urllib2.Request(sql_url)
-    response = urllib2.urlopen(req)
+    req = urllib_req.Request(sql_url)
+    print('hi' + sql_url)
+    response = urllib_req.urlopen(req)
     a = json.loads(response.read())
 
     if a["error"]:
