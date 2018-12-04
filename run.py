@@ -18,7 +18,7 @@ sockets = Sockets(app)
 @sockets.route('/getdata')
 def feed(websocket):
     message = ujson.loads(websocket.receive())
-    measurements = test_measurements()
+    measurements = chipseq_measurements()
     print message
     data = message['data']
     start = data['start']
@@ -50,131 +50,63 @@ def feed(websocket):
     websocket.send(ujson.dumps(seqID))
 
 
-# just for testing purposes
-def test_measurements(expression=True, block=True, methylation=True):
+# chipseq data
+def chipseq_measurements(expression=True, block=True, methylation=True):
     measurements = []
-    gene_types = ['breast___normal', 'breast___tumor', 'colon___normal',
-                  'colon___tumor', 'lung___normal', 'lung___tumor',
-                  'thyroid___normal', 'thyroid___tumor']
 
-    gene_names = ['breast_normal', 'breast_tumor', 'colon_normal',
-                  'colon_tumor', 'lung_normal', 'lung_tumor',
-                  'thyroid_normal', 'thyroid_tumor']
+    gene_ids = ["p1hc1", "p1hc2", "p1hc3", "p1sc3", "p1sc2", "p1sc1", "p6sc2", "p6sc3", "p6hc2", "p6hc1"]
 
-    tissue_types = ['breast', 'colon', 'thyroid', 'lung']
+    gene_names = ["P1Hc RNA sample 1", "P1Hc RNA sample 2", "P1Hc RNA sample 3", "P1Sc RNA sample 3", "P1Sc RNA sample 2", "P1Sc RNA sample 1", "P6Sc RNA sample 2", "P6Sc RNA sample 3", "P6Hc RNA sample 2", "P6Hc RNA sample 1"]
 
-    methylation_types = ['breast_normal', 'breast_cancer', 'colon_normal',
-                         'colon_cancer', 'lung_normal', 'lung_cancer',
-                         'thyroid_normal', 'thyroid_cancer']
+    block_ids = ["p1hc_h3k9ac_peaks_merged", "p1sc_h3k9ac_peaks_merged", "P1_Hc_fAtoh1_GFP_filt_narrowPeak", "P1_Sc_Lfng_GFP_ppr_narrowPeak","P6_Hc_fAtoh1_GFP_ppr_IDR0_narrowPeak", "P6_Sc_Lfng_GFP_ppr_narrowPeak"]
+    block_names = ["P1Hc H3k27m3 ChipSeq Peaks", "P1Hc ATAC Peaks", "P1Sc ATAC Peaks", "P1Sc H3k27m3 ChipSeq Peaks", "P6Hc ATAC Peaks", "P6Sc ATAC Peaks", "P6Sc H3k27m3 ChipSeq Peaks","P1HC H3k9ac ChipSeq Peaks", "P1Sc H3k9ac ChipSeq Peaks", "P6Hc H3k9ac ChipSeq Peaks", "P6Sc H3k9ac ChipSeq Peaks"]
+    # ATAC blocks name: "P1_Hc_fAtoh1_GFP_filt_narrowPeak", "P1_Sc_Lfng_GFP_ppr_narrowPeak",
+    # "P6_Hc_fAtoh1_GFP_ppr_IDR0_narrowPeak", "P6_Sc_Lfng_GFP_ppr_narrowPeak",
+    # NOTE: "p6hc_h3k9ac_peaks_merged", "p6sc_h3k9ac_peaks_merged" is not available in the database for now, will add that later
+
+    aggregation_datasource_groups = ["P1_Hc_atac-signal", "P1_Sc_atac-signal", "P6_Sc_atac-signal", "P6_Hc_atac-signal", "P6_Hc_atac-signal", "P6_Sc_atac-signal", "P1_Sc_atac-signal", "P1_Hc_atac-signal"]
+    aggregation_data_names = ["P6Hc log ATAC signal", "P6Sc log ATAC signal", "P1Sc log ATAC signal", "P1Hc log ATAC signal",]
+    aggregation_ids = ["lscore", "lscore", "lscore", "lscore"]
+
     if expression:
-        for gene_type, gene_name in zip(gene_types, gene_names):
+        for gene_id, gene_name in zip(gene_ids, gene_names):
             measurements.append({
-                "id": gene_type,
-                "name": 'Expression ' + gene_name,
+                "id": gene_id,
+                "name": gene_name,
                 "type": "feature",
-                "datasourceId": "gene_expression_barcode_subtype",
-                "datasourceGroup": "gene_expression_barcode_subtype",
+                "datasourceId": "rna_expression_merge",
+                "datasourceGroup": "rna_expression_merge",
                 "dataprovider": "umd",
                 "formula": None,
                 "defaultChartType": "scatterplot",
                 "annotation": None,
-                "metadata": ["probe"]
+                "metadata": ["gene", "entrez", "gene_id"]
             })
 
     if block:
-        for tissue_type in tissue_types:
+        for block_id, block_name in zip(block_ids, block_names):
             measurements.append({
-                "id": 'timp2014_' + tissue_type + '_blocks',
-                "name": tissue_type + ' blocks',
-                "type": "feature",
-                "datasourceId": 'timp2014_' + tissue_type + '_blocks',
-                "datasourceGroup": 'timp2014_' + tissue_type + '_blocks',
+                "id": block_id,
+                "name": block_name,
+                "type": "range",
+                "datasourceId": block_id,
+                "datasourceGroup": block_id,
                 "dataprovider": "umd",
                 "formula": None,
                 "defaultChartType": "block",
-                "annotation": None,
-                "metadata": ["probe"]
-            })
-
-    if methylation:
-        # for methylation difference
-        for tissue_type in tissue_types:
-            measurements.append({
-                "id": tissue_type,
-                "name": 'Collapsed Methylation Diff ' + tissue_type,
-                "type": "feature",
-                "datasourceId": 'timp2014_collapsed_diff',
-                "datasourceGroup": 'timp2014_collapsed_diff',
-                "dataprovider": "umd",
-                "formula": None,
-                "defaultChartType": "line",
-                "annotation": None,
-                "metadata": ["probe"]
-            })
-
-        for methylation_type in methylation_types:
-            measurements.append({
-                "id": methylation_type,
-                "name": ' Average Probe level Meth ' + methylation_type,
-                "type": "feature",
-                "datasourceId": 'timp2014_probelevel_beta',
-                "datasourceGroup": 'timp2014_probelevel_beta',
-                "dataprovider": "umd",
-                "formula": None,
-                "defaultChartType": "line",
                 "annotation": None,
                 "metadata": []
             })
 
-    return measurements
-
-
-# road map measurements
-def roadmap_measurements(expression=True, block=True, methylation=True):
-    measurements = []
-    gene_types = ['breast___normal', 'breast___tumor', 'colon___normal',
-                  'colon___tumor', 'lung___normal', 'lung___tumor',
-                  'thyroid___normal', 'thyroid___tumor']
-
-    tissue_types = ['breast', 'colon', 'thyroid', 'lung']
-    if expression:
-        for gene_type in gene_types:
-            measurements.append({
-                "id": gene_type,
-                "name": gene_type,
-                "type": "feature",
-                "datasourceId": "gene_expression_barcode_subtype",
-                "datasourceGroup": "gene_expression_barcode_subtype",
-                "dataprovider": "umd",
-                "formula": None,
-                "defaultChartType": "scatterplot",
-                "annotation": None,
-                "metadata": ["probe"]
-            })
-
-    if block:
-        for tissue_type in tissue_types:
-            measurements.append({
-                "id": 'timp2014_' + tissue_type + '_blocks',
-                "name": 'timp2014_' + tissue_type + '_blocks',
-                "type": "feature",
-                "datasourceId": 'timp2014_' + tissue_type + '_blocks',
-                "datasourceGroup": 'timp2014_' + tissue_type + '_blocks',
-                "dataprovider": "umd",
-                "formula": None,
-                "defaultChartType": "block",
-                "annotation": None,
-                "metadata": ["probe"]
-            })
-
     if methylation:
-        for tissue_type in tissue_types:
+        # for methylation difference
+        for datasource_group, name, idx in zip(aggregation_datasource_groups, aggregation_data_names, aggregation_ids):
             measurements.append({
-                "id": tissue_type,
-                "name": tissue_type,
+                "id": idx,
+                "name": name,
                 "type": "feature",
-                "datasourceId": 'timp2014_collapsed_diff',
-                "datasourceGroup": 'timp2014_collapsed_diff',
+                "datasourceId": datasource_group,
+                "datasourceGroup": datasource_group,
                 "dataprovider": "umd",
                 "formula": None,
                 "defaultChartType": "line",

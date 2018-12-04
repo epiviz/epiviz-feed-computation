@@ -11,6 +11,7 @@ from scipy.stats import ttest_ind
 import urllib2
 import json
 import itertools
+import math
 
 
 # http request to get data
@@ -21,8 +22,7 @@ def get_url_data(data_source, measurements=None, chromosome=None,
     #           'action=getData&datasource=' + data_source
     # sql_url = 'http://localhost:5000/?requestId=10&version=4&action=getData' \
     #           '&datasource=' + data_source
-    sql_url = 'http://54.157.53.251/api/?requestId=10&version=4&action=getData'\
-        '&datasource=' + data_source
+    sql_url = 'http://epiviz.umgear.org/api/?requestId=1&version=4&action=getData&datasourceGroup=hrp_2018&datasource=' + data_source    
     if measurements is not None:
         sql_url += '&measurement='
         if type(measurements) is list:
@@ -45,7 +45,6 @@ def get_url_data(data_source, measurements=None, chromosome=None,
     req = urllib2.Request(sql_url)
     response = urllib2.urlopen(req)
     a = json.loads(response.read())
-
     # check if it's an error message in the response, if it is, there's nothing coming back, we should skip the computation
     if a['error'] is not None and len(a['error']) > 1:
         return ""
@@ -72,7 +71,7 @@ def get_block_data(start, end, chromosome, block_measurements):
         url_data = get_url_data(data_source=block_measurement["datasourceId"],
                                 chromosome=chromosome, start_seq=start,
                                 end_seq=end)
-
+                                
         # if there is no block data for this tissue type, just skip it
         if not url_data:
             continue
@@ -104,10 +103,18 @@ def get_methy_data(start_seq, end_seq, chromosome, methylation_measurements):
             continue
 
         # extract expected format here
-        methy_raw['start'] = url_data['rows']['values']['start']
-        methy_raw['end'] = url_data['rows']['values']['end']
+        curr_methy = dict()
+        curr_methy['start'] = url_data['rows']['values']['start']
+        curr_methy['end'] = url_data['rows']['values']['end']
+        curr_methy['value'] = url_data['values']['values'][methy_id]
+        methy_df = pd.DataFrame(curr_methy)
+        methy_binned = methy_data_binning(start_seq, end_seq, 1000, methy_id, methy_df)
 
-        methy_raw[methy_id] = url_data['values']['values'][methy_id]
+        methy_raw[methylation_measurement["name"]] = methy_binned['average']
+        methy_raw['start'] = methy_binned['start']
+        methy_raw['end'] = methy_binned['end']
+        print "one methy type done!"
+        # print len(methy_raw[methy_id]), len(methy_raw['start']), len(methy_raw['end'])
 
     return pd.DataFrame(methy_raw)
 
@@ -126,6 +133,9 @@ def get_gene_data(start_seq, end_seq, chromosome, gene_measurements):
                                 chromosome=chromosome, start_seq=start_seq,
                                 end_seq=end_seq, metadata="gene")
 
+    if not exp_url_data:
+        return pd.DataFrame(expression_data)
+
     # extract expected format here
     expression_data['start'] = exp_url_data['rows']['values']['start']
     expression_data['end'] = exp_url_data['rows']['values']['end']
@@ -138,30 +148,6 @@ def get_gene_data(start_seq, end_seq, chromosome, gene_measurements):
             'values'][tissue_type]
 
     return pd.DataFrame(expression_data)
-
-
-# def get_gene_exact_pos(chromosome, gene_name):
-#     # construct url
-#     sql_url = 'http://54.157.53.251/api/?requestId=0&maxResults=5&type=exact&action=search&q=' + gene_name
-
-#     # get data
-#     req = urllib2.Request(sql_url)
-#     response = urllib2.urlopen(req)
-#     a = json.loads(response.read())
-#     url_data = a['data']
-#     values_obj = dict()
-
-#     if a['error'] is not None and len(a['error']) > 1:
-#         return values_obj
-
-#     # loop through top 5 results
-#     for result in url_data:
-#         if result['chr'] == chromosome:
-#             values_obj['start'] = result['start']
-#             values_obj['end'] = result['end']
-#             break
-
-#     return url_data
 
 
 def get_sample_counts(measurements, start_seq, end_seq, chromosome):
@@ -201,3 +187,38 @@ def get_sample_counts(measurements, start_seq, end_seq, chromosome):
 def relative_to_absolute(raw_data):
     raw_data['start'] = np.cumsum(raw_data['start'])
     raw_data['end'] = np.cumsum(raw_data['end'])
+
+
+def methy_data_binning(start_seq, end_seq, bins, methy_id, methy_data):
+    bin_size = (end_seq - start_seq) / bins
+
+    bin_number = 0
+    results = dict()
+    results['start'] = []
+    results['end'] = []
+    results['average'] = []
+    start = start_seq
+    end = start + bin_size - 1
+
+    while bin_number < bins:
+        bin_number += 1
+        
+
+        methy_filtered = methy_data[((start <= methy_data.start) & (
+            methy_data.start <= end)) | ((start <= methy_data.end)
+                                             & (methy_data.end <= end))]
+        
+        mean = methy_filtered.loc[:, "value"].mean()
+        if not math.isnan(mean):
+            # print mean
+            results['average'].append(mean)
+        else:
+            results['average'].append(0)
+        results['start'].append(start)
+        results['end'].append(end)
+
+        start += bin_size
+        end += bin_size
+
+    return results
+        
