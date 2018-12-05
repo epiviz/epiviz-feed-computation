@@ -1,4 +1,4 @@
-   import numpy as np
+import numpy as np
 import pandas as pd
 from scipy.stats.stats import pearsonr
 from scipy.stats import ttest_ind, fisher_exact, norm
@@ -10,7 +10,7 @@ import json
 import itertools
 import math
 
-class data_functions:
+class Data_Functions:
 
     def __init__(self, start_seq, end_seq, chromosome, gene_name, measurements = None):
         self.start_seq = start_seq
@@ -19,15 +19,15 @@ class data_functions:
         self.gene_name = gene_name
         self.measurements = measurements
 
-    def gene_data():
+    def gene_data(self):
         return get_gene_data(self.start_seq, self.end_seq, self.chromosome, self.measurements)
 
-    def block_data():
+    def block_data(self):
 
         return get_block_data(self.start_seq, self.end_seq, self.chromosome, self.measurements)
 
-    def methylation_diff():
+    def methylation_diff(self):
         return get_methy_data(self.start_seq, self.end_seq, self.chromosome, self.measurements)
 
-    def methylation():
+    def methylation(self):
         return get_methy_data(self.start_seq, self.end_seq, self.chromosome, self.measurements)
