@@ -114,7 +114,6 @@ def get_methy_data(start_seq, end_seq, chromosome, methylation_measurements):
         methy_raw['start'] = methy_binned['start']
         methy_raw['end'] = methy_binned['end']
         print "one methy type done!"
-        # print len(methy_raw[methy_id]), len(methy_raw['start']), len(methy_raw['end'])
 
     return pd.DataFrame(methy_raw)
 
@@ -210,7 +209,6 @@ def methy_data_binning(start_seq, end_seq, bins, methy_id, methy_data):
         
         mean = methy_filtered.loc[:, "value"].mean()
         if not math.isnan(mean):
-            # print mean
             results['average'].append(mean)
         else:
             results['average'].append(0)

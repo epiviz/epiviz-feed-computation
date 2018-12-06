@@ -53,14 +53,10 @@ def ttest_block_expression(exp_data, block_data, exp_datasource,
             # only with tissues that align with block types
             # get tissue type from block id
             # for chipseq data, the first four letters are the same
-            tissue_type = block_to_expression_map(block_type)
-            exp_types = [tissue_type + "1", tissue_type + "2"]
-            if tissue_type == "p1hc":
-                exp_types.append(tissue_type + "3")
+            exp_types = [exp["name"] for exp in exp_datasource]
                         
             gene_expression_block[block_type] = pd.DataFrame(columns=exp_types)
-            gene_expression_nonblock[block_type] = pd.DataFrame(
-                columns=exp_types)
+            gene_expression_nonblock[block_type] = pd.DataFrame(columns=exp_types)
             for ind, row in block_dataframe.iterrows():
                 start = row["start"]
                 end = row["end"]
@@ -83,25 +79,31 @@ def ttest_block_expression(exp_data, block_data, exp_datasource,
                 gene_expression_nonblock[block_type] = gene_expression_nonblock[
                     block_type].append(exp_nonblock)
 
+            gene_expression_block[block_type] = gene_expression_block[block_type].drop_duplicates()
+            gene_expression_nonblock[block_type] = gene_expression_nonblock[block_type].drop_duplicates()
+
     pd_block = pd.DataFrame(datasource_types)
     pd_expression = pd.DataFrame(exp_datasource)
 
     # calculate t test between block and non-block gene expression of the same
     # tissue type
-    for block_type, gene_per_block_exp in gene_expression_block.items():
-
+    for block_type, gene_per_block_exp in gene_expression_block.iteritems():
         gene_per_nonblock_exp = gene_expression_nonblock[block_type]
         for exp_type in gene_per_block_exp:
             gene_block_exp = gene_per_block_exp[exp_type]
             if gene_block_exp.empty:
                 continue
             gene_nonblock_exp = gene_per_nonblock_exp[exp_type]
-
+           
             t_value, p_value = ttest_ind(gene_block_exp, gene_nonblock_exp,
                                          equal_var=False)
             print "block:" + block_type + ", gene:" + exp_type
             print p_value
-            gene_ds = json.loads(pd_expression.loc[pd_expression['id'] ==
+            if math.isnan(p_value):
+                print("found nan!!")
+                continue
+                
+            gene_ds = json.loads(pd_expression.loc[pd_expression['name'] ==
                                                    exp_type].to_json(orient='records')[1:-1])
             block_ds = json.loads(pd_block.loc[pd_block['id'] ==
                                                block_type].to_json(orient='records')[1:-1])
@@ -109,7 +111,7 @@ def ttest_block_expression(exp_data, block_data, exp_datasource,
             data = format_expression_block_data(
                 gene_block_exp, gene_nonblock_exp)
 
-            ttest_obj = build_obj('t-test', 'expression', 'block', False,
+            ttest_obj = build_obj('t-test', 'expression', 'peaks', False,
                                   gene_ds, block_ds, t_value, p_value, data)
 
             ttest_res.append(ttest_obj)
@@ -215,7 +217,7 @@ def block_overlap_percent(data_sources, block_data, start_seq, end_seq):
 
 def expression_methy_correlation(exp_data, datasource_gene_types,
                                  datasource_methy_types,
-                                 methy_data, downstream=3000, upstream=1000):
+                                 methy_data, downstream=5000, upstream=1000):
     print "expression_methy_correlation"
     corr_res = []
 
@@ -239,11 +241,11 @@ def expression_methy_correlation(exp_data, datasource_gene_types,
                                        ignore_index=True)
 
     for datasource_gene_type in datasource_gene_types:
-        tissue_type = datasource_gene_type["id"]
+        tissue_type = datasource_gene_type['name']
         expression = exp_data[tissue_type]
 
         for datasource_methy_type in datasource_methy_types:
-            methy_type = datasource_methy_type["id"]
+            methy_type = datasource_methy_type["name"]
 
             correlation_coefficient = pearsonr(methy_mean[methy_type],
                                                expression)
@@ -254,7 +256,7 @@ def expression_methy_correlation(exp_data, datasource_gene_types,
 
             # format the data into list of json objects for plots
             data = format_exp_methy_output(expression, methy_mean[
-                methy_type], datasource_gene_type["name"], datasource_methy_type["name"])
+                methy_type], datasource_gene_type['name'], datasource_methy_type["name"])
 
             data_range = {
                 'attr-one': [min(expression),
@@ -263,7 +265,7 @@ def expression_methy_correlation(exp_data, datasource_gene_types,
                              max(methy_mean[methy_type])]
             }
             corr_obj = build_exp_methy_obj('correlation', 'expression',
-                                           'methylation', True, datasource_gene_type["name"],
+                                           'signal', True, datasource_gene_type['name'],
                                            datasource_methy_type["name"],
                                            correlation_coefficient[0],
                                            correlation_coefficient[1],
@@ -382,7 +384,6 @@ def average_expression(data, gene_pairs):
         average_df['avg ' + gene] = average_df[samples].mean(axis=1)
         average_df = average_df.drop(columns=samples)
 
-    print(average_df)
     return average_df
 
 
@@ -427,7 +428,24 @@ def computation_request(start_seq, end_seq, chromosome, gene_name,              
         "p6hc" : ["p6hc2", "p6hc1"]
     }
 
-    average_gene_types = ["avg p1hc", "avg p1sc", "avg p6sc", "avg p6hc"]
+    average_gene_types = [
+        {"name" : "avg p1hc", 
+        "id" : "avg p1hc",
+        "datasourceId": "rna_expression_merge"
+        },
+        {"name" : "avg p1sc",
+        "id" : "avg p1sc",
+        "datasourceId": "rna_expression_merge"
+        }, 
+        {"name" : "avg p6sc", 
+        "id" : "avg p6sc",
+        "datasourceId": "rna_expression_merge"
+        },
+        {"name" : "avg p6hc",
+        "id" : "avg p6hc",
+        "datasourceId": "rna_expression_merge"
+        }
+        ]
 
     average_expression_data = average_expression(expression_data, gene_pairs)
 
@@ -448,16 +466,6 @@ def computation_request(start_seq, end_seq, chromosome, gene_name,              
                                               start_seq, end_seq)
         yield block_overlap
 
-    # There's not methy_diff data for chipSeq dataset
-    if has_methy_diff:
-        methy_raw_diff = get_methy_data(start_seq, end_seq, chromosome,
-                                        methylation_diff_types)
-
-        methy_diff_corr_res = methy_diff_correlation(
-            methy_raw_diff, methylation_diff_types)
-
-        yield methy_diff_corr_res
-
     if has_methy:
         methy_raw = get_methy_data(start_seq, end_seq, chromosome,
                                    methylation_types)
@@ -471,8 +479,8 @@ def computation_request(start_seq, end_seq, chromosome, gene_name,              
         # pvalue_list = []
         for data_source_one, data_source_two in itertools.combinations(
                 average_gene_types, 2):
-            exp1 = data_source_one
-            exp2 = data_source_two
+            exp1 = data_source_one["name"]
+            exp2 = data_source_two["name"]
 
             if exp1 not in average_expression_data.columns or exp2 not in average_expression_data.columns:
                 continue
@@ -517,13 +525,12 @@ def computation_request(start_seq, end_seq, chromosome, gene_name,              
     if has_gene and has_block:
         # gene expression and block independency test
         ttest_block_exp = ttest_block_expression(average_expression_data, block_data,
-                                                 gene_types, block_types)
+                                                 average_gene_types, block_types)
         yield ttest_block_exp
 
     if has_gene and has_methy:
         # correlation between methylation and gene expression
         # with the same tissue type
-        corr_methy_gene = expression_methy_correlation(average_expression_data, gene_types, methylation_types,
-                                                       methy_raw)
+        corr_methy_gene = expression_methy_correlation(average_expression_data, average_gene_types,methylation_types, methy_raw)
 
         yield corr_methy_gene
