@@ -12,7 +12,7 @@ import math
 
 class Data_Functions:
 
-    def __init__(self, start_seq, end_seq, chromosome, gene_name, measurements = None):
+    def __init__(self, start_seq, end_seq, chromosome, gene_name = None, measurements = None):
         self.start_seq = start_seq
         self.end_seq = end_seq
         self.chromosome = chromosome
