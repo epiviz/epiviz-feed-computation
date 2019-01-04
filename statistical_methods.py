@@ -36,8 +36,7 @@ def ttest_block_expression(exp_data, block_data, exp_datasource, datasource_type
                 start = row["start"]
                 end = row["end"]
                 exp_block = pd.DataFrame(columns = exp_types)
-                exp_block = exp_block.append(exp_data[(start <= exp_data[
-                    "start"]) & (exp_data["start"] <= end)][exp_types])
+                exp_block = exp_block.append(exp_data[(start <= exp_data["start"]) & (exp_data["start"] <= end)][exp_types])
                 exp_block = exp_block.append(exp_data[(start <= exp_data["end"]) & (exp_data["end"] <= end)][exp_types])
                 exp_block = exp_block.append(exp_data[(exp_data["start"] <= start) & (start <= exp_data["end"])][exp_types])
 
