@@ -17,7 +17,7 @@ import math
  #       print("hi")
 
 def ttest_block_expression(exp_data, block_data, exp_datasource, datasource_types):
-
+    print("dsdsffdsdfdfdf")
     ttest_res = []
     gene_expression_block = dict()
     gene_expression_nonblock = dict()
@@ -45,11 +45,13 @@ def ttest_block_expression(exp_data, block_data, exp_datasource, datasource_type
 
                 exp_nonblock = exp_data[(exp_data["end"] < start) | (exp_data[
                     "start"] > end)][exp_types]
-
                 gene_expression_block[block_type] = gene_expression_block[
                     block_type].append(exp_block)
                 gene_expression_nonblock[block_type] = gene_expression_nonblock[
                     block_type].append(exp_nonblock)
+
+    print(gene_expression_block)
+    print(gene_expression_nonblock)
 
     pd_block = pd.DataFrame(datasource_types)
     pd_expression = pd.DataFrame(exp_datasource)
@@ -57,7 +59,7 @@ def ttest_block_expression(exp_data, block_data, exp_datasource, datasource_type
     # calculate t test between block and non - block gene expression of the same# tissue type
     for block_type, gene_per_block_exp in gene_expression_block.items():
         gene_per_nonblock_exp = gene_expression_nonblock[block_type]
-
+        print(type(gene_per_block_exp))
         for exp_type in gene_per_block_exp:
 
             gene_block_exp = gene_per_block_exp[exp_type]

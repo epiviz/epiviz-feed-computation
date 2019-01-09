@@ -3,6 +3,7 @@ from computation_request import computation_request
 from comp_req import comp_req
 from flask_cache import Cache
 from flask_sockets import Sockets
+import ttest_block
 import time
 import ujson
 
@@ -32,8 +33,7 @@ def feed(websocket):
         websocket.send(ujson.dumps(cached))
         websocket.send(ujson.dumps(seqID))
         return
-    results = comp_req(start, end, chromosome, gene_name,
-                                  measurements=measurements)
+    results = comp_req(start, end, chromosome, gene_name, measurements=measurements)
     cache_results = []
     print (results)
     for result in results:

@@ -58,9 +58,13 @@ def ttest_block_expression(exp_data, block_data, exp_datasource,
                     block_type].append(exp_block)
                 gene_expression_nonblock[block_type] = gene_expression_nonblock[
                     block_type].append(exp_nonblock)
+    print('herkdfcvx')
+    print(gene_expression_block)
+    print(gene_expression_nonblock)
 
     pd_block = pd.DataFrame(datasource_types)
     pd_expression = pd.DataFrame(exp_datasource)
+
 
     # calculate t test between block and non-block gene expression of the same
     # tissue type

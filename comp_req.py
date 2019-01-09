@@ -8,6 +8,7 @@ from utils import build_obj, build_exp_methy_obj, add_to_block, format_expressio
 from requests import get_methy_data, get_block_data, get_gene_data, get_sample_counts
 from data_functions import Data_Functions
 from urllib.request import urlopen
+from ttest_block import Ttest_Block
 import json
 import itertools
 import math
@@ -128,6 +129,12 @@ def comp_req(start_seq, end_seq, chromosome, gene_name, measurements=None):
         # gene expression and block independency test
         ttest_block_exp = statistical_methods.ttest_block_expression(expression_data, block_data,
                                                  gene_types, block_types)
+        print("adfsjfd")
+        print(statistical_methods.ttest_block_expression(expression_data, block_data,
+                                                 gene_types, block_types))
+        ttest = Ttest_Block(expression_data, block_data, gene_types, block_types)
+        print("thersdfjsdf")
+        print(ttest.ttest())
         yield ttest_block_exp
     if has_gene and has_methy:
 
@@ -141,7 +148,6 @@ def comp_req(start_seq, end_seq, chromosome, gene_name, measurements=None):
 
             # correlation between methylation difference and gene expression
         # difference
-        corr_methy_gene = statistical_methods.expression_methydiff_correlation(expression_data, gene_types, methylation_diff_types,
-                                                           methy_raw_diff)
+        corr_methy_gene = statistical_methods.expression_methydiff_correlation(expression_data, gene_types, methylation_diff_types, methy_raw_diff)
 
         yield corr_methy_gene
