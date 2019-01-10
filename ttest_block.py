@@ -23,7 +23,7 @@ class Ttest_Block:
         exp_end = self.exp_data["end"]
 
         exp_block = pd.DataFrame(columns=exp_types)
-        in_block = ((exp_srt <= end) & (exp_end >= end)) | ((exp_srt <= start) & (exp_end >= start)) | ((exp_end >= start) & (exp_end <= end)) | ((exp_srt >= start) & (exp_srt <= end))
+        in_block = ((exp_srt <= end) & (exp_end >= start)) | ((exp_end >= start) & (exp_end <= end)) | ((exp_srt >= start) & (exp_srt <= end))
 
         #queries the dataframe where expressions are in/overlap blocks and drops nan values
         exp_indices = list((self.exp_data.where(in_block)['index_col']).dropna().unique())
@@ -41,7 +41,6 @@ class Ttest_Block:
             block_dataframe.apply(lambda row: self.get_expressions(row, exp_types, block_type), axis=1)
 
     def ttest(self):
-        #map(lambda block_type, block_dataframe: self.sort_expression_blocks(block_type, block_dataframe), self.block_data.items())
         for block_type, block_dataframe in self.block_data.items():
             self.sort_expression_blocks(block_type, block_dataframe)
 
@@ -53,23 +52,23 @@ class Ttest_Block:
             gene_per_nonblock_exp = self.gene_expression_nonblock[block_type]
 
             for exp_type in gene_per_block_exp:
-
                 gene_block_exp = gene_per_block_exp[exp_type]
 
                 if not gene_block_exp.empty:
-                    gene_nonblock_exp = gene_per_nonblock_exp[exp_type]
 
+                    gene_nonblock_exp = gene_per_nonblock_exp[exp_type]
                     t_value, p_value = ttest_ind(gene_block_exp, gene_nonblock_exp, equal_var=False)
+
                     print("block:" + block_type + ", gene:" + exp_type)
                     print(p_value)
+
                     gene_ds = json.loads(pd_expression.loc[pd_expression['id'] == exp_type].to_json(orient='records')[1: -1])
                     block_ds = json.loads(pd_block.loc[pd_block['id'] == block_type].to_json(orient='records')[1: -1])
-                    data = format_expression_block_data(gene_block_exp, gene_nonblock_exp)
 
+                    data = format_expression_block_data(gene_block_exp, gene_nonblock_exp)
                     ttest_obj = build_obj('t-test', 'expression', 'block', False, gene_ds, block_ds, t_value, p_value, data)
 
                     ttest_res.append(ttest_obj)
 
         ttest_res = sorted(ttest_res, key=lambda x: x['value'], reverse=True)
         return ttest_res
-

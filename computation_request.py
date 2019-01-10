@@ -390,7 +390,7 @@ def ttest_expression_per_gene(gene_types, exp_data, chromosome, start_seq, end_s
                 "value": two
             }]
 
-            corr_obj = build_exp_singlegene_obj('Binomial test difference in proportions', 'expression',                                        'expression', True, data_source_one,
+            corr_obj = build_exp_singlegene_obj('Binomial test difference in proportions', 'expression','expression', True, data_source_one,
                                                 data_source_two, ttest_value, pvalue=p_value, gene=row['gene'], data=data)
             ttest_results.append(corr_obj)
 

@@ -17,7 +17,6 @@ import math
  #       print("hi")
 
 def ttest_block_expression(exp_data, block_data, exp_datasource, datasource_types):
-    print("dsdsffdsdfdfdf")
     ttest_res = []
     gene_expression_block = dict()
     gene_expression_nonblock = dict()
@@ -50,8 +49,8 @@ def ttest_block_expression(exp_data, block_data, exp_datasource, datasource_type
                 gene_expression_nonblock[block_type] = gene_expression_nonblock[
                     block_type].append(exp_nonblock)
 
-    print(gene_expression_block)
-    print(gene_expression_nonblock)
+    # print(gene_expression_block)
+    # print(gene_expression_nonblock)
 
     pd_block = pd.DataFrame(datasource_types)
     pd_expression = pd.DataFrame(exp_datasource)
@@ -334,7 +333,6 @@ def ttest_expression_per_gene(gene_types, exp_data, chromosome, start_seq, end_s
             element for element in gene_types if element["id"] == exp1][0]
         data_source_two = [
             element for element in gene_types if element["id"] == exp2][0]
-
         for index, row in exp_data.iterrows():
 
             one = row[exp1]
@@ -363,8 +361,7 @@ def ttest_expression_per_gene(gene_types, exp_data, chromosome, start_seq, end_s
                 "value": two
             }]
 
-            corr_obj = build_exp_singlegene_obj('Binomial test difference in proportions', 'expression',                                        'expression', True, data_source_one,
-                                                data_source_two, ttest_value, pvalue=p_value, gene=row['gene'], data=data)
+            corr_obj = build_exp_singlegene_obj('Binomial test difference in proportions', 'expression', 'expression', True, data_source_one, data_source_two, ttest_value, pvalue=p_value, gene=row['gene'], data=data)
             ttest_results.append(corr_obj)
 
     ttest_results = sorted(ttest_results, key=lambda x: x['value'],
