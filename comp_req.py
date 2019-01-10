@@ -53,11 +53,11 @@ def comp_req(start_seq, end_seq, chromosome, gene_name, measurements=None):
     block_data = block_func.block_data()
     per_gene_ttest = statistical_methods.ttest_expression_per_gene(gene_types, expression_data,
                                                chromosome, start_seq, end_seq)
-    print("hesdfdssjsdjkdkjckj")
-    print(per_gene_ttest)
-    ttest_gene = Ttest_Gene(gene_types, expression_data, chromosome, start_seq, end_seq)
-    print("dsfhjsdfhkjsdhasdasas")
-    ttest_gene.ttest_exp()
+    # print("hesdfdssjsdjkdkjckj")
+    # print(per_gene_ttest)
+    # ttest_gene = Ttest_Gene(gene_types, expression_data, chromosome, start_seq, end_seq)
+    # print("dsfhjsdfhkjsdhasdasas")
+    # ttest_gene.ttest_exp()
 
     yield per_gene_ttest
     if has_block:
@@ -137,12 +137,11 @@ def comp_req(start_seq, end_seq, chromosome, gene_name, measurements=None):
         # gene expression and block independency test
         ttest_block_exp = statistical_methods.ttest_block_expression(expression_data, block_data,
                                                  gene_types, block_types)
-        # print("adfsjfd")
-        # print(statistical_methods.ttest_block_expression(expression_data, block_data,
-        #                                          gene_types, block_types))
-        # ttest = Ttest_Block(expression_data, block_data, gene_types, block_types)
-        # print("thersdfjsdf")
-        # print(ttest.ttest())
+        print("adfsjfd")
+        print(ttest_block_exp)
+        ttest = Ttest_Block(expression_data, block_data, gene_types, block_types)
+        print("thersdfjsdf")
+        ttest.ttest()
         yield ttest_block_exp
     if has_gene and has_methy:
 

@@ -13,9 +13,6 @@ import itertools
 import math
 
 
-#    def __init__(self):
- #       print("hi")
-
 def ttest_block_expression(exp_data, block_data, exp_datasource, datasource_types):
     ttest_res = []
     gene_expression_block = dict()
@@ -24,8 +21,9 @@ def ttest_block_expression(exp_data, block_data, exp_datasource, datasource_type
     # loop through block of different tissue types
     for block_type, block_dataframe in block_data.items():
         if not block_dataframe.empty:
-            #loop through each start, end in the block# only with tissues that align
-            #with block types# get tissue type from block id
+            # loop through each start, end in the block# only with tissues that align
+            # with block types
+            # get tissue type from block id
             tissue_type = block_type.split("_")[1]
             exp_types = [tissue_type + "___normal", tissue_type + "___tumor"]
 
@@ -49,8 +47,8 @@ def ttest_block_expression(exp_data, block_data, exp_datasource, datasource_type
                 gene_expression_nonblock[block_type] = gene_expression_nonblock[
                     block_type].append(exp_nonblock)
 
-    # print(gene_expression_block)
-    # print(gene_expression_nonblock)
+    print(gene_expression_block.items())
+    print(gene_expression_nonblock.items())
 
     pd_block = pd.DataFrame(datasource_types)
     pd_expression = pd.DataFrame(exp_datasource)
@@ -58,7 +56,7 @@ def ttest_block_expression(exp_data, block_data, exp_datasource, datasource_type
     # calculate t test between block and non - block gene expression of the same# tissue type
     for block_type, gene_per_block_exp in gene_expression_block.items():
         gene_per_nonblock_exp = gene_expression_nonblock[block_type]
-        print(type(gene_per_block_exp))
+        print(gene_per_block_exp.columns)
         for exp_type in gene_per_block_exp:
 
             gene_block_exp = gene_per_block_exp[exp_type]
