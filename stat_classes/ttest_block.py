@@ -2,38 +2,35 @@ import json
 import pandas as pd
 from scipy.stats import ttest_ind
 from utils import build_obj, format_expression_block_data
+from stat_classes.stat_method import stat_method
+from data_functions import Gene_data, Block_data
 
-class Ttest_Block:
 
-    def __init__(self, exp_data, block_data, exp_datasource, datasource_types):
-        self.exp_data = exp_data
-        self.block_data = block_data
-        self.exp_datasource = exp_datasource
-        self.datasource_types = datasource_types
+class Ttest_Block(stat_method):
 
-        self.exp_data['index_col'] = self.exp_data.index
+    def __init__(self, measurements):
+        super().__init__(measurements)
+        self.exp_datasource = super().get_measurements_self("gene")
+        self.datasource_types = super().get_measurements_self("block")
 
-        self.gene_expression_block = dict()
-        self.gene_expression_nonblock = dict()
-
-    def get_expressions(self, row, exp_types, block_type):
+    def get_expressions(self, row, exp_types, block_type, exp_data, gene_expression_block, gene_expression_nonblock):
         start = row["start"]
         end = row["end"]
-        exp_srt = self.exp_data["start"]
-        exp_end = self.exp_data["end"]
+        exp_srt = exp_data["start"]
+        exp_end = exp_data["end"]
 
         exp_block = pd.DataFrame(columns=exp_types)
         # boolean formula for finding expression block overlap
         in_block = ((exp_srt <= end) & (exp_end >= start)) | ((exp_end >= start) & (exp_end <= end)) | ((exp_srt >= start) & (exp_srt <= end))
         # queries the dataframe where expressions are in/overlap blocks and drops nan values
-        exp_indices = list((self.exp_data.where(in_block)['index_col']).dropna().unique())
+        exp_indices = list((exp_data.where(in_block)['index_col']).dropna().unique())
         # gets rows at exp_indices keeping only the exp types cols
-        exp_block = self.exp_data.iloc[exp_indices][exp_types]
+        exp_block = exp_data.iloc[exp_indices][exp_types]
 
-        exp_nonblock = self.exp_data[(exp_end < start) | (exp_srt > end)][exp_types]
+        exp_nonblock = exp_data[(exp_end < start) | (exp_srt > end)][exp_types]
 
-        self.gene_expression_block[block_type] = self.gene_expression_block.get(block_type, pd.DataFrame(columns=exp_types)).append(exp_block)
-        self.gene_expression_nonblock[block_type] = self.gene_expression_nonblock.get(block_type, pd.DataFrame(columns=exp_types)).append(exp_nonblock)
+        gene_expression_block[block_type] = gene_expression_block.get(block_type, pd.DataFrame(columns=exp_types)).append(exp_block)
+        gene_expression_nonblock[block_type] = gene_expression_nonblock.get(block_type, pd.DataFrame(columns=exp_types)).append(exp_nonblock)
 
     def ttest_calculation(self, gene_block_exp, gene_per_nonblock_exp, exp_type, block_type, pd_block, pd_expression):
 
@@ -51,22 +48,28 @@ class Ttest_Block:
 
         return ttest_obj
 
-    def ttest(self):
+    def compute(self, chromosome, start_seq, end_seq):
+        exp_data = Gene_data(start_seq, end_seq, chromosome, measurements=self.exp_datasource)
+        block_data = Block_data(start_seq, end_seq, chromosome, measurements=self.datasource_types)
+        exp_data['index_col'] = exp_data.index
+        gene_expression_block = dict()
+        gene_expression_nonblock = dict()
+
         # loop through block of different tissue types
         for block_type, block_dataframe in self.block_data.items():
             if not block_dataframe.empty:
                 tissue_type = block_type.split("_")[1]
                 exp_types = [tissue_type + "___normal", tissue_type + "___tumor"]
                 # gets block and non-block expressions
-                block_dataframe.apply(lambda row: self.get_expressions(row, exp_types, block_type), axis=1)
+                block_dataframe.apply(lambda row: self.get_expressions(row, exp_types, block_type, exp_data, gene_expression_block, gene_expression_nonblock), axis=1)
 
         ttest_res = []
         pd_block = pd.DataFrame(self.datasource_types)
         pd_expression = pd.DataFrame(self.exp_datasource)
 
-        for block_type, gene_per_block_exp in self.gene_expression_block.items():
+        for block_type, gene_per_block_exp in gene_expression_block.items():
             exp_types = list(gene_per_block_exp.columns)
-            gene_per_nonblock_exp = self.gene_expression_nonblock[block_type]
+            gene_per_nonblock_exp = gene_expression_nonblock[block_type]
 
             for exp_type in exp_types:
                 gene_block_exp = gene_per_block_exp[exp_type]

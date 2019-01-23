@@ -10,24 +10,19 @@ import json
 import itertools
 import math
 
-class Data_Functions:
 
-    def __init__(self, start_seq, end_seq, chromosome, gene_name = None, measurements = None):
-        self.start_seq = start_seq
-        self.end_seq = end_seq
-        self.chromosome = chromosome
-        self.gene_name = gene_name
-        self.measurements = measurements
+def Gene_data(start_seq, end_seq, chromosome, gene_name=None, measurements=None):
+    return get_gene_data(start_seq, end_seq, chromosome, measurements)
 
-    def gene_data(self):
-        return get_gene_data(self.start_seq, self.end_seq, self.chromosome, self.measurements)
 
-    def block_data(self):
+def Block_data(start_seq, end_seq, chromosome, gene_name=None, measurements=None):
 
-        return get_block_data(self.start_seq, self.end_seq, self.chromosome, self.measurements)
+    return get_block_data(start_seq, end_seq, chromosome, measurements)
 
-    def methylation_diff(self):
-        return get_methy_data(self.start_seq, self.end_seq, self.chromosome, self.measurements)
 
-    def methylation(self):
-        return get_methy_data(self.start_seq, self.end_seq, self.chromosome, self.measurements)
+def Methylation_diff(start_seq, end_seq, chromosome, gene_name=None, measurements=None):
+    return get_methy_data(start_seq, end_seq, chromosome, measurements)
+
+
+def Methylation(start_seq, end_seq, chromosome, gene_name=None, measurements=None):
+    return get_methy_data(start_seq, end_seq, chromosome, measurements)
