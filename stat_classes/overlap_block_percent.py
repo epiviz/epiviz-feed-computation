@@ -7,7 +7,7 @@ from stat_classes.stat_method import stat_method
 from data_functions import Block_data
 
 
-class Block_overlap(stat_method):
+class OverlapBlock(stat_method):
     def __init__(self, measurements):
         super().__init__(measurements)
         self.data_sources = super().get_measurements_self("block")
@@ -22,6 +22,7 @@ class Block_overlap(stat_method):
     def get_overlap(self, overlap_region, block_one, block_two, start_seq, end_seq):
         b_one_ind = block_one["index"]
         b_two_ind = block_two["index"]
+
         while b_one_ind < block_one["length"] and b_two_ind < block_two["length"]:
 
             tissue_one_start = max(float(start_seq), block_one["block_tissue"]['start'][b_one_ind])
@@ -41,7 +42,7 @@ class Block_overlap(stat_method):
             if tissue_two_start >= tissue_one_end or tissue_two_end > tissue_one_end:
                 b_one_ind += 1
             # block tissue one is larger
-            if tissue_one_start >= tissue_two_end or tissue_two_end < tissue_one_end:
+            if tissue_one_start >= tissue_two_end or tissue_two_end <= tissue_one_end:
                 b_two_ind += 1
 
     def calc_overlap_percentage(self, overlap_region, block_one, block_two, data_source_one, data_source_two, start_seq, end_seq):
@@ -71,8 +72,8 @@ class Block_overlap(stat_method):
     def create_block(self, attributes, attributes_vals):
         return {key: val for key, val in zip(attributes, attributes_vals)}
 
-    def compute(self, chromosome, start_seq, end_seq):
-        block_data = Block_data(start_seq, end_seq, chromosome, measurements=self.data_sources)
+    def compute(self, chromosome, start, end):
+        block_data = Block_data(start, end, chromosome, measurements=self.data_sources)
         block_overlap = []
         if block_data:
             for data_source_one, data_source_two in itertools.combinations(self.data_sources, 2):
@@ -89,9 +90,11 @@ class Block_overlap(stat_method):
                         block_data[tissue_two], 0, len(block_data[tissue_two]['start']), []])
 
                     overlap_region = []
-                    overlap_obj = self.calc_overlap_percentage(overlap_region, block_one, block_two, data_source_one, data_source_two, start_seq, end_seq)
+                    overlap_obj = self.calc_overlap_percentage(overlap_region, block_one, block_two, data_source_one, data_source_two, start, end)
                     block_overlap.append(overlap_obj)
 
         block_overlap = sorted(block_overlap, key=lambda x: x['value'], reverse=True)
         print ('overlap done!')
+        print("glsfo")
+        print(block_overlap)
         return block_overlap

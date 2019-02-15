@@ -8,9 +8,10 @@ from utils import build_obj, build_exp_methy_obj, add_to_block, format_expressio
 from requests import get_methy_data, get_block_data, get_gene_data, get_sample_counts
 from data_functions import Gene_data, Block_data, Methylation_diff, Methylation
 from urllib.request import urlopen
-from stat_classes.ttest_block import Ttest_Block
-from stat_classes.ttest_gene import Ttest_Gene
-from stat_classes.block_overlap_percent import Block_overlap
+from stat_classes.ttest_block import TtestBlock
+from stat_classes.ttest_gene import TtestGene
+from stat_classes.block_overlap_percent import OverlapBlock
+from stat_classes.correlation_exp_methy import CorrelationExpMethy
 import json
 import itertools
 import math
@@ -55,18 +56,18 @@ def comp_req(start_seq, end_seq, chromosome, gene_name, measurements=None):
                                                chromosome, start_seq, end_seq)
     # print("hesdfdssjsdjkdkjckj")
     # print(per_gene_ttest)
-    # ttest_gene = Ttest_Gene(gene_types, expression_data, chromosome, start_seq, end_seq)
+    # ttest_gene = Ttest_Gene(measurements)
     # print("dsfhjsdfhkjsdhasdasas")
-    # ttest_gene.ttest_exp()
+    # ttest_gene.compute(chromosome, start_seq, end_seq)
 
     yield per_gene_ttest
     if has_block:
         # block overlap percentage
         block_overlap = statistical_methods.block_overlap_percent(block_types, block_data, start_seq, end_seq)
-        print('hellooooooo')
-        print(block_overlap)
-        block_ol = Block_overlap(measurements)
-        block_ol.compute(block_data, start_seq, end_seq)
+        # print('hellooooooo')
+        # print(block_overlap)
+        # block_ol = Block_overlap(measurements)
+        # block_ol.compute(chromosome, start_seq, end_seq)
 
         yield block_overlap
     if has_methy_diff:
@@ -79,7 +80,9 @@ def comp_req(start_seq, end_seq, chromosome, gene_name, measurements=None):
 
         methy_raw = Methylation(start_seq, end_seq, chromosome, measurements=methylation_types)
         methy_corr_res = statistical_methods.methy_correlation(methy_raw, methylation_diff_types)
-
+        test_method = CorrelationExpMethy(measurements, "methy")
+        test_method.compute(start_seq, end_seq, chromosome)
+      #  print(methy_corr_res)
             # loop through normal/tumor of each tissue type
         for data_source_one, data_source_two in itertools.combinations(
                 methylation_diff_types, 2):
@@ -141,11 +144,11 @@ def comp_req(start_seq, end_seq, chromosome, gene_name, measurements=None):
         # gene expression and block independency test
         ttest_block_exp = statistical_methods.ttest_block_expression(expression_data, block_data,
                                                  gene_types, block_types)
-        # print("adfsjfd")
-        # print(ttest_block_exp)
-        # ttest = Ttest_Block(expression_data, block_data, gene_types, block_types)
-        # print("thersdfjsdf")
-        # ttest.ttest()
+        print("adfsjfd")
+        print(ttest_block_exp)
+        ttest = TtestBlock(measurements)
+        print("thersdfjsdf")
+        ttest.compute(chromosome, start_seq, end_seq)
         yield ttest_block_exp
     if has_gene and has_methy:
 

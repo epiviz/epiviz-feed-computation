@@ -180,12 +180,14 @@ def block_overlap_percent(data_sources, block_data, start_seq, end_seq):
     print ('overlap done!')
     return block_overlap
 
-def expression_methydiff_correlation(exp_data, datasource_gene_types, datasource_methy_types, methy_data, downstream = 3000, upstream = 1000):
 
-    print ("expression_methydiff_correlation")
-
-    methy_types = [datasource_type["id"] for datasource_type in
-                   datasource_methy_types]
+def expression_methydiff_correlation(exp_data, datasource_gene_types,
+                                     datasource_methy_types,
+                                     methy_data, downstream=3000, upstream=1000):
+    print("expression_methydiff_correlation")
+    print("eishfdhosdfhiosf")
+    methy_types = [datasource_type["id"] for datasource_type in datasource_methy_types]
+    print(methy_types)
     methy_mean = pd.DataFrame(columns=methy_types)
     corr_res = []
 
@@ -198,8 +200,9 @@ def expression_methydiff_correlation(exp_data, datasource_gene_types, datasource
                                              & (methy_data.end <= exp_end))]
 
         mean = methy_filtered[methy_types].mean().fillna(0)
-        methy_mean = methy_mean.append(mean,
-                                       ignore_index=True)
+        methy_mean = methy_mean.append(mean, ignore_index=True)
+
+    print(methy_mean)
 
     tissue_types = [["breast___normal", "breast___tumor"],
                     ['colon___normal', 'colon___tumor'],
@@ -212,19 +215,13 @@ def expression_methydiff_correlation(exp_data, datasource_gene_types, datasource
         expression_type2 = tissue_pair[1]
         tissue_type = expression_type1.split("___")[0]
 
-        print (tissue_type, methy_type)
-        correlation_coefficient = pearsonr(methy_mean[methy_type], expression_diff)
-
-        if math.isnan(correlation_coefficient[0]):
-            continue
-            print (correlation_coefficient[0])
-
         expression_diff = np.subtract(exp_data[expression_type1],
                                       exp_data[expression_type2])
 
         # for datasource_methy_type in datasource_methy_types:
         methy_type = tissue_type
-        print (tissue_pair, methy_type)
+
+        print( tissue_pair, methy_type)
         correlation_coefficient = pearsonr(methy_mean[methy_type],
                                            expression_diff)
 
@@ -255,11 +252,13 @@ def expression_methydiff_correlation(exp_data, datasource_gene_types, datasource
 
     return corr_res
 
+
 def expression_methy_correlation(exp_data, datasource_gene_types, datasource_methy_types, methy_data, downstream = 3000, upstream = 1000):
     print ("expression_methy_correlation")
     methy_types = [datasource_type["id"] for datasource_type in
                    datasource_methy_types]
-
+    print("hskjkdfsjkdj")
+    print(methy_types)
     methy_mean = pd.DataFrame(columns=methy_types)
     corr_res = []
 

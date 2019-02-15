@@ -8,7 +8,7 @@ from stat_classes.stat_method import stat_method
 from data_functions import Gene_data
 
 
-class Ttest_Gene(stat_method):
+class TtestGene(stat_method):
 
     def __init__(self, measurements):
         super().__init__(measurements)
@@ -39,10 +39,10 @@ class Ttest_Gene(stat_method):
                     True, gene1, gene2, ttest_value, pvalue=p_value, gene=row['gene'], data=data)]
         return corr_obj
 
-    def compute(self, chromosome, start_seq, end_seq):
-        exp_data = Gene_data(start_seq, end_seq, chromosome, self.gene_types)
+    def compute(self, chromosome, start, end):
+        exp_data = Gene_data(start, end, chromosome, measurements=self.gene_types)
         print("ttest per single gene!")
-        sample_counts = get_sample_counts(self.gene_types, start_seq, end_seq, chromosome)
+        sample_counts = get_sample_counts(self.gene_types, start, end, chromosome)
 
         ttest_results = []
         if exp_data.empty or not sample_counts:
@@ -62,4 +62,6 @@ class Ttest_Gene(stat_method):
             ttest_results.extend(concat_result)
 
         ttest_results = sorted(ttest_results, key=lambda x: x['value'], reverse=True)
+        print("ttest_gene_result")
+        print(ttest_results)
         return ttest_results

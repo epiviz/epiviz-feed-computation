@@ -1,47 +1,34 @@
-from stat_classes.ttest_block import Ttest_Block
-from stat_classes.ttest_gene import Ttest_Gene
-from stat_classes.block_overlap_percent import Block_overlap
+from stat_classes.ttest_block import TtestBlock
+from stat_classes.ttest_gene import TtestGene
+from stat_classes.overlap_block_percent import OverlapBlock
+from stat_classes.correlation_exp_methy import CorrelationExpMethy
 
 
 class Compute_obj:
 
-    def init(self, computation, measurements):
-        self.computation_obj = self.create(computation)
+    def __init__(self, computation, measurements):
         self.measurements = measurements
+        self.computation_obj = self.create(computation)
 
     def create(self, computation):
 
         if(computation == "ttest_block_expression"):
-            ret_val = Ttest_Block(self.measurements)
+            ret_val = TtestBlock(self.measurements)
         elif(computation == "block_overlap_percent"):
-            ret_val = Block_overlap(self.measurements)
+            ret_val = OverlapBlock(self.measurements)
         elif(computation == "expression_methydiff_correlation"):
-            ret_val = expression_methydiff_correlation(self.measurements)
+            ret_val = CorrelationExpMethy(self.measurements, "methy_diff")
         elif(computation == "expression_methy_correlation"):
-            ret_val = ttest_obj
+            ret_val = CorrelationExpMethy(self.measurements, "methy")
         elif(computation == "ttest_expression_per_gene"):
-            ret_val = Ttest_Gene(self.measurements)
-        elif(computation == "methy_diff_correlation"):
-            ret_val = ttest_obj
-        elif(computation == "expression_correlation"):
-            ret_val = ttest_obj
+            ret_val = TtestGene(self.measurements)
+        # elif(computation == "methy_diff_correlation"):
+        #     ret_val = ttest_obj
+        # elif(computation == "expression_correlation"):
+        #     ret_val = ttest_obj
 
         return ret_val
 
-    def compute(self, chromosome, start_seq, end_seq):
-        if(self.computation == "ttest_block_expression"):
-            ret_val = self.computation_obj.compute()
-        elif(self.computation == "block_overlap_percent"):
-            ret_val = self.computation_obj.compute(start_seq, end_seq)
-        elif(self.computation == "expression_methydiff_correlation"):
-            ret_val = self.computation_obj.compute()
-        elif(self.computation == "expression_methy_correlation"):
-            ret_val = self.computation_obj.compute()
-        elif(self.computation == "ttest_expression_per_gene"):
-            ret_val = self.computation_obj.compute(chromosome, start_seq, end_seq)
-        elif(self.computation == "methy_diff_correlation"):
-            ret_val = self.computation_obj.compute()
-        elif(self.computation == "expression_correlation"):
-            ret_val = self.computation_obj.compute()
+    def compute(self, chromosome, start, end):
 
-        return ret_val
+        return self.computation_obj.compute(chromosome, start, end)

@@ -2,7 +2,7 @@ class stat_method:
     def __init__(self, measurements=None):
         self.measurements = measurements
 
-    def compute(self, chromosome, start_seq, end_seq):
+    def compute(self, chromosome, start, end):
         print("base class")
 
     def get_measurements_self(self, mes_type):

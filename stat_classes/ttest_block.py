@@ -1,12 +1,13 @@
 import json
 import pandas as pd
+
 from scipy.stats import ttest_ind
 from utils import build_obj, format_expression_block_data
 from stat_classes.stat_method import stat_method
 from data_functions import Gene_data, Block_data
 
 
-class Ttest_Block(stat_method):
+class TtestBlock(stat_method):
 
     def __init__(self, measurements):
         super().__init__(measurements)
@@ -21,7 +22,7 @@ class Ttest_Block(stat_method):
 
         exp_block = pd.DataFrame(columns=exp_types)
         # boolean formula for finding expression block overlap
-        in_block = ((exp_srt <= end) & (exp_end >= start)) | ((exp_end >= start) & (exp_end <= end)) | ((exp_srt >= start) & (exp_srt <= end))
+        in_block = (exp_srt < end & exp_end >= end) | (exp_end > start & exp_srt <= start) | (exp_srt >= start & exp_end <= end)
         # queries the dataframe where expressions are in/overlap blocks and drops nan values
         exp_indices = list((exp_data.where(in_block)['index_col']).dropna().unique())
         # gets rows at exp_indices keeping only the exp types cols
@@ -48,15 +49,15 @@ class Ttest_Block(stat_method):
 
         return ttest_obj
 
-    def compute(self, chromosome, start_seq, end_seq):
-        exp_data = Gene_data(start_seq, end_seq, chromosome, measurements=self.exp_datasource)
-        block_data = Block_data(start_seq, end_seq, chromosome, measurements=self.datasource_types)
+    def compute(self, chromosome, start, end):
+        exp_data = Gene_data(start, end, chromosome, measurements=self.exp_datasource)
+        block_data = Block_data(start, end, chromosome, measurements=self.datasource_types)
         exp_data['index_col'] = exp_data.index
         gene_expression_block = dict()
         gene_expression_nonblock = dict()
 
         # loop through block of different tissue types
-        for block_type, block_dataframe in self.block_data.items():
+        for block_type, block_dataframe in block_data.items():
             if not block_dataframe.empty:
                 tissue_type = block_type.split("_")[1]
                 exp_types = [tissue_type + "___normal", tissue_type + "___tumor"]
@@ -80,4 +81,6 @@ class Ttest_Block(stat_method):
                     ttest_res.append(ttest_obj)
 
         ttest_res = sorted(ttest_res, key=lambda x: x['value'], reverse=True)
+        print("ttest_block_res")
+        print(ttest_res)
         return ttest_res

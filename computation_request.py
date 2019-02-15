@@ -216,11 +216,12 @@ def expression_methydiff_correlation(exp_data, datasource_gene_types,
         methy_mean = methy_mean.append(mean,
                                        ignore_index=True)
 
-    tissue_types = [["breast___normal", "breast___tumor"],
+        tissue_types = [["breast___normal", "breast___tumor"],
                     ['colon___normal', 'colon___tumor'],
                     ['lung___normal', 'lung___tumor'],
                     ['thyroid___normal', 'thyroid___tumor']]
     for tissue_pair in tissue_types:
+        methy_type = datasource_methy_type["id"]
 
         # use the difference of types (normal and tumor) for the same tissue
         expression_type1 = tissue_pair[0]
