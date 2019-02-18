@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import math
+import itertools
 from scipy.stats.stats import pearsonr
 from utils import build_exp_methy_obj
 from UI_functions import format_exp_methy_output
@@ -60,7 +61,7 @@ class CorrelationExpMethy(stat_method):
             }
 
             corr_obj_cancer = build_exp_methy_obj('correlation', 'expression diff',
-                                           'methylation diff', True, "Expression diff " + tissue_type,
+                                           'methylation diff', True, "Expression diff " + tissue_type + "cancer",
                                            'Collapsed Methylation Diff ' + tissue_type,
                                            correlation_coefficient_canc[0],
                                            correlation_coefficient_canc[1],
@@ -70,11 +71,13 @@ class CorrelationExpMethy(stat_method):
     def compute(self, start, end, chromosome, downstream=3000, upstream=1000):
         exp_data = Gene_data(start, end, chromosome, measurements=self.datasource_gene_types)
         methy_data = Methylation(start, end, chromosome, measurements=self.datasource_methy_types)
-
-        corr_res = []
+        print("hi1")
+        corr_result = pd.DataFrame()
+        results = []
 
         exp_regions = np.array([exp_data.start, exp_data.end]).transpose()
         down_up = np.ones(exp_regions.shape) * np.array([downstream, -1 * upstream])
+        print("hi2")
 
         regions_of_interest = pd.DataFrame(np.subtract(exp_regions, down_up), columns=["start", "end"])
         print(regions_of_interest)
@@ -86,14 +89,22 @@ class CorrelationExpMethy(stat_method):
         sorted_gene_types = sorted(self.datasource_gene_types, key=lambda x: x["id"])
         # gets list of dicts containing the same info as gene type
         tissue_types = [item["id"] for item in sorted_gene_types]
-        # breaks list down into sublist of size 2
+        print("hi3")
         tissue_types = [tissue_types[x:x+2] for x in range(0, len(tissue_types), 2)]
-        print(tissue_types)
-        corr_res, corr_res_cancer = map(lambda tissue_pair: self.correlation_calc(exp_data, methy_mean, tissue_pair), tissue_types)
 
-        corr_res = sorted(corr_res, key=lambda x: x['value'], reverse=True)
-        corr_cancer = sorted(corr_res_cancer, key=lambda x: x['value'], reverse=True)
+        for tissue_pair in tissue_types:
+            corr_res, corr_res_cancer = self.correlation_calc(exp_data, methy_mean, tissue_pair)
+            results.append(corr_res)
+            results.append(corr_res_cancer)
+        print("hi4")
 
-        return corr_res
+        # corr_res = sorted(corr_res, key=lambda x: x['value'], reverse=True)
+        # corr_cancer = sorted(corr_res_cancer, key=lambda x: x['value'], reverse=True)
+        corr_result = pd.Series(results)
+        corr_result = corr_result.apply(pd.Series)
+        print("hi5")
+
+        print(corr_result)
+        return corr_result
 
 

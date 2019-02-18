@@ -10,7 +10,7 @@ from data_functions import Gene_data, Block_data, Methylation_diff, Methylation
 from urllib.request import urlopen
 from stat_classes.ttest_block import TtestBlock
 from stat_classes.ttest_gene import TtestGene
-from stat_classes.block_overlap_percent import OverlapBlock
+from stat_classes.overlap_block_percent import OverlapBlock
 from stat_classes.correlation_exp_methy import CorrelationExpMethy
 import json
 import itertools
@@ -52,13 +52,12 @@ def comp_req(start_seq, end_seq, chromosome, gene_name, measurements=None):
     has_gene = len(gene_types) > 0
     expression_data = Gene_data(start_seq, end_seq, chromosome, gene_name, gene_types)
     block_data = Block_data(start_seq, end_seq, chromosome, gene_name, block_types)
-    per_gene_ttest = statistical_methods.ttest_expression_per_gene(gene_types, expression_data,
-                                               chromosome, start_seq, end_seq)
+    per_gene_ttest = statistical_methods.ttest_expression_per_gene(gene_types, expression_data, chromosome, start_seq, end_seq)
     # print("hesdfdssjsdjkdkjckj")
     # print(per_gene_ttest)
-    # ttest_gene = Ttest_Gene(measurements)
-    # print("dsfhjsdfhkjsdhasdasas")
-    # ttest_gene.compute(chromosome, start_seq, end_seq)
+    ttest_gene = TtestGene(measurements)
+    print("dsfhjsdfhkjsdhasdasas")
+    ttest_gene.compute(chromosome, start_seq, end_seq)
 
     yield per_gene_ttest
     if has_block:
@@ -66,8 +65,8 @@ def comp_req(start_seq, end_seq, chromosome, gene_name, measurements=None):
         block_overlap = statistical_methods.block_overlap_percent(block_types, block_data, start_seq, end_seq)
         # print('hellooooooo')
         # print(block_overlap)
-        # block_ol = Block_overlap(measurements)
-        # block_ol.compute(chromosome, start_seq, end_seq)
+        block_ol = OverlapBlock(measurements)
+        block_ol.compute(chromosome, start_seq, end_seq)
 
         yield block_overlap
     if has_methy_diff:
@@ -142,8 +141,7 @@ def comp_req(start_seq, end_seq, chromosome, gene_name, measurements=None):
     if has_gene and has_block:
 
         # gene expression and block independency test
-        ttest_block_exp = statistical_methods.ttest_block_expression(expression_data, block_data,
-                                                 gene_types, block_types)
+        ttest_block_exp = statistical_methods.ttest_block_expression(expression_data, block_data, gene_types, block_types)
         print("adfsjfd")
         print(ttest_block_exp)
         ttest = TtestBlock(measurements)
@@ -154,8 +152,7 @@ def comp_req(start_seq, end_seq, chromosome, gene_name, measurements=None):
 
             # correlation between methylation and gene expression
         # with the same tissue type
-        corr_methy_gene = statistical_methods.expression_methy_correlation(expression_data, gene_types, methylation_types,
-                                                       methy_raw)
+        corr_methy_gene = statistical_methods.expression_methy_correlation(expression_data, gene_types, methylation_types, methy_raw)
 
         yield corr_methy_gene
     if has_gene and has_methy_diff:

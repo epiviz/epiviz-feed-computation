@@ -64,7 +64,8 @@ class TtestBlock(stat_method):
                 # gets block and non-block expressions
                 block_dataframe.apply(lambda row: self.get_expressions(row, exp_types, block_type, exp_data, gene_expression_block, gene_expression_nonblock), axis=1)
 
-        ttest_res = []
+        ttest_res = pd.DataFrame()
+        results = []
         pd_block = pd.DataFrame(self.datasource_types)
         pd_expression = pd.DataFrame(self.exp_datasource)
 
@@ -78,9 +79,12 @@ class TtestBlock(stat_method):
                 if not gene_block_exp.empty:
                     gene_nonblock_exp = gene_per_nonblock_exp[exp_type]
                     ttest_obj = self.ttest_calculation(gene_block_exp, gene_per_nonblock_exp, exp_type, block_type, pd_block, pd_expression)
-                    ttest_res.append(ttest_obj)
+                    results.append(ttest_obj)
 
-        ttest_res = sorted(ttest_res, key=lambda x: x['value'], reverse=True)
+        results = sorted(results, key=lambda x: x['value'], reverse=True)
+        ttest_res = pd.Series(overlaps)
+        ttest_res = ttest_res.apply(pd.Series)
+
         print("ttest_block_res")
         print(ttest_res)
         return ttest_res

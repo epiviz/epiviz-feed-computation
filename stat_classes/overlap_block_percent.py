@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import math
 import itertools
 from utils import build_obj
@@ -74,7 +75,7 @@ class OverlapBlock(stat_method):
 
     def compute(self, chromosome, start, end):
         block_data = Block_data(start, end, chromosome, measurements=self.data_sources)
-        block_overlap = []
+        overlaps = []
         if block_data:
             for data_source_one, data_source_two in itertools.combinations(self.data_sources, 2):
                 tissue_one = data_source_one["id"]
@@ -91,10 +92,10 @@ class OverlapBlock(stat_method):
 
                     overlap_region = []
                     overlap_obj = self.calc_overlap_percentage(overlap_region, block_one, block_two, data_source_one, data_source_two, start, end)
-                    block_overlap.append(overlap_obj)
+                    overlaps.append(overlap_obj)
+        block_overlap = pd.Series(overlaps)
+        block_overlap = block_overlap.apply(pd.Series)
 
-        block_overlap = sorted(block_overlap, key=lambda x: x['value'], reverse=True)
         print ('overlap done!')
-        print("glsfo")
         print(block_overlap)
         return block_overlap

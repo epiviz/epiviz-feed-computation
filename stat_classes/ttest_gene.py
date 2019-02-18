@@ -35,16 +35,16 @@ class TtestGene(stat_method):
             "value": two
         }]
 
-        corr_obj = [build_exp_singlegene_obj('Binomial test difference in proportions', 'expression', 'expression',
-                    True, gene1, gene2, ttest_value, pvalue=p_value, gene=row['gene'], data=data)]
+        corr_obj = build_exp_singlegene_obj('Binomial test difference in proportions', 'expression', 'expression',
+                    True, gene1, gene2, ttest_value, pvalue=p_value, gene=row['gene'], data=data)
         return corr_obj
 
     def compute(self, chromosome, start, end):
         exp_data = Gene_data(start, end, chromosome, measurements=self.gene_types)
         print("ttest per single gene!")
         sample_counts = get_sample_counts(self.gene_types, start, end, chromosome)
-
-        ttest_results = []
+        cols = ['computation-type', 'data-type-one', 'data-type-two', 'show-chart', 'attribute-one', 'attribute-two', 'value', 'pvalue', 'data', 'gene']
+        ttest_results = pd.DataFrame(columns=cols)
         if exp_data.empty or not sample_counts:
             return ttest_results
         # sorts gene_types by tissue type
@@ -57,11 +57,12 @@ class TtestGene(stat_method):
         for gene_pair in gene_pairs:
             # preforms ttest calc on each row of the exp_data dataframe
             results = exp_data.apply(lambda row: self.ttest_calculations(row, gene_pair[0], gene_pair[1], sample_counts), axis=1)
-            # concat series of list
-            concat_result = [element for sublist in results for element in sublist]
-            ttest_results.extend(concat_result)
+            # turns series of dicts to a dataframe
+            results = results.apply(pd.Series)
 
-        ttest_results = sorted(ttest_results, key=lambda x: x['value'], reverse=True)
+            ttest_results = pd.concat([ttest_results, results])
+        ttest_results = ttest_results.sort_values(by=['value'])
+        # print(ttest_results["value"])
         print("ttest_gene_result")
         print(ttest_results)
         return ttest_results

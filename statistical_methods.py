@@ -177,6 +177,8 @@ def block_overlap_percent(data_sources, block_data, start_seq, end_seq):
 
     block_overlap = sorted(block_overlap, key=lambda x: x['value'],
                            reverse=True)
+    print("hsdsdfsdf")
+    print(block_overlap)
     print ('overlap done!')
     return block_overlap
 
