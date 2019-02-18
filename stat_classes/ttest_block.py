@@ -22,7 +22,7 @@ class TtestBlock(stat_method):
 
         exp_block = pd.DataFrame(columns=exp_types)
         # boolean formula for finding expression block overlap
-        in_block = (exp_srt < end & exp_end >= end) | (exp_end > start & exp_srt <= start) | (exp_srt >= start & exp_end <= end)
+        in_block = ((exp_srt <= end) & (exp_end >= start)) | ((exp_end >= start) & (exp_end <= end)) | ((exp_srt >= start) & (exp_srt <= end))
         # queries the dataframe where expressions are in/overlap blocks and drops nan values
         exp_indices = list((exp_data.where(in_block)['index_col']).dropna().unique())
         # gets rows at exp_indices keeping only the exp types cols
@@ -82,7 +82,7 @@ class TtestBlock(stat_method):
                     results.append(ttest_obj)
 
         results = sorted(results, key=lambda x: x['value'], reverse=True)
-        ttest_res = pd.Series(overlaps)
+        ttest_res = pd.Series(results)
         ttest_res = ttest_res.apply(pd.Series)
 
         print("ttest_block_res")
