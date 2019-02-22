@@ -2,6 +2,8 @@ from stat_classes.ttest_block import TtestBlock
 from stat_classes.ttest_gene import TtestGene
 from stat_classes.overlap_block_percent import OverlapBlock
 from stat_classes.correlation_exp_methy import CorrelationExpMethy
+from stat_classes.correlation_exp import CorrelationExp
+from stat_classes.correlation_methy import CorrelationMethy
 
 
 class Compute_obj:
@@ -22,10 +24,12 @@ class Compute_obj:
             ret_val = CorrelationExpMethy(self.measurements, "methy")
         elif(computation == "ttest_expression_per_gene"):
             ret_val = TtestGene(self.measurements)
-        # elif(computation == "methy_diff_correlation"):
-        #     ret_val = ttest_obj
-        # elif(computation == "expression_correlation"):
-        #     ret_val = ttest_obj
+        elif(computation == "methy_diff_correlation"):
+            ret_val = CorrelationMethy(self.measurements, "methy_diff")
+        elif(computation == "methy_correlation"):
+            ret_val = CorrelationMethy(self.measurements, "methy")
+        elif(computation == "expression_correlation"):
+            ret_val = CorrelationExp(self.measurements)
 
         return ret_val
 

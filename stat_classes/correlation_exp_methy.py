@@ -6,7 +6,7 @@ from scipy.stats.stats import pearsonr
 from utils import build_exp_methy_obj
 from UI_functions import format_exp_methy_output
 from stat_classes.stat_method import stat_method
-from data_functions import Gene_data, Methylation
+from data_functions import Gene_data, Methylation, Methylation_diff
 
 
 class CorrelationExpMethy(stat_method):
@@ -68,9 +68,16 @@ class CorrelationExpMethy(stat_method):
                                            data=data, ranges=data_range)
         return corr_obj, corr_obj_cancer
 
+    def get_methy_data(self, start, end, chromosome):
+        if self.methy_type == "methy":
+            methy_data = Methylation(start, end, chromosome, measurements=self.datasource_methy_types)
+        else:
+            methy_data = Methylation_diff(start, end, chromosome, measurements=self.datasource_methy_types)
+        return methy_data
+
     def compute(self, start, end, chromosome, downstream=3000, upstream=1000):
         exp_data = Gene_data(start, end, chromosome, measurements=self.datasource_gene_types)
-        methy_data = Methylation(start, end, chromosome, measurements=self.datasource_methy_types)
+        methy_data = self.get_methy_data(start, end, chromosome)
         print("hi1")
         corr_result = pd.DataFrame()
         results = []

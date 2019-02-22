@@ -382,8 +382,7 @@ def methy_diff_correlation(methy_diff_data, methylation_diff_types):
         if type1 not in methy_diff_data.columns or type2 not in methy_diff_data.columns:
             continue
 
-        correlation_coefficient = pearsonr(methy_diff_data[type1], methy_diff_data[
-            type2])
+        correlation_coefficient = pearsonr(methy_diff_data[type1], methy_diff_data[type2])
         data_range = {
             'attr-one': [min(methy_diff_data[type1]), max(methy_diff_data[type1])],
             'attr-two': [min(methy_diff_data[type2]), max(methy_diff_data[type2])]

@@ -558,8 +558,7 @@ def computation_request(start_seq, end_seq, chromosome, gene_name, measurements=
         yield methy_corr_res
 
     if has_gene:
-        # expression_data = get_gene_data(start_seq, end_seq, chromosome,
-        #                                 gene_types)
+        # expression_data = get_gene_data(start_seq, end_seq, chromosome, gene_types)
 
         corr_list = []
         # pvalue_list = []
