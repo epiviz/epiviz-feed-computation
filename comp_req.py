@@ -12,6 +12,8 @@ from stat_classes.ttest_block import TtestBlock
 from stat_classes.ttest_gene import TtestGene
 from stat_classes.overlap_block_percent import OverlapBlock
 from stat_classes.correlation_exp_methy import CorrelationExpMethy
+from stat_classes.correlation_exp import CorrelationExp
+from stat_classes.correlation_methy import CorrelationMethy
 import json
 import itertools
 import math
@@ -53,6 +55,8 @@ def comp_req(start_seq, end_seq, chromosome, gene_name, measurements=None):
     expression_data = Gene_data(start_seq, end_seq, chromosome, gene_name, gene_types)
     block_data = Block_data(start_seq, end_seq, chromosome, gene_name, block_types)
     per_gene_ttest = statistical_methods.ttest_expression_per_gene(gene_types, expression_data, chromosome, start_seq, end_seq)
+    print("expression_data")
+    print(expression_data)
     # print("hesdfdssjsdjkdkjckj")
     # print(per_gene_ttest)
     ttest_gene = TtestGene(measurements)
@@ -79,8 +83,7 @@ def comp_req(start_seq, end_seq, chromosome, gene_name, measurements=None):
 
         methy_raw = Methylation(start_seq, end_seq, chromosome, measurements=methylation_types)
         methy_corr_res = statistical_methods.methy_correlation(methy_raw, methylation_diff_types)
-        test_method = CorrelationExpMethy(measurements, "methy")
-        test_method.compute(start_seq, end_seq, chromosome)
+
       #  print(methy_corr_res)
             # loop through normal/tumor of each tissue type
         for data_source_one, data_source_two in itertools.combinations(
@@ -107,12 +110,13 @@ def comp_req(start_seq, end_seq, chromosome, gene_name, measurements=None):
             methy_corr_res.append(corr_obj)
         methy_corr_res = sorted(methy_corr_res, key=lambda x: x['value'],
                                 reverse=True)
+        m_corr = CorrelationMethy(measurements, "methy")
+        print(m_corr.compute(chromosome, start_seq, end_seq))
+
         yield methy_corr_res
     if has_gene:
         # expression_data = get_gene_data(start_seq, end_seq, chromosome,
         #                                 gene_types)
-
-
         corr_list = []
         # pvalue_list = []
         for data_source_one, data_source_two in itertools.combinations(
@@ -137,6 +141,10 @@ def comp_req(start_seq, end_seq, chromosome, gene_name, measurements=None):
                                          equal_var=False)
         corr_list = sorted(corr_list, key=lambda x: x['value'],
                            reverse=True)
+
+        print(corr_list)
+        corr_exp = CorrelationExp(measurements)
+        print(corr_exp.compute(chromosome, start_seq, end_seq))
         yield corr_list
     if has_gene and has_block:
 
@@ -152,13 +160,18 @@ def comp_req(start_seq, end_seq, chromosome, gene_name, measurements=None):
 
             # correlation between methylation and gene expression
         # with the same tissue type
+        test_method = CorrelationExpMethy(measurements, "methy")
+        test_method.compute(start_seq, end_seq, chromosome)
         corr_methy_gene = statistical_methods.expression_methy_correlation(expression_data, gene_types, methylation_types, methy_raw)
-
+        print(corr_methy_gene)
         yield corr_methy_gene
     if has_gene and has_methy_diff:
 
             # correlation between methylation difference and gene expression
         # difference
+        test_method = CorrelationExpMethy(measurements, "methy_diff")
+        test_method.compute(start_seq, end_seq, chromosome)
         corr_methy_gene = statistical_methods.expression_methydiff_correlation(expression_data, gene_types, methylation_diff_types, methy_raw_diff)
+        print(corr_methy_gene)
 
         yield corr_methy_gene

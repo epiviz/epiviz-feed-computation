@@ -9,16 +9,15 @@ from stat_classes.stat_method import stat_method
 from data_functions import Gene_data, Methylation
 
 
-class CorrelationExp:
+class CorrelationExp(stat_method):
 
     def __init__(self, measurements):
         super(). __init__(measurements)
         self.gene_types = super().get_measurements_self("gene")
 
-    def compute(self, start, end, chromosome):
-        expression_data = Gene_data(start, end, chromosome, self.gene_types)
+    def compute(self, chromosome, start, end):
+        expression_data = Gene_data(start, end, chromosome, measurements=self.gene_types)
         corr_list = []
-        corr_res = pd.Dataframe()
         # pvalue_list = []
         for data_source_one, data_source_two in itertools.combinations(self.gene_types, 2):
             exp1 = data_source_one['id']

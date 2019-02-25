@@ -9,7 +9,7 @@ from stat_classes.stat_method import stat_method
 from data_functions import Methylation, Methylation_diff
 
 
-class CorrelationMethy:
+class CorrelationMethy(stat_method):
 
     def __init__(self, measurements, methy_type):
         super(). __init__(measurements)
@@ -23,9 +23,8 @@ class CorrelationMethy:
             methy_data = Methylation_diff(start, end, chromosome, measurements=self.methylation_types)
         return methy_data
 
-    def compute(self, start, end, chromosome):
+    def compute(self, chromosome, start, end):
         methy_data = self.get_methy_data(start, end, chromosome)
-        result = pd.Dataframe()
         methy_corr_res = []
         if not methy_data.empty:
             # loop through every possible combinations of methylation
@@ -53,6 +52,6 @@ class CorrelationMethy:
                                     reverse=True)
 
             result = pd.Series(methy_corr_res)
-            result = methy_corr_res.apply(pd.Series)
+            result = result.apply(pd.Series)
 
         return result
