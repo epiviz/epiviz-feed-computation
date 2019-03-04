@@ -2,10 +2,10 @@ import numpy as np
 import pandas as pd
 import math
 import itertools
-from utils import build_obj
+from old_feed.utils import build_obj
 from scipy.stats import ttest_ind, fisher_exact, norm
 from stat_classes.stat_method import stat_method
-from data_functions import Block_data
+from old_feed.data_functions import Block_data
 
 
 class OverlapBlock(stat_method):

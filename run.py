@@ -1,5 +1,5 @@
 from flask import Flask, Response
-from computation_request import computation_request
+from old_feed.computation_request import computation_request
 from comp_req import comp_req
 from flask_cache import Cache
 from flask_sockets import Sockets

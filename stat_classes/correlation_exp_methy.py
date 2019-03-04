@@ -3,10 +3,10 @@ import numpy as np
 import math
 import itertools
 from scipy.stats.stats import pearsonr
-from utils import build_exp_methy_obj
-from UI_functions import format_exp_methy_output
+from old_feed.utils import build_exp_methy_obj
+from old_feed.UI_functions import format_exp_methy_output
 from stat_classes.stat_method import stat_method
-from data_functions import Gene_data, Methylation, Methylation_diff
+from old_feed.data_functions import Gene_data, Methylation, Methylation_diff
 
 
 class CorrelationExpMethy(stat_method):
@@ -23,6 +23,21 @@ class CorrelationExpMethy(stat_method):
             mean = mean.append(methy_data.where(((row.start <= methy_data.start) & (methy_data.start <= row.end)) | ((row.start <= methy_data.end) & (methy_data.end <= row.end))).mean().fillna(0), ignore_index=True)
         return mean
 
+    def create_corr_obj(self, exp_diff, methy_col, tissue_type, corr_coef):
+        data = format_exp_methy_output(exp_diff, methy_col, "Expression diff "
+            + tissue_type,  'Collapsed Methylation Diff ' + tissue_type)
+
+        data_range = {
+            'attr-one': [min(exp_diff), max(exp_diff)],
+            'attr-two': [min(methy_col), max(methy_col)]
+        }
+        corr_obj = build_exp_methy_obj('correlation', 'expression diff',
+                                       'methylation diff', True, "Expression diff " + tissue_type,
+                                       'Collapsed Methylation Diff ' + tissue_type,
+                                       corr_coef[0], corr_coef[1],
+                                       data=data, ranges=data_range)
+        return corr_obj
+
     def correlation_calc(self, exp_data, methy_mean, tissue_pair):
         ret_obj = []
         # use the difference of types (normal and tumor) for the same tissue
@@ -35,53 +50,20 @@ class CorrelationExpMethy(stat_method):
         methy_type_norm = tissue_type + "_" + exp_type1.split("___")[1]
         methy_type_canc = tissue_type + "_cancer"
         expression_diff = np.subtract(exp_data[exp_type1], exp_data[exp_type2])
+
         if self.methy_name == "methy":
             correlation_coefficient_norm = pearsonr(methy_mean[methy_type_norm], expression_diff)
             correlation_coefficient_canc = pearsonr(methy_mean[methy_type_canc], expression_diff)
-            if not math.isnan(correlation_coefficient_norm[0]):
+            if not math.isnan(correlation_coefficient_norm[0]) and not math.isnan(correlation_coefficient_canc[0]):
                 # format the data into list of json objects for plots
-                data = format_exp_methy_output(expression_diff, methy_mean[methy_type_norm], "Expression diff " + tissue_type,  'Collapsed Methylation Diff ' + tissue_type)
-
-                data_range = {
-                    'attr-one': [min(expression_diff), max(expression_diff)],
-                    'attr-two': [min(methy_mean[methy_type_norm]), max(methy_mean[methy_type_norm])]
-                }
-
-                corr_obj = build_exp_methy_obj('correlation', 'expression diff',
-                                               'methylation diff', True, "Expression diff " + tissue_type,
-                                               'Collapsed Methylation Diff ' + tissue_type,
-                                               correlation_coefficient_norm[0],
-                                               correlation_coefficient_norm[1],
-                                               data=data, ranges=data_range)
-                data_canc = format_exp_methy_output(expression_diff, methy_mean[methy_type_canc], "Expression diff " + tissue_type,  'Collapsed Methylation Diff ' + tissue_type)
-
-                data_canc_range = {
-                    'attr-one': [min(expression_diff), max(expression_diff)],
-                    'attr-two': [min(methy_mean[methy_type_canc]), max(methy_mean[methy_type_canc])]
-                }
-
-                corr_obj_cancer = build_exp_methy_obj('correlation', 'expression diff',
-                                               'methylation diff', True, "Expression diff " + tissue_type + "cancer",
-                                               'Collapsed Methylation Diff ' + tissue_type,
-                                               correlation_coefficient_canc[0],
-                                               correlation_coefficient_canc[1],
-                                               data=data_canc, ranges=data_range)
+                corr_obj = self.create_corr_obj(expression_diff, methy_mean[methy_type_norm], tissue_type, correlation_coefficient_norm)
+                corr_obj_cancer = self.create_corr_obj(expression_diff, methy_mean[methy_type_canc], tissue_type, correlation_coefficient_canc)
                 ret_obj = [corr_obj, corr_obj_cancer]
         else:
-                correlation_coefficient = pearsonr(methy_mean[tissue_type], expression_diff)
-                data_out = format_exp_methy_output(expression_diff, methy_mean[tissue_type], "Expression diff " + tissue_type,  'Collapsed Methylation Diff ' + tissue_type)
-
-                data_range = {
-                    'attr-one': [min(expression_diff), max(expression_diff)],
-                    'attr-two': [min(methy_mean[tissue_type]), max(methy_mean[tissue_type])]
-                }
-
-                corr_obj = build_exp_methy_obj('correlation', 'expression diff',
-                                               'methylation diff', True, "Expression diff " + tissue_type,
-                                               'Collapsed Methylation Diff ' + tissue_type,
-                                               correlation_coefficient[0],
-                                               correlation_coefficient[1],
-                                               data=data_out, ranges=data_range)
+            correlation_coefficient = pearsonr(methy_mean[tissue_type], expression_diff)
+            if not math.isnan(correlation_coefficient[0]):
+                # format the data into list of json objects for plots
+                corr_obj = self.create_corr_obj(expression_diff, methy_mean[tissue_type], tissue_type, correlation_coefficient)
                 ret_obj = [corr_obj]
 
         return ret_obj
@@ -118,9 +100,6 @@ class CorrelationExpMethy(stat_method):
                 results.append(corr_obj_res[1])
             else:
                 results.append(corr_obj_res[0])
-
-        # corr_res = sorted(corr_res, key=lambda x: x['value'], reverse=True)
-        # corr_cancer = sorted(corr_res_cancer, key=lambda x: x['value'], reverse=True)
         corr_result = pd.Series(results)
         corr_result = corr_result.apply(pd.Series)
 

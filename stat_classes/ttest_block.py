@@ -2,9 +2,9 @@ import json
 import pandas as pd
 
 from scipy.stats import ttest_ind
-from utils import build_obj, format_expression_block_data
+from old_feed.utils import build_obj, format_expression_block_data
 from stat_classes.stat_method import stat_method
-from data_functions import Gene_data, Block_data
+from old_feed.data_functions import Gene_data, Block_data
 
 
 class TtestBlock(stat_method):

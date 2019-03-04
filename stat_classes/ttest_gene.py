@@ -2,10 +2,10 @@ import json
 import math
 import pandas as pd
 from scipy.stats import ttest_ind, norm
-from requests import get_sample_counts
-from utils import build_obj, format_expression_block_data, build_exp_singlegene_obj
+from old_feed.requests import get_sample_counts
+from old_feed.utils import build_obj, format_expression_block_data, build_exp_singlegene_obj
 from stat_classes.stat_method import stat_method
-from data_functions import Gene_data
+from old_feed.data_functions import Gene_data
 
 
 class TtestGene(stat_method):
