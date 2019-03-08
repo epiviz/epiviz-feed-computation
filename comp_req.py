@@ -39,7 +39,7 @@ def comp_req(start_seq, end_seq, chromosome, gene_name, measurements=None):
     yield ttest.compute(chromosome, start_seq, end_seq)
 
     test_method = CorrelationExpMethy(measurements, "methy")
-    yield test_method.compute(start_seq, end_seq, chromosome)
+    yield test_method.compute(chromosome, start_seq, end_seq)
 
     test_method = CorrelationExpMethy(measurements, "methy_diff")
-    yield test_method.compute(start_seq, end_seq, chromosome)
+    yield test_method.compute(chromosome, start_seq, end_seq)

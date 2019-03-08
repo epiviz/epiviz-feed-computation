@@ -3,11 +3,11 @@ import pandas as pd
 
 from scipy.stats import ttest_ind
 from old_feed.utils import build_obj, format_expression_block_data
-from stat_classes.stat_method import stat_method
+from stat_classes.stat_method import StatMethod
 from old_feed.data_functions import Gene_data, Block_data
 
 
-class TtestBlock(stat_method):
+class TtestBlock(StatMethod):
 
     def __init__(self, measurements):
         super().__init__(measurements)
@@ -86,5 +86,4 @@ class TtestBlock(stat_method):
         ttest_res = ttest_res.apply(pd.Series)
 
         print("ttest_block_res")
-        print(ttest_res)
         return ttest_res

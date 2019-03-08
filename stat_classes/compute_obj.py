@@ -6,7 +6,7 @@ from stat_classes.correlation_exp import CorrelationExp
 from stat_classes.correlation_methy import CorrelationMethy
 
 
-class Compute_obj:
+class ComputeObj:
 
     def __init__(self, computation, measurements):
         self.measurements = measurements

@@ -4,11 +4,11 @@ import pandas as pd
 from scipy.stats import ttest_ind, norm
 from old_feed.requests import get_sample_counts
 from old_feed.utils import build_obj, format_expression_block_data, build_exp_singlegene_obj
-from stat_classes.stat_method import stat_method
+from stat_classes.stat_method import StatMethod
 from old_feed.data_functions import Gene_data
 
 
-class TtestGene(stat_method):
+class TtestGene(StatMethod):
 
     def __init__(self, measurements):
         super().__init__(measurements)
@@ -64,5 +64,4 @@ class TtestGene(stat_method):
         ttest_results = ttest_results.sort_values(by=['value'])
         # print(ttest_results["value"])
         print("ttest_gene_result")
-        print(ttest_results)
         return ttest_results

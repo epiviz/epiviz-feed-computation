@@ -5,11 +5,11 @@ import itertools
 from scipy.stats.stats import pearsonr
 from old_feed.utils import build_exp_methy_obj
 from old_feed.UI_functions import format_exp_methy_output
-from stat_classes.stat_method import stat_method
+from stat_classes.stat_method import StatMethod
 from old_feed.data_functions import Gene_data, Methylation, Methylation_diff
 
 
-class CorrelationExpMethy(stat_method):
+class CorrelationExpMethy(StatMethod):
 
     def __init__(self, measurements, methy_name):
         super(). __init__(measurements)
@@ -76,7 +76,7 @@ class CorrelationExpMethy(stat_method):
             methy_data = Methylation_diff(start, end, chromosome, measurements=self.datasource_methy_types)
         return methy_data
 
-    def compute(self, start, end, chromosome, downstream=3000, upstream=1000):
+    def compute(self, chromosome, start, end, downstream=3000, upstream=1000):
         exp_data = Gene_data(start, end, chromosome, measurements=self.datasource_gene_types)
         methy_data = self.get_methy_data(chromosome, start, end)
         results = []
@@ -103,7 +103,6 @@ class CorrelationExpMethy(stat_method):
         corr_result = pd.Series(results)
         corr_result = corr_result.apply(pd.Series)
 
-        print(corr_result)
         return corr_result
 
 

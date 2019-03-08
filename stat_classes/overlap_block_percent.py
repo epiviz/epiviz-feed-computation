@@ -4,11 +4,11 @@ import math
 import itertools
 from old_feed.utils import build_obj
 from scipy.stats import ttest_ind, fisher_exact, norm
-from stat_classes.stat_method import stat_method
+from stat_classes.stat_method import StatMethod
 from old_feed.data_functions import Block_data
 
 
-class OverlapBlock(stat_method):
+class OverlapBlock(StatMethod):
     def __init__(self, measurements):
         super().__init__(measurements)
         self.data_sources = super().get_measurements_self("block")
@@ -97,5 +97,4 @@ class OverlapBlock(stat_method):
         block_overlap = block_overlap.apply(pd.Series)
 
         print ('overlap done!')
-        print(block_overlap)
         return block_overlap

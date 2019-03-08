@@ -118,7 +118,6 @@ def get_gene_data(start_seq, end_seq, chromosome, gene_measurements):
     # get gene expressions data
     expression_data = dict()
     # gene expression has the same source
-    print("helloo")
     print(gene_measurements)
     gene_exp_data_source = gene_measurements[0]["datasourceId"]
     gene_exp_measurements = []
