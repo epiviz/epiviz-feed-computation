@@ -84,10 +84,11 @@ def ttest_block_expression(exp_data, block_data, exp_datasource,
             data = format_expression_block_data(
                 gene_block_exp, gene_nonblock_exp)
 
-            ttest_obj = build_obj('t-test', 'expression', 'block', False,
-                                  gene_ds, block_ds, t_value, p_value, data)
+            if p_value <= 0.1:
+                ttest_obj = build_obj('t-test', 'expression', 'block', False,
+                                    gene_ds, block_ds, t_value, p_value, data)
 
-            ttest_res.append(ttest_obj)
+                ttest_res.append(ttest_obj)
 
     ttest_res = sorted(ttest_res, key=lambda x: x['value'], reverse=True)
 
@@ -245,13 +246,14 @@ def expression_methydiff_correlation(exp_data, datasource_gene_types,
                          max(methy_mean[methy_type])]
         }
 
-        corr_obj = build_exp_methy_obj('correlation', 'expression diff',
-                                       'methylation diff', True, "Expression diff " + tissue_type,
-                                       'Collapsed Methylation Diff ' + tissue_type,
-                                       correlation_coefficient[0],
-                                       correlation_coefficient[1],
-                                       data=data, ranges=data_range)
-        corr_res.append(corr_obj)
+        if correlation_coefficient[1] <= 0.1:
+            corr_obj = build_exp_methy_obj('correlation', 'expression diff',
+                                        'methylation diff', True, "Expression diff " + tissue_type,
+                                        'Collapsed Methylation Diff ' + tissue_type,
+                                        correlation_coefficient[0],
+                                        correlation_coefficient[1],
+                                        data=data, ranges=data_range)
+            corr_res.append(corr_obj)
         corr_res = sorted(corr_res, key=lambda x: abs(x['value']),
                           reverse=True)
 
@@ -304,13 +306,14 @@ def expression_methy_correlation(exp_data, datasource_gene_types,
                     'attr-two': [min(methy_mean[methy_type]),
                                 max(methy_mean[methy_type])]
                 }
-                corr_obj = build_exp_methy_obj('correlation', 'expression',
-                                            'methylation', True, datasource_gene_type["name"],
-                                            datasource_methy_type["name"],
-                                            correlation_coefficient[0],
-                                            correlation_coefficient[1],
-                                            data=data, ranges=data_range)
-                corr_res.append(corr_obj)
+                if correlation_coefficient[1] <= 0.1:
+                    corr_obj = build_exp_methy_obj('correlation', 'expression',
+                                                'methylation', True, datasource_gene_type["name"],
+                                                datasource_methy_type["name"],
+                                                correlation_coefficient[0],
+                                                correlation_coefficient[1],
+                                                data=data, ranges=data_range)
+                    corr_res.append(corr_obj)
                 corr_res = sorted(corr_res, key=lambda x: abs(x['value']),
                                 reverse=True)
 
@@ -369,7 +372,7 @@ def ttest_expression_per_gene(gene_types, exp_data, chromosome, start_seq, end_s
 
             ttest_value = (one - two) / denominator
 
-            p_value = 1 - norm.cdf(ttest_value)
+            p_value = 1 - norm.cdf(abs(ttest_value))
 
             data = [{
                 "type": data_source_one["name"],
@@ -379,9 +382,10 @@ def ttest_expression_per_gene(gene_types, exp_data, chromosome, start_seq, end_s
                 "value": two
             }]
 
-            corr_obj = build_exp_singlegene_obj('Binomial test difference in proportions', 'expression',                                        'expression', True, data_source_one,
-                                                data_source_two, ttest_value, pvalue=p_value, gene=row['gene'], data=data)
-            ttest_results.append(corr_obj)
+            if p_value <= 0.1:
+                corr_obj = build_exp_singlegene_obj('Binomial test difference in proportions', 'expression',                                        'expression', True, data_source_one,
+                                                    data_source_two, ttest_value, pvalue=p_value, gene=row['gene'], data=data)
+                ttest_results.append(corr_obj)
 
     ttest_results = sorted(ttest_results, key=lambda x: x['value'],
                            reverse=True)
@@ -409,13 +413,15 @@ def methy_diff_correlation(methy_diff_data, methylation_diff_types):
             'attr-one': [min(methy_diff_data[type1]), max(methy_diff_data[type1])],
             'attr-two': [min(methy_diff_data[type2]), max(methy_diff_data[type2])]
         }
-        corr_obj = build_obj('correlation', 'methylation diff',
-                             'methylation diff', True, data_source_one,
-                             data_source_two,
-                             correlation_coefficient[0],
-                             correlation_coefficient[1],
-                             ranges=data_range)
-        methy_corr_res.append(corr_obj)
+
+        if correlation_coefficient[1] <= 0.1:
+            corr_obj = build_obj('correlation', 'methylation diff',
+                                'methylation diff', True, data_source_one,
+                                data_source_two,
+                                correlation_coefficient[0],
+                                correlation_coefficient[1],
+                                ranges=data_range)
+            methy_corr_res.append(corr_obj)
     methy_corr_res = sorted(methy_corr_res, key=lambda x: abs(x['value']),
                             reverse=True)
     return methy_corr_res
@@ -442,13 +448,14 @@ def methy_correlation(methy_raw, methylation_diff_types):
             'attr-one': [min(methy_raw[type1]), max(methy_raw[type1])],
             'attr-two': [min(methy_raw[type2]), max(methy_raw[type2])]
         }
-        corr_obj = build_obj('correlation', 'methylation',
-                             'methylation', True, data_source_one,
-                             data_source_two,
-                             correlation_coefficient[0],
-                             correlation_coefficient[1],
-                             ranges=data_range)
-        methy_corr_res.append(corr_obj)
+        if p_value <= 0.1:
+            corr_obj = build_obj('correlation', 'methylation',
+                                'methylation', True, data_source_one,
+                                data_source_two,
+                                correlation_coefficient[0],
+                                correlation_coefficient[1],
+                                ranges=data_range)
+            methy_corr_res.append(corr_obj)
     methy_corr_res = sorted(methy_corr_res, key=lambda x: abs(x['value']),
                             reverse=True)
     return methy_corr_res
