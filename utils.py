@@ -77,7 +77,8 @@ def build_obj(comp_type, data_one, data_two, show_chart, attr_one, attr_two,
     return target_obj
 
 
-def build_exp_methy_obj(comp_type, data_one, data_two, show_chart, attr_one,                            attr_two, value, pvalue, data=None, ranges=None):
+def build_exp_methy_obj(comp_type, data_one, data_two, show_chart, attr_one, 
+                        attr_two, value, pvalue, data=None, ranges=None):
 
     target_obj = {
         'computation-type': comp_type,
@@ -93,7 +94,8 @@ def build_exp_methy_obj(comp_type, data_one, data_two, show_chart, attr_one,    
     return target_obj
 
 
-def build_exp_singlegene_obj(comp_type, data_one, data_two, show_chart,                                      attr_one, attr_two, value, pvalue=None, gene=None, data=None,                              ranges=None):
+def build_exp_singlegene_obj(comp_type, data_one, data_two, show_chart, attr_one, attr_two, 
+                            value, pvalue=None, gene=None, data=None, ranges=None):
 
     target_obj = {
         'computation-type': comp_type,
