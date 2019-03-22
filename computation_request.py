@@ -383,8 +383,8 @@ def ttest_expression_per_gene(gene_types, exp_data, chromosome, start_seq, end_s
             }]
 
             if p_value <= 0.1:
-                corr_obj = build_exp_singlegene_obj('Binomial test difference in proportions', 'expression',                                        'expression', True, data_source_one,
-                                                    data_source_two, ttest_value, pvalue=p_value, gene=row['gene'], data=data)
+                corr_obj = build_exp_singlegene_obj('Binomial test difference in proportions', 'expression', 'expression', True, data_source_one,
+                                                    data_source_two, abs(ttest_value), pvalue=p_value, gene=row['gene'], data=data)
                 ttest_results.append(corr_obj)
 
     ttest_results = sorted(ttest_results, key=lambda x: x['value'],
