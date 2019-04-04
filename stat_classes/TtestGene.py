@@ -66,32 +66,34 @@ class TtestGene(StatMethod):
     def compute(self, chromosome, start, end):
         exp_data = Gene_data(start, end, chromosome, measurements=self.gene_types)
         print("ttest per single gene!")
+        attribute = ["tissue", (None, None)]
         sample_counts = get_sample_counts(self.gene_types, start, end, chromosome)
         cols = ['computation-type', 'data-type-one', 'data-type-two', 'show-chart', 'attribute-one', 'attribute-two', 'value', 'pvalue', 'data', 'gene']
         ttest_results = pd.DataFrame(columns=cols)
 
-        group_one, group_two = self.partion(["tissue", (None, None)])
+        group_one, group_two = self.partion(attribute)
         # use to_dict('records') convert dataframe into a list of dicts for gene data function
         exp_group_one = Gene_data(start, end, chromosome, measurements=group_one.to_dict('records'))
         exp_group_two = Gene_data(start, end, chromosome, measurements=group_two.to_dict('records'))
-        #for ele_one, ele_two in itertools.combinations()
 
         if exp_data.empty or not sample_counts:
             return ttest_results
+        group_pairs = []
+        for g_one, g_two in zip(exp_group_one.columns, exp_group_two.columns):
+            if "_" in g_one and "_" in g_two and g_one.split("_")[0] == g_two.split("_")[0]:
+                for i in self.gene_types:
+                    if i["id"] == g_one:
+                        g_one = i
+                    elif i["id"] == g_two:
+                        g_two = i
 
-        # sorts gene_types by tissue type
-        sorted_gene_types = sorted(self.gene_types, key=lambda x: x["id"])
-        # gets list of dicts containing the same info as gene type
-        tissue_types = [item for item in sorted_gene_types]
-        # breaks list down into sublist of size 2
-        gene_pairs = [tissue_types[x:x+2] for x in range(0, len(tissue_types), 2)]
-        print(gene_pairs)
-        for gene_pair in gene_pairs:
+                group_pairs.append([g_one, g_two])
+        data = pd.concat([exp_group_one, exp_group_two], axis=1, copy=False)
+        for group_pair in group_pairs:
             # preforms ttest calc on each row of the exp_data dataframe
-            results = exp_data.apply(lambda row: self.ttest_calculations(row, gene_pair[0], gene_pair[1], sample_counts), axis=1)
+            results = exp_data.apply(lambda row: self.ttest_calculations(row, group_pair[0], group_pair[1], sample_counts), axis=1)
             # turns series of dicts to a dataframe
             results = results.apply(pd.Series)
-
             ttest_results = pd.concat([ttest_results, results])
         ttest_results = ttest_results.sort_values(by=['value'])
         # print(ttest_results["value"])
