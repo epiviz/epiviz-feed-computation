@@ -1,5 +1,6 @@
 import json
 import math
+import itertools
 import pandas as pd
 from scipy.stats import ttest_ind, norm
 from old_feed.requests import get_sample_counts
@@ -40,62 +41,75 @@ class TtestGene(StatMethod):
                     True, gene1, gene2, ttest_value, pvalue=p_value, gene=row['gene'], data=data)
         return corr_obj
 
-    def partion(self, attr):
+    def partion(self, type, group_one, group_two=None):
         #attributes other than tissues must be specifed in form [attr_name, (attr_val 1, attr_val 2)]
         # where attributes values must be distinct strings
         pair = None
         m = pd.DataFrame()
         for measurement in self.measurements:
             m = m.append(measurement, ignore_index=True)
-        if attr[0] == "tissue":
-            exp_measurements = m[m['name'].str.contains('Expression')]
-            norm = exp_measurements[exp_measurements['name'].str.contains('normal')]
-            canc = exp_measurements[exp_measurements['name'].str.contains('tumor')]
-            pair = (norm, canc)
+        exp_measurements = m[m['name'].str.contains('Expression')]
+        print(m)
+
+        if group_two is None:
+            g_one = exp_measurements[exp_measurements['name'].str.contains(group_one)]
+            g_two = exp_measurements[exp_measurements['name'].str.contains(group_one) == False]
+            pair = (g_one, g_two)
         else:
-            attr_v1 = attr[1][0]
-            attr_v2 = attr[1][1]
-
-            exp_measurements = m[m['name'].str.contains('Expression')]
-            attr_val_one = exp_measurements[exp_measurements['annotation'].str.contains('attr_v1')]
-            attr_val_two = exp_measurements[exp_measurements['annotation'].str.contains('attr_v2')]
-            pair = (attr_val_one, attr_val_two)
-
+            g_one = exp_measurements[exp_measurements['annotation'].str.contains(group_one)]
+            g_two = exp_measurements[exp_measurements['annotation'].str.contains(group_two)]
+            pair = (g_one, g_two)
         return pair
+
+    def to_list_of_dict(self, group):
+        ret_val = []
+        for ele in group:
+            for i in self.gene_types:
+                if i["id"] == ele:
+                    ret_val.append(i)
+
+        return ret_val
+
+    # def grouping(self, group_one, group_two, type):
+    #     group_pairs = []
+    #     if partion_type != None:
+
+    #     else:
+    #         group_pairs = [(x, y) for x in group_one for y in group_two]
 
     def compute(self, chromosome, start, end):
         exp_data = Gene_data(start, end, chromosome, measurements=self.gene_types)
         print("ttest per single gene!")
-        attribute = ["tissue", (None, None)]
+        partion_type = "condition"
+        group_one, group_two = self.partion(partion_type, "normal")
+
+        exp_group_one = Gene_data(start, end, chromosome, measurements=group_one.to_dict('records'))
+        exp_group_two = Gene_data(start, end, chromosome, measurements=group_two.to_dict('records'))
+
+        group_one = [c for c in exp_group_one.columns if "_" in c]
+        group_two = [c for c in exp_group_two.columns if "_" in c]
+
+        group_one = self.to_list_of_dict(group_one)
+        group_two = self.to_list_of_dict(group_two)
+
+        group_pairs = [(x, y) for x in group_one for y in group_two]
+        print(group_pairs)
         sample_counts = get_sample_counts(self.gene_types, start, end, chromosome)
         cols = ['computation-type', 'data-type-one', 'data-type-two', 'show-chart', 'attribute-one', 'attribute-two', 'value', 'pvalue', 'data', 'gene']
         ttest_results = pd.DataFrame(columns=cols)
 
-        group_one, group_two = self.partion(attribute)
-        # use to_dict('records') convert dataframe into a list of dicts for gene data function
-        exp_group_one = Gene_data(start, end, chromosome, measurements=group_one.to_dict('records'))
-        exp_group_two = Gene_data(start, end, chromosome, measurements=group_two.to_dict('records'))
-
         if exp_data.empty or not sample_counts:
             return ttest_results
-        group_pairs = []
-        for g_one, g_two in zip(exp_group_one.columns, exp_group_two.columns):
-            if "_" in g_one and "_" in g_two and g_one.split("_")[0] == g_two.split("_")[0]:
-                for i in self.gene_types:
-                    if i["id"] == g_one:
-                        g_one = i
-                    elif i["id"] == g_two:
-                        g_two = i
 
-                group_pairs.append([g_one, g_two])
-        data = pd.concat([exp_group_one, exp_group_two], axis=1, copy=False)
-        for group_pair in group_pairs:
+        for g_pair in group_pairs:
             # preforms ttest calc on each row of the exp_data dataframe
-            results = exp_data.apply(lambda row: self.ttest_calculations(row, group_pair[0], group_pair[1], sample_counts), axis=1)
+            results = exp_data.apply(lambda row: self.ttest_calculations(row, g_pair[0], g_pair[1], sample_counts), axis=1)
             # turns series of dicts to a dataframe
             results = results.apply(pd.Series)
+
             ttest_results = pd.concat([ttest_results, results])
+
         ttest_results = ttest_results.sort_values(by=['value'])
-        # print(ttest_results["value"])
+        print(ttest_results)
         print("ttest_gene_result")
         return ttest_results
