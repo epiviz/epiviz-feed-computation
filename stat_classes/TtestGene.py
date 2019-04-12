@@ -70,29 +70,33 @@ class TtestGene(StatMethod):
 
         return ret_val
 
-    # def grouping(self, group_one, group_two, type):
-    #     group_pairs = []
-    #     if partion_type != None:
+    def grouping(self, group_one, group_two, all_pairs=True):
+        group_pairs = []
 
-    #     else:
-    #         group_pairs = [(x, y) for x in group_one for y in group_two]
+        if all_pairs:
+            g_one = [c for c in group_one.columns if "_" in c]
+            g_two = [c for c in group_one.columns if "_" in c]
+
+            group_pairs = [(x, y) for x in g_one for y in g_two]
+            group_pairs = [(self.to_list_of_dict(x), self.to_list_of_dict(y)) for x, y in group_pairs]
+        else:
+            a = group_one.columns
+            b = group_two.columns
+
+            group_pairs = [(x, y) for x, y in zip(a, b) if x not in b and y not in a]
+            group_pairs = [(self.to_list_of_dict(x), self.to_list_of_dict(y)) for x, y in group_pairs]
+
+        return group_pairs
 
     def compute(self, chromosome, start, end):
         exp_data = Gene_data(start, end, chromosome, measurements=self.gene_types)
         print("ttest per single gene!")
         partion_type = "condition"
         group_one, group_two = self.partion(partion_type, "normal")
-
         exp_group_one = Gene_data(start, end, chromosome, measurements=group_one.to_dict('records'))
         exp_group_two = Gene_data(start, end, chromosome, measurements=group_two.to_dict('records'))
 
-        group_one = [c for c in exp_group_one.columns if "_" in c]
-        group_two = [c for c in exp_group_two.columns if "_" in c]
-
-        group_one = self.to_list_of_dict(group_one)
-        group_two = self.to_list_of_dict(group_two)
-
-        group_pairs = [(x, y) for x in group_one for y in group_two]
+        group_pairs = self.grouping(exp_group_one, exp_group_two, True)
         print(group_pairs)
         sample_counts = get_sample_counts(self.gene_types, start, end, chromosome)
         cols = ['computation-type', 'data-type-one', 'data-type-two', 'show-chart', 'attribute-one', 'attribute-two', 'value', 'pvalue', 'data', 'gene']

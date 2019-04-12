@@ -17,6 +17,44 @@ class CorrelationExpMethy(StatMethod):
         self.datasource_methy_types = super().get_measurements_self(methy_name)
         self.methy_name = methy_name
 
+    def partion(self, type, group_one, group_two=None):
+        #attributes other than tissues must be specifed in form [attr_name, (attr_val 1, attr_val 2)]
+        # where attributes values must be distinct strings
+        pair = None
+        m = pd.DataFrame()
+        for measurement in self.measurements:
+            m = m.append(measurement, ignore_index=True)
+        exp_measurements = m[m['name'].str.contains('Expression')]
+        print(m)
+
+        if group_two is None:
+            g_one = exp_measurements[exp_measurements['name'].str.contains(group_one)]
+            g_two = exp_measurements[exp_measurements['name'].str.contains(group_one) == False]
+            pair = (g_one, g_two)
+        else:
+            g_one = exp_measurements[exp_measurements['annotation'].str.contains(group_one)]
+            g_two = exp_measurements[exp_measurements['annotation'].str.contains(group_two)]
+            pair = (g_one, g_two)
+        return pair
+
+    def grouping(self, group_one, group_two, all_pairs=True):
+        group_pairs = []
+
+        if all_pairs:
+            g_one = [c for c in group_one.columns if "_" in c]
+            g_two = [c for c in group_one.columns if "_" in c]
+
+            group_pairs = [(x, y) for x in g_one for y in g_two]
+            group_pairs = [(self.to_list_of_dict(x), self.to_list_of_dict(y)) for x, y in group_pairs]
+        else:
+            a = group_one.columns
+            b = group_two.columns
+
+            group_pairs = [(x, y) for x, y in zip(a, b) if x not in b and y not in a]
+            group_pairs = [(self.to_list_of_dict(x), self.to_list_of_dict(y)) for x, y in group_pairs]
+
+        return group_pairs
+
     def find_expression_block(self, regions_of_interest, methy_data):
         mean = pd.DataFrame(columns=[methy_type["id"] for methy_type in self.datasource_methy_types])
         for index, row in regions_of_interest.iterrows():
@@ -79,6 +117,14 @@ class CorrelationExpMethy(StatMethod):
     def compute(self, chromosome, start, end, downstream=3000, upstream=1000):
         exp_data = Gene_data(start, end, chromosome, measurements=self.datasource_gene_types)
         methy_data = self.get_methy_data(chromosome, start, end)
+
+        partion_type = "condition"
+        group_one, group_two = self.partion(partion_type, "normal")
+        exp_group_one = Gene_data(start, end, chromosome, measurements=group_one.to_dict('records'))
+        exp_group_two = Gene_data(start, end, chromosome, measurements=group_two.to_dict('records'))
+
+        group_pairs = self.grouping(exp_group_one, exp_group_two, True)
+
         results = []
         exp_regions = np.array([exp_data.start, exp_data.end]).transpose()
         down_up = np.ones(exp_regions.shape) * np.array([downstream, -1 * upstream])
@@ -88,12 +134,12 @@ class CorrelationExpMethy(StatMethod):
         #names cols to methy types in datasource methy types
         methy_mean = self.find_expression_block(regions_of_interest, methy_data)
 
-        # sorts gene_types by tissue type
-        sorted_gene_types = sorted(self.datasource_gene_types, key=lambda x: x["id"])
-        # gets list of dicts containing the same info as gene type
-        tissue_types = [item["id"] for item in sorted_gene_types]
-        tissue_types = [tissue_types[x:x+2] for x in range(0, len(tissue_types), 2)]
-        for tissue_pair in tissue_types:
+        # # sorts gene_types by tissue type
+        # sorted_gene_types = sorted(self.datasource_gene_types, key=lambda x: x["id"])
+        # # gets list of dicts containing the same info as gene type
+        # tissue_types = [item["id"] for item in sorted_gene_types]
+        # tissue_types = [tissue_types[x:x+2] for x in range(0, len(tissue_types), 2)]
+        for tissue_pair in group_pairs:
             corr_obj_res = self.correlation_calc(exp_data, methy_mean, tissue_pair)
             if self.methy_name == "methy":
                 results.append(corr_obj_res[0])
