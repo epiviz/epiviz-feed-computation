@@ -62,7 +62,7 @@ class TtestBlock(StatMethod):
 
         return 1
 
-    def compute(self, chromosome, start, end):
+    def compute(self, chromosome, start, end, additional=None):
         exp_data = Gene_data(start, end, chromosome, measurements=self.exp_datasource)
         block_data = Block_data(start, end, chromosome, measurements=self.datasource_types)
         exp_data['index_col'] = exp_data.index
@@ -96,6 +96,8 @@ class TtestBlock(StatMethod):
         results = sorted(results, key=lambda x: x['value'], reverse=True)
         ttest_res = pd.Series(results)
         ttest_res = ttest_res.apply(pd.Series)
+        ttest_res = ttest_res.to_json(orient='records')
+        parse_res = json.loads(ttest_res)
 
         print("ttest_block_res")
-        return ttest_res
+        return parse_res

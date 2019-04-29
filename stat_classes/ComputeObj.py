@@ -33,6 +33,6 @@ class ComputeObj:
 
         return ret_val
 
-    def compute(self, chromosome, start, end):
+    def compute(self, chromosome, start, end, additional=None):
 
         return self.computation_obj.compute(chromosome, start, end)

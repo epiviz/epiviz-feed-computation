@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import math
+import json
 import itertools
 from old_feed.utils import build_obj
 from scipy.stats import ttest_ind, fisher_exact, norm
@@ -73,7 +74,7 @@ class OverlapBlock(StatMethod):
     def create_block(self, attributes, attributes_vals):
         return {key: val for key, val in zip(attributes, attributes_vals)}
 
-    def compute(self, chromosome, start, end):
+    def compute(self, chromosome, start, end, additional=None):
         block_data = Block_data(start, end, chromosome, measurements=self.data_sources)
         overlaps = []
         if block_data:
@@ -95,6 +96,8 @@ class OverlapBlock(StatMethod):
                     overlaps.append(overlap_obj)
         block_overlap = pd.Series(overlaps)
         block_overlap = block_overlap.apply(pd.Series)
+        block_overlap = block_overlap.to_json(orient='records')
+        parse_res = json.loads(block_overlap)
 
         print ('overlap done!')
-        return block_overlap
+        return parse_res

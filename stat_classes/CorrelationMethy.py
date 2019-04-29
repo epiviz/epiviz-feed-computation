@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import math
+import json
 import itertools
 from scipy.stats.stats import pearsonr, ttest_ind
 from old_feed.utils import build_obj
@@ -46,23 +47,38 @@ class CorrelationMethy(StatMethod):
     def to_list_of_dict(self, group):
         ret_val = []
         for ele in group:
-            for i in self.gene_types:
+            for i in self.methylation_types:
+
                 if i["id"] == ele:
                     ret_val.append(i)
 
         return ret_val
 
-    def compute(self, chromosome, start, end):
+    def unpack_params(self, additional):
+        if additional is not None:
+            partition_type = additional["partition_type"]
+            group_one = additional["group_one"]
+            group_two = additional["group_two"]
+            grouping = additional["grouping"]
+        else:
+            partition_type = None
+            group_one = "normal"
+            group_two = "cancer"
+            grouping = "all_pairs"
+        return partition_type, group_one, group_two, grouping
+
+    def compute(self, chromosome, start, end, additional=None):
+        part_type, g_one, g_two, grouping = self.unpack_params(additional)
+
         methy_data = self.get_methy_data(start, end, chromosome)
         methy_corr_res = []
-        partion_type = None
 
-        group_one, group_two = self.partion(partion_type, "")
+        group_one, group_two = self.partion(part_type, "")
         exp_group_one = Methylation(start, end, chromosome, measurements=group_one.to_dict('records'))
         group_one = [c for c in exp_group_one.columns if "_" in c]
         group_one = self.to_list_of_dict(group_one)
 
-        if partion_type is not None:
+        if part_type is not None:
             exp_group_two = Methylation(start, end, chromosome, measurements=group_two.to_dict('records'))
             group_two = [c for c in exp_group_two.columns if "_" in c]
             group_two = self.to_list_of_dict(group_two)
@@ -100,5 +116,7 @@ class CorrelationMethy(StatMethod):
 
             result = pd.Series(methy_corr_res)
             result = result.apply(pd.Series)
+            result = result.to_json(orient='records')
+            parse_res = json.loads(result)
 
-        return result
+        return parse_res

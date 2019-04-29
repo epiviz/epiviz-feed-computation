@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import math
+import json
 import itertools
 from scipy.stats.stats import pearsonr
 from old_feed.utils import build_exp_methy_obj
@@ -16,6 +17,13 @@ class CorrelationExpMethy(StatMethod):
         self.datasource_gene_types = super().get_measurements_self("gene")
         self.datasource_methy_types = super().get_measurements_self(methy_name)
         self.methy_name = methy_name
+
+    def to_list_of_dict(self, ele):
+        ret_val = None
+        for i in self.datasource_gene_types:
+            if i["id"] == ele:
+                ret_val = i
+        return ret_val
 
     def partion(self, type, group_one, group_two=None):
         #attributes other than tissues must be specifed in form [attr_name, (attr_val 1, attr_val 2)]
@@ -42,7 +50,7 @@ class CorrelationExpMethy(StatMethod):
 
         if all_pairs:
             g_one = [c for c in group_one.columns if "_" in c]
-            g_two = [c for c in group_one.columns if "_" in c]
+            g_two = [c for c in group_two.columns if "_" in c]
 
             group_pairs = [(x, y) for x in g_one for y in g_two]
             group_pairs = [(self.to_list_of_dict(x), self.to_list_of_dict(y)) for x, y in group_pairs]
@@ -76,13 +84,26 @@ class CorrelationExpMethy(StatMethod):
                                        data=data, ranges=data_range)
         return corr_obj
 
+    def unpack_params(self, additional):
+        if additional is not None:
+            partition_type = additional["partition_type"]
+            group_one = additional["group_one"]
+            group_two = additional["group_two"]
+            grouping = additional["grouping"]
+        else:
+            partition_type = "condition"
+            group_one = "normal"
+            group_two = "cancer"
+            grouping = "all_pairs"
+        return partition_type, group_one, group_two, grouping
+
     def correlation_calc(self, exp_data, methy_mean, tissue_pair):
+
         ret_obj = []
         # use the difference of types (normal and tumor) for the same tissue
         # this need to be changed to accomadate multiple attributes
-        exp_type1 = tissue_pair[0]
-        exp_type2 = tissue_pair[1]
-
+        exp_type1 = tissue_pair[0]["id"]
+        exp_type2 = tissue_pair[1]["id"]
         tissue_type = exp_type1.split("___")[0]
         # for datasource_methy_type in datasource_methy_types:
         methy_type_norm = tissue_type + "_" + exp_type1.split("___")[1]
@@ -114,23 +135,26 @@ class CorrelationExpMethy(StatMethod):
             methy_data = Methylation_diff(start, end, chromosome, measurements=self.datasource_methy_types)
         return methy_data
 
-    def compute(self, chromosome, start, end, downstream=3000, upstream=1000):
+    def compute(self, chromosome, start, end, additional=None, downstream=3000, upstream=1000):
+        part_type, g_one, g_two, grouping = self.unpack_params(additional)
+        if grouping == "all_pairs":
+            grouping = True
+        else:
+            grouping = False
+
         exp_data = Gene_data(start, end, chromosome, measurements=self.datasource_gene_types)
         methy_data = self.get_methy_data(chromosome, start, end)
 
-        partion_type = "condition"
-        group_one, group_two = self.partion(partion_type, "normal")
+        group_one, group_two = self.partion(part_type, g_one)
         exp_group_one = Gene_data(start, end, chromosome, measurements=group_one.to_dict('records'))
         exp_group_two = Gene_data(start, end, chromosome, measurements=group_two.to_dict('records'))
 
-        group_pairs = self.grouping(exp_group_one, exp_group_two, True)
-
+        group_pairs = self.grouping(exp_group_one, exp_group_two, grouping)
         results = []
         exp_regions = np.array([exp_data.start, exp_data.end]).transpose()
         down_up = np.ones(exp_regions.shape) * np.array([downstream, -1 * upstream])
 
         regions_of_interest = pd.DataFrame(np.subtract(exp_regions, down_up), columns=["start", "end"])
-        print(regions_of_interest)
         #names cols to methy types in datasource methy types
         methy_mean = self.find_expression_block(regions_of_interest, methy_data)
 
@@ -139,6 +163,7 @@ class CorrelationExpMethy(StatMethod):
         # # gets list of dicts containing the same info as gene type
         # tissue_types = [item["id"] for item in sorted_gene_types]
         # tissue_types = [tissue_types[x:x+2] for x in range(0, len(tissue_types), 2)]
+
         for tissue_pair in group_pairs:
             corr_obj_res = self.correlation_calc(exp_data, methy_mean, tissue_pair)
             if self.methy_name == "methy":
@@ -148,7 +173,9 @@ class CorrelationExpMethy(StatMethod):
                 results.append(corr_obj_res[0])
         corr_result = pd.Series(results)
         corr_result = corr_result.apply(pd.Series)
+        corr_result = corr_result.to_json(orient='records')
+        parse_res = json.loads(corr_result)
 
-        return corr_result
+        return parse_res
 
 

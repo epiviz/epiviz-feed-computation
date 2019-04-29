@@ -1,5 +1,6 @@
 from flask import Flask, Response
-from old_feed.computation_request import computation_request
+#from old_feed.computation_request import computation_request
+from interface import computational_request
 from comp_req import comp_req
 from flask_cache import Cache
 from flask_sockets import Sockets
@@ -32,7 +33,7 @@ def feed(websocket):
         websocket.send(ujson.dumps(cached))
         websocket.send(ujson.dumps(seqID))
         return
-    results = comp_req(start, end, chromosome, gene_name, measurements=measurements)
+    results = computational_request(start, end, chromosome, gene_name, measurements=measurements)
     cache_results = []
     print (results)
     for result in results:
@@ -187,5 +188,6 @@ if __name__ == "__main__":
     from gevent import pywsgi
     from geventwebsocket.handler import WebSocketHandler
     server = pywsgi.WSGIServer(('', 5001), app, handler_class=WebSocketHandler)
+    print(sockets.route('/getdata'))
     print ("Server Starts!")
     server.serve_forever()

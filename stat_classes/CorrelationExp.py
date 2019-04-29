@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import math
+import json
 import itertools
 from scipy.stats.stats import pearsonr, ttest_ind
 from old_feed.utils import build_obj
@@ -23,7 +24,6 @@ class CorrelationExp(StatMethod):
         for measurement in self.measurements:
             m = m.append(measurement, ignore_index=True)
         exp_measurements = m[m['name'].str.contains('Expression')]
-        print(m)
         if part_type == None:
             pair = (exp_measurements, None)
         elif group_two is None:
@@ -45,18 +45,32 @@ class CorrelationExp(StatMethod):
 
         return ret_val
 
-    def compute(self, chromosome, start, end):
-        partion_type = None
+    def unpack_params(self, additional):
+        if additional is not None:
+            partition_type = additional["partition_type"]
+            group_one = additional["group_one"]
+            group_two = additional["group_two"]
+            grouping = additional["grouping"]
+        else:
+            partition_type = "condition"
+            group_one = "normal"
+            group_two = "tumor"
+            grouping = "all_pairs"
+        return partition_type, group_one, group_two, grouping
+
+    def compute(self, chromosome, start, end, additional=None):
+        part_type, g_one, g_two, grouping = self.unpack_params(additional)
+
         expression_data = Gene_data(start, end, chromosome, measurements=self.gene_types)
         corr_list = []
 
-        group_one, group_two = self.partion(partion_type, "")
+        group_one, group_two = self.partion(part_type, g_one)
         exp_group_one = Gene_data(start, end, chromosome, measurements=group_one.to_dict('records'))
 
         group_one = [c for c in exp_group_one.columns if "_" in c]
         group_one = self.to_list_of_dict(group_one)
 
-        if partion_type is not None:
+        if part_type is not None:
             exp_group_two = Gene_data(start, end, chromosome, measurements=group_two.to_dict('records'))
             group_two = [c for c in exp_group_two.columns if "_" in c]
             group_two = self.to_list_of_dict(group_two)
@@ -86,5 +100,7 @@ class CorrelationExp(StatMethod):
         corr_list = sorted(corr_list, key=lambda x: x['value'], reverse=True)
         corr_res = pd.Series(corr_list)
         corr_res = corr_res.apply(pd.Series)
+        corr_res = corr_res.to_json(orient='records')
+        parse_res = json.loads(corr_res)
 
-        return corr_res
+        return parse_res
