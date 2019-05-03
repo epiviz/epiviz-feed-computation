@@ -6,7 +6,7 @@ import itertools
 from scipy.stats.stats import pearsonr, ttest_ind
 from old_feed.utils import build_obj
 from old_feed.UI_functions import format_exp_methy_output
-from stat_classes.StatMethod import StatMethod
+from epivizFeed.StatMethod import StatMethod
 from old_feed.data_functions import Methylation, Methylation_diff
 
 

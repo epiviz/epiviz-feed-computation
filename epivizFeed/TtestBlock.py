@@ -3,7 +3,7 @@ import pandas as pd
 import logging
 from scipy.stats import ttest_ind
 from old_feed.utils import build_obj, format_expression_block_data
-from stat_classes.StatMethod import StatMethod
+from epivizFeed.StatMethod import StatMethod
 from old_feed.data_functions import Gene_data, Block_data
 
 

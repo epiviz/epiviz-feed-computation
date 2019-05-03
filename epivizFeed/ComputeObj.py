@@ -1,9 +1,9 @@
-from stat_classes.TtestBlock import TtestBlock
-from stat_classes.TtestGene import TtestGene
-from stat_classes.OverlapBlockPercent import OverlapBlock
-from stat_classes.CorrelationExpMethy import CorrelationExpMethy
-from stat_classes.CorrelationExp import CorrelationExp
-from stat_classes.CorrelationMethy import CorrelationMethy
+from epivizFeed.TtestBlock import TtestBlock
+from epivizFeed.TtestGene import TtestGene
+from epivizFeed.OverlapBlockPercent import OverlapBlock
+from epivizFeed.CorrelationExpMethy import CorrelationExpMethy
+from epivizFeed.CorrelationExp import CorrelationExp
+from epivizFeed.CorrelationMethy import CorrelationMethy
 
 
 class ComputeObj:
