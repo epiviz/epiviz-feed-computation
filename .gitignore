@@ -2,7 +2,9 @@ Include/
 Lib/
 Scripts/
 tcl/
+bin/
 *.pyc
+.Python
 
 comp_req_csv.py
 methy_format_gene.py
