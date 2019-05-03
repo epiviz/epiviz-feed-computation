@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import logging
 import math
 import json
 import itertools
@@ -63,8 +64,8 @@ class OverlapBlock(StatMethod):
         fisher_table = np.array([[overlap, block_one_only], [block_two_only, non_block]])
         odds_ratio, p_value = fisher_exact(fisher_table)
         if not math.isnan(odds_ratio):
-            print('p value is ' + str(p_value))
-            print('odds ratio is ' + str(odds_ratio))
+            logging.info('p value is ' + str(p_value))
+            logging.info('odds ratio is ' + str(odds_ratio))
 
             overlap_percent = 0.0 if union == 0.0 else overlap * 1.0 / union
             overlap_obj = build_obj('overlap', 'block', 'block', False, data_source_one, data_source_two, overlap_percent, p_value)
@@ -99,5 +100,5 @@ class OverlapBlock(StatMethod):
         block_overlap = block_overlap.to_json(orient='records')
         parse_res = json.loads(block_overlap)
 
-        print ('overlap done!')
+        logging.info('overlap done!')
         return parse_res

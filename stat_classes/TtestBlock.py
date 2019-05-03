@@ -1,6 +1,6 @@
 import json
 import pandas as pd
-
+import logging
 from scipy.stats import ttest_ind
 from old_feed.utils import build_obj, format_expression_block_data
 from stat_classes.StatMethod import StatMethod
@@ -99,5 +99,5 @@ class TtestBlock(StatMethod):
         ttest_res = ttest_res.to_json(orient='records')
         parse_res = json.loads(ttest_res)
 
-        print("ttest_block_res")
+        logging.info("ttest_block_res")
         return parse_res

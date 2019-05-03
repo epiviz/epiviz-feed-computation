@@ -32,7 +32,6 @@ class CorrelationMethy(StatMethod):
         for measurement in self.measurements:
             m = m.append(measurement, ignore_index=True)
         methy_measurements = m[m['name'].str.contains('Probe')]
-        print(m)
 
         if group_two is None:
             g_one = methy_measurements[methy_measurements['name'].str.contains(group_one)]

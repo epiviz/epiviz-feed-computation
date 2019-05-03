@@ -33,7 +33,6 @@ class CorrelationExpMethy(StatMethod):
         for measurement in self.measurements:
             m = m.append(measurement, ignore_index=True)
         exp_measurements = m[m['name'].str.contains('Expression')]
-        print(m)
 
         if group_two is None:
             g_one = exp_measurements[exp_measurements['name'].str.contains(group_one)]

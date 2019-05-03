@@ -1,5 +1,6 @@
 import json
 import math
+import logging
 import itertools
 import pandas as pd
 from scipy.stats import ttest_ind, norm
@@ -49,7 +50,6 @@ class TtestGene(StatMethod):
         for measurement in self.measurements:
             m = m.append(measurement, ignore_index=True)
         exp_measurements = m[m['name'].str.contains('Expression')]
-        print(m)
 
         if group_two is None:
             g_one = exp_measurements[exp_measurements['name'].str.contains(group_one)]
@@ -108,13 +108,12 @@ class TtestGene(StatMethod):
             grouping = False
 
         exp_data = Gene_data(start, end, chromosome, measurements=self.gene_types)
-        print("ttest per single gene!")
+        logging.info("ttest per single gene!")
         group_one, group_two = self.partion(part_type, g_one)
         exp_group_one = Gene_data(start, end, chromosome, measurements=group_one.to_dict('records'))
         exp_group_two = Gene_data(start, end, chromosome, measurements=group_two.to_dict('records'))
 
         group_pairs = self.grouping(exp_group_one, exp_group_two, grouping)
-        print(group_pairs)
         sample_counts = get_sample_counts(self.gene_types, start, end, chromosome)
         cols = ['computation-type', 'data-type-one', 'data-type-two', 'show-chart', 'attribute-one', 'attribute-two', 'value', 'pvalue', 'data', 'gene']
         ttest_results = pd.DataFrame(columns=cols)
@@ -132,13 +131,12 @@ class TtestGene(StatMethod):
 
         ttest_results = ttest_results.sort_values(by=['value'], ascending=False)
         ttest_results = ttest_results[cols]
-        print(ttest_results)
         # front end assumes that json parse returns string but when takes in a json
         # string ret a str so we turn ttest_result to a json string then to a list for proper behavior
         # turns data into a json string
         ttest_results = ttest_results.to_json(orient='records')
         parse_res = json.loads(ttest_results)
 
-        print("ttest_gene_result")
+        logging.info("ttest_gene_result")
 
         return parse_res
