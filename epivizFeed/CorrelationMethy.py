@@ -13,8 +13,8 @@ from old_feed.data_functions import Methylation, Methylation_diff
 class CorrelationMethy(StatMethod):
 
     def __init__(self, measurements, methy_type):
-        super(). __init__(measurements)
-        self.methylation_types = super().get_measurements_self(methy_type)
+        super(CorrelationMethy, self). __init__(measurements)
+        self.methylation_types = super(CorrelationMethy, self).get_measurements_self(methy_type)
         self.methy_type = methy_type
 
     def get_methy_data(self, start, end, chromosome):

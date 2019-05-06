@@ -13,9 +13,9 @@ from old_feed.data_functions import Gene_data, Methylation, Methylation_diff
 class CorrelationExpMethy(StatMethod):
 
     def __init__(self, measurements, methy_name):
-        super(). __init__(measurements)
-        self.datasource_gene_types = super().get_measurements_self("gene")
-        self.datasource_methy_types = super().get_measurements_self(methy_name)
+        super(CorrelationExpMethy, self). __init__(measurements)
+        self.datasource_gene_types = super(CorrelationExpMethy, self).get_measurements_self("gene")
+        self.datasource_methy_types = super(CorrelationExpMethy, self).get_measurements_self(methy_name)
         self.methy_name = methy_name
 
     def to_list_of_dict(self, ele):

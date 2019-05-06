@@ -12,8 +12,8 @@ from old_feed.data_functions import Block_data
 
 class OverlapBlock(StatMethod):
     def __init__(self, measurements):
-        super().__init__(measurements)
-        self.data_sources = super().get_measurements_self("block")
+        super(OverlapBlock, self).__init__(measurements)
+        self.data_sources = super(OverlapBlock, self).get_measurements_self("block")
 
     def calc_region(self, block, start_seq, end_seq):
         for start, end in zip(block["block_tissue"]['start'], block["block_tissue"]['end']):

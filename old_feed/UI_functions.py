@@ -6,7 +6,7 @@ from scipy.io import savemat
 from old_feed.utils import build_obj, build_exp_methy_obj, add_to_block, format_expression_block_data, build_exp_singlegene_obj
 from old_feed.requests import get_methy_data, get_block_data, get_gene_data, get_sample_counts
 
-from urllib.request import urlopen
+from urllib import urlopen
 import json
 import itertools
 import math

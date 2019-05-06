@@ -13,8 +13,8 @@ from old_feed.data_functions import Gene_data, Methylation
 class CorrelationExp(StatMethod):
 
     def __init__(self, measurements):
-        super(). __init__(measurements)
-        self.gene_types = super().get_measurements_self("gene")
+        super(CorrelationExp, self). __init__(measurements)
+        self.gene_types = super(CorrelationExp, self).get_measurements_self("gene")
 
     def partion(self, part_type, group_one, group_two=None):
         #attributes other than tissues must be specifed in form [attr_name, (attr_val 1, attr_val 2)]

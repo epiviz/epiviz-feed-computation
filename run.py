@@ -7,6 +7,7 @@ from flask_sockets import Sockets
 import time
 import ujson
 import logging
+import os
 
 app = Flask(__name__)
 cache = Cache(app, config={'CACHE_TYPE': 'simple', 'CACHE_DEFAULT_TIMEOUT': 0})
@@ -19,8 +20,8 @@ sockets = Sockets(app)
 @sockets.route('/getdata')
 def feed(websocket):
     message = ujson.loads(websocket.receive())
-    with open("epiviz.json", "r") as config_file:
-        measurements = ujson.loads(config_file)
+    with open( os.getcwd() + "/epiviz.json", "r") as config_file:
+        measurements = ujson.loads(config_file.read())
     logging.info(message)
     data = message['data']
     start = data['start']

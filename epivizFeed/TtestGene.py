@@ -13,9 +13,9 @@ from old_feed.data_functions import Gene_data
 class TtestGene(StatMethod):
 
     def __init__(self, measurements):
-        super().__init__(measurements)
+        super(TtestGene, self).__init__(measurements)
         self.measurements = measurements
-        self.gene_types = super().get_measurements_self("gene")
+        self.gene_types = super(TtestGene, self).get_measurements_self("gene")
 
     def ttest_calculations(self, row, gene1, gene2, sample_counts):
         gene_norm = gene1["id"]

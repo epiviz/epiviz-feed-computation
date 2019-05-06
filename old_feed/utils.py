@@ -8,7 +8,7 @@ import pandas as pd
 from scipy.stats.stats import pearsonr
 from scipy.stats import ttest_ind
 
-from urllib.request import urlopen
+from urllib import urlopen
 import json
 import itertools
 

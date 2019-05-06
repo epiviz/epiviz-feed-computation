@@ -10,9 +10,9 @@ from old_feed.data_functions import Gene_data, Block_data
 class TtestBlock(StatMethod):
 
     def __init__(self, measurements):
-        super().__init__(measurements)
-        self.exp_datasource = super().get_measurements_self("gene")
-        self.datasource_types = super().get_measurements_self("block")
+        super(TtestBlock, self).__init__(measurements)
+        self.exp_datasource = super(TtestBlock, self).get_measurements_self("gene")
+        self.datasource_types = super(TtestBlock, self).get_measurements_self("block")
 
     def get_expressions(self, row, exp_types, block_type, exp_data, exp_block, exp_nonblock):
         start = row["start"]

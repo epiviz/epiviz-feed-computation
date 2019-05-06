@@ -1,4 +1,4 @@
-class StatMethod:
+class StatMethod(object):
     def __init__(self, measurements=None):
         self.measurements = measurements
 
