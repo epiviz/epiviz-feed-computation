@@ -23,7 +23,7 @@ def get_url_data(data_source, measurements=None, chromosome=None,
     #           '&datasource=' + data_source
     sql_url = 'http://54.157.53.251/api/?requestId=10&version=4&action=getData'\
         '&datasource=' + data_source
-    print(sql_url)
+    # print(sql_url)
     if measurements is not None:
         sql_url += '&measurement='
         if type(measurements) is list:
@@ -43,7 +43,7 @@ def get_url_data(data_source, measurements=None, chromosome=None,
         sql_url += '&metadata[]=' + str(metadata)
 
     # get data
-    print(sql_url)
+    # print(sql_url)
     req = urllib_req.Request(sql_url)
     response = urllib_req.urlopen(req)
     a = json.loads(response.read())
@@ -118,7 +118,7 @@ def get_gene_data(start_seq, end_seq, chromosome, gene_measurements):
     # get gene expressions data
     expression_data = dict()
     # gene expression has the same source
-    print(gene_measurements)
+    # print(gene_measurements)
     gene_exp_data_source = gene_measurements[0]["datasourceId"]
     gene_exp_measurements = []
     for gene_measurement in gene_measurements:
@@ -191,7 +191,7 @@ def get_sample_counts(measurements, start_seq, end_seq, chromosome):
 
     # get data
     req = urllib_req.Request(sql_url)
-    print('hi' + sql_url)
+    # print('hi' + sql_url)
     response = urllib_req.urlopen(req)
     a = json.loads(response.read())
 

@@ -35,6 +35,8 @@ class OverlapBlock(StatMethod):
             # there is an overlap
             if tissue_one_start <= tissue_two_start < tissue_one_end or \
                tissue_one_start < tissue_two_end <= tissue_one_end or \
+               tissue_two_start <= tissue_one_start < tissue_two_end or \
+               tissue_two_start < tissue_one_end <= tissue_two_end or \
                (tissue_one_start == tissue_two_start and tissue_one_end == tissue_two_end):
 
                 common_end = min(tissue_two_end, tissue_one_end)

@@ -22,7 +22,7 @@ class TtestBlock(StatMethod):
 
         blocks = pd.DataFrame(columns=exp_types)
         # boolean formula for finding expression block overlap
-        in_block = ((exp_srt <= end) & (exp_end >= start)) | ((exp_end >= start) & (exp_end <= end)) | ((exp_srt >= start) & (exp_srt <= end))
+        in_block = ((exp_srt <= end) & (exp_end >= end)) | ((exp_srt <= start) & (exp_end >= start)) | ((exp_end >= start) & (exp_end <= end)) | ((exp_srt >= start) & (exp_srt <= end))
         # queries the dataframe where expressions are in/overlap blocks and drops nan values
         exp_indices = list((exp_data.where(in_block)['index_col']).dropna().unique())
         # gets rows at exp_indices keeping only the exp types cols
@@ -84,14 +84,15 @@ class TtestBlock(StatMethod):
         for block_type, gene_per_block_exp in gene_expression_block.items():
             exp_types = list(gene_per_block_exp.columns)
             gene_per_nonblock_exp = gene_expression_nonblock[block_type]
-
-            for exp_type in exp_types:
+            for exp_type in gene_per_block_exp:
                 gene_block_exp = gene_per_block_exp[exp_type]
 
                 if not gene_block_exp.empty:
                     gene_nonblock_exp = gene_per_nonblock_exp[exp_type]
-                    ttest_obj = self.ttest_calculation(gene_block_exp, gene_per_nonblock_exp, exp_type, block_type, pd_block, pd_expression)
-                    results.append(ttest_obj)
+                    # this is to ensure the output value of t-test is not nan, e.g., when len(gene_block_exp) == 1, ttest_ind would produce nan result.
+                    if len(gene_block_exp) >= 2 and len(gene_nonblock_exp) >= 2:
+                        ttest_obj = self.ttest_calculation(gene_block_exp, gene_per_nonblock_exp, exp_type, block_type, pd_block, pd_expression)
+                        results.append(ttest_obj)
 
         results = sorted(results, key=lambda x: x['value'], reverse=True)
         ttest_res = pd.Series(results)
