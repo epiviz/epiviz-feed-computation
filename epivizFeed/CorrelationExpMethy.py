@@ -68,7 +68,7 @@ class CorrelationExpMethy(StatMethod):
             mean = mean.append(methy_data.where(((row.start <= methy_data.start) & (methy_data.start <= row.end)) | ((row.start <= methy_data.end) & (methy_data.end <= row.end))).mean().fillna(0), ignore_index=True)
         return mean
 
-    def create_corr_obj(self, exp_diff, methy_col, tissue_type, corr_coef):
+    def create_corr_diff_obj(self, exp_diff, methy_col, tissue_type, corr_coef):
         data = format_exp_methy_output(exp_diff, methy_col, "Expression diff "
             + tissue_type,  'Collapsed Methylation Diff ' + tissue_type)
 
@@ -81,6 +81,26 @@ class CorrelationExpMethy(StatMethod):
                                        'Collapsed Methylation Diff ' + tissue_type,
                                        corr_coef[0], corr_coef[1],
                                        data=data, ranges=data_range)
+        return corr_obj
+
+    def create_corr_obj(self, expression, methy_mean, exp_type, methy_type, corr_coef):
+        # format the data into list of json objects for plots
+        data = format_exp_methy_output(expression, methy_mean, "Expression " + exp_type.split('___')[0] + '_' + exp_type.split('___')[1], 
+        "Average Probe level Meth " + methy_type)
+
+        data_range = {
+            'attr-one': [min(expression),
+                        max(expression)],
+            'attr-two': [min(methy_mean),
+                        max(methy_mean)]
+        }
+        # if correlation_coefficient[1] <= 0.1:
+        corr_obj = build_exp_methy_obj('correlation', 'expression',
+                                    'methylation', True, "Expression " + exp_type.split('___')[0] + '_' + exp_type.split('___')[1], 
+                                    "Average Probe level Meth " + methy_type,
+                                    corr_coef[0],
+                                    corr_coef[1],
+                                    data=data, ranges=data_range)
         return corr_obj
 
     def unpack_params(self, additional):
@@ -108,20 +128,31 @@ class CorrelationExpMethy(StatMethod):
         methy_type_norm = tissue_type + "_" + exp_type1.split("___")[1]
         methy_type_canc = tissue_type + "_cancer"
         expression_diff = np.subtract(exp_data[exp_type1], exp_data[exp_type2])
+        res_obj = []
 
         if self.methy_name == "methy":
-            correlation_coefficient_norm = pearsonr(methy_mean[methy_type_norm], expression_diff)
-            correlation_coefficient_canc = pearsonr(methy_mean[methy_type_canc], expression_diff)
-            if not math.isnan(correlation_coefficient_norm[0]) and not math.isnan(correlation_coefficient_canc[0]):
+            correlation_coefficient_norm = pearsonr(methy_mean[methy_type_norm], exp_data[exp_type1])
+            correlation_coefficient_canc = pearsonr(methy_mean[methy_type_canc], exp_data[exp_type2])
+            correlation_coefficient_3 = pearsonr(methy_mean[methy_type_norm], exp_data[exp_type2])
+            correlation_coefficient_4 = pearsonr(methy_mean[methy_type_canc], exp_data[exp_type1])
+            if not math.isnan(correlation_coefficient_norm[0]) and correlation_coefficient_norm[1] <= 0.1:
                 # format the data into list of json objects for plots
-                corr_obj = self.create_corr_obj(expression_diff, methy_mean[methy_type_norm], tissue_type, correlation_coefficient_norm)
-                corr_obj_cancer = self.create_corr_obj(expression_diff, methy_mean[methy_type_canc], tissue_type, correlation_coefficient_canc)
-                ret_obj = [corr_obj, corr_obj_cancer]
+                corr_obj_1 = self.create_corr_obj(exp_data, methy_mean[methy_type_norm], exp_type1, methy_type_norm, correlation_coefficient_norm)
+                ret_obj.append(corr_obj_1)
+            if not math.isnan(correlation_coefficient_canc[1]) and correlation_coefficient_canc[1] <= 0.1:
+                corr_obj_2 = self.create_corr_obj(exp_data, methy_mean[methy_type_canc], exp_type2, methy_type_canc, correlation_coefficient_canc)
+                ret_obj.append(corr_obj_2)
+            if not math.isnan(correlation_coefficient_3[1]) and correlation_coefficient_3[1] <= 0.1:
+                corr_obj_3 = self.create_corr_obj(exp_data, methy_mean[methy_type_norm], exp_type2, methy_type_norm, correlation_coefficient_3)
+                ret_obj.append(corr_obj_3)
+            if not math.isnan(correlation_coefficient_4[1]) and correlation_coefficient_4[1] <= 0.1:
+                corr_obj_4 = self.create_corr_obj(exp_data, methy_mean[methy_type_canc], exp_type1, methy_type_canc, correlation_coefficient_4)
+                ret_obj.append(corr_obj_4)
         else:
             correlation_coefficient = pearsonr(methy_mean[tissue_type], expression_diff)
-            if not math.isnan(correlation_coefficient[0]):
+            if not math.isnan(correlation_coefficient[0]) and correlation_coefficient[1] <= 0.1:
                 # format the data into list of json objects for plots
-                corr_obj = self.create_corr_obj(expression_diff, methy_mean[tissue_type], tissue_type, correlation_coefficient)
+                corr_obj = self.create_corr_diff_obj(expression_diff, methy_mean[tissue_type], tissue_type, correlation_coefficient)
                 ret_obj = [corr_obj]
 
         return ret_obj
@@ -133,6 +164,12 @@ class CorrelationExpMethy(StatMethod):
         else:
             methy_data = Methylation_diff(start, end, chromosome, measurements=self.datasource_methy_types)
         return methy_data
+
+    def same_tissue_match(self, pair):
+        if pair[0]['id'].split('___')[0] == pair[1]['id'].split('___')[0]:
+            return True
+        else:
+            return False    
 
     def compute(self, chromosome, start, end, additional=None, downstream=3000, upstream=1000):
         part_type, g_one, g_two, grouping = self.unpack_params(additional)
@@ -149,6 +186,11 @@ class CorrelationExpMethy(StatMethod):
         exp_group_two = Gene_data(start, end, chromosome, measurements=group_two.to_dict('records'))
 
         group_pairs = self.grouping(exp_group_one, exp_group_two, grouping)
+
+        # if self.methy_name == 'methy_diff':
+        #filter group_pairs with only the same tissue
+        group_pairs = filter(self.same_tissue_match, group_pairs)
+            
         results = []
         exp_regions = np.array([exp_data.start, exp_data.end]).transpose()
         down_up = np.ones(exp_regions.shape) * np.array([downstream, -1 * upstream])
@@ -166,10 +208,12 @@ class CorrelationExpMethy(StatMethod):
         for tissue_pair in group_pairs:
             corr_obj_res = self.correlation_calc(exp_data, methy_mean, tissue_pair)
             if self.methy_name == "methy":
-                results.append(corr_obj_res[0])
-                results.append(corr_obj_res[1])
+                results.extend(corr_obj_res)
             else:
-                results.append(corr_obj_res[0])
+                results.extend(corr_obj_res)
+
+        results = sorted(results, key=lambda x: abs(x['value']),
+                                reverse=True)
         corr_result = pd.Series(results)
         corr_result = corr_result.apply(pd.Series)
         corr_result = corr_result.to_json(orient='records')
