@@ -77,6 +77,10 @@ class CorrelationExp(StatMethod):
             group_pairs = [(x, y) for x in group_one for y in group_two]
         else:
             group_pairs = itertools.combinations(group_one, 2)
+
+        # all combinations of gene expressions
+        # TODO (Kyle?): simplify the above code
+        group_pairs = itertools.combinations(group_one + group_two, 2)
         # pvalue_list = []
         #for data_source_one, data_source_two in itertools.combinations(self.gene_types, 2):
         for data_source_one, data_source_two in group_pairs:
