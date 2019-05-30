@@ -31,8 +31,8 @@ class CorrelationMethy(StatMethod):
         m = pd.DataFrame()
         for measurement in self.measurements:
             m = m.append(measurement, ignore_index=True)
-        methy_measurements = m[m['name'].str.contains('Probe')]
-
+        keywords_in_measurements = 'Probe' if self.methy_type == 'methy' else 'Methylation'
+        methy_measurements = m[m['name'].str.contains(keywords_in_measurements)]
         if group_two is None:
             g_one = methy_measurements[methy_measurements['name'].str.contains(group_one)]
             g_two = methy_measurements[methy_measurements['name'].str.contains(group_one) == False]
@@ -73,10 +73,12 @@ class CorrelationMethy(StatMethod):
         methy_corr_res = []
 
         group_one, group_two = self.partion(part_type, "")
-        exp_group_one = Methylation(start, end, chromosome, measurements=group_one.to_dict('records'))
-        group_one = [c for c in exp_group_one.columns if "_" in c]
+        # exp_group_one = Methylation(start, end, chromosome, measurements=group_one.to_dict('records'))
+        # group_one = [c for c in exp_group_one.columns if "_" in c]
+        group_one = group_one['id'].tolist()
         group_one = self.to_list_of_dict(group_one)
 
+        # Note in this case, part_type is always None, so this piece of code is probably not useful
         if part_type is not None:
             exp_group_two = Methylation(start, end, chromosome, measurements=group_two.to_dict('records'))
             group_two = [c for c in exp_group_two.columns if "_" in c]
@@ -103,13 +105,15 @@ class CorrelationMethy(StatMethod):
                     'attr-one': [min(methy_data[type1]), max(methy_data[type1])],
                     'attr-two': [min(methy_data[type2]), max(methy_data[type2])]
                 }
-                corr_obj = build_obj('correlation', 'methylation diff',
-                                     'methylation diff', True, data_source_one,
-                                     data_source_two,
-                                     correlation_coefficient[0],
-                                     correlation_coefficient[1],
-                                     ranges=data_range)
-                methy_corr_res.append(corr_obj)
+                attr = 'methylation' if self.methy_type == 'methy' else 'methylation diff'
+                if correlation_coefficient[1] <= 0.1:
+                    corr_obj = build_obj('correlation', attr,
+                                        attr, True, data_source_one,
+                                        data_source_two,
+                                        correlation_coefficient[0],
+                                        correlation_coefficient[1],
+                                        ranges=data_range)
+                    methy_corr_res.append(corr_obj)
             methy_corr_res = sorted(methy_corr_res, key=lambda x: x['value'],
                                     reverse=True)
 
