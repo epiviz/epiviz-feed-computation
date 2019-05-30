@@ -28,7 +28,7 @@ class TtestGene(StatMethod):
         var_two = variance_threshold if (two * (1 - two)) < variance_threshold else (two * (1 - two))
         denominator = math.sqrt(var_one / sample_counts[gene_norm][0] + var_two / sample_counts[gene_cancer][0])
         ttest_value = (one - two) / denominator
-        p_value = 1 - norm.cdf(ttest_value)
+        p_value = 1 - norm.cdf(abs(ttest_value))
 
         data = [{
             "type": gene1["name"],
@@ -39,7 +39,7 @@ class TtestGene(StatMethod):
         }]
 
         corr_obj = build_exp_singlegene_obj('Binomial test difference in proportions', 'expression', 'expression',
-                    True, gene1, gene2, ttest_value, pvalue=p_value, gene=row['gene'], data=data)
+                    True, gene1, gene2, abs(ttest_value), pvalue=p_value, gene=row['gene'], data=data)
         return corr_obj
 
     def partion(self, type, group_one, group_two=None):

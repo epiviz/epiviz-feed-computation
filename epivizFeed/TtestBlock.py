@@ -41,6 +41,9 @@ class TtestBlock(StatMethod):
         print("block:" + block_type + ", gene:" + exp_type)
         print(p_value)
 
+        if p_value > 0.1:
+            return None
+
         gene_ds = json.loads(pd_expression.loc[pd_expression['id'] == exp_type].to_json(orient='records')[1: -1])
         block_ds = json.loads(pd_block.loc[pd_block['id'] == block_type].to_json(orient='records')[1: -1])
 
@@ -92,7 +95,8 @@ class TtestBlock(StatMethod):
                     # this is to ensure the output value of t-test is not nan, e.g., when len(gene_block_exp) == 1, ttest_ind would produce nan result.
                     if len(gene_block_exp) >= 2 and len(gene_nonblock_exp) >= 2:
                         ttest_obj = self.ttest_calculation(gene_block_exp, gene_per_nonblock_exp, exp_type, block_type, pd_block, pd_expression)
-                        results.append(ttest_obj)
+                        if ttest_obj is not None:
+                            results.append(ttest_obj)
 
         results = sorted(results, key=lambda x: x['value'], reverse=True)
         ttest_res = pd.Series(results)
