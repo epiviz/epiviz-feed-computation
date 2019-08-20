@@ -11,6 +11,7 @@ import logging
 import os
 import pandas as pd
 import json
+import numpy as np
 
 app = Flask(__name__)
 cache = Cache(app, config={'CACHE_TYPE': 'simple', 'CACHE_DEFAULT_TIMEOUT': 0})
@@ -62,19 +63,20 @@ def feed(websocket):
         # emit('returned_results', result)
         significant_result =pd.DataFrame()
 
-        if len(result) > 1:
+        if len(result) > 0:
             logging.info("batch is > 1, FDR")
             pvalues = result["pvalue"].tolist()
             cor_pval = pValFDR.batchLondStar(pval = pvalues)
             result["adjusted_testing_levels"] = cor_pval[1]
             result["significance"] = cor_pval[2]
             # significant_result = result.loc[result['significance'] == True]
-
-
-        comp_res = result.to_json(orient='records')
-        parse_res = json.loads(comp_res)
-        cache_results.extend(parse_res)
-        websocket.send(ujson.dumps(parse_res))
+            
+            pval_sci = [np.format_float_scientific(x, precision=10) for x in pvalues]
+            result["pvalue"] = pval_sci
+            comp_res = result.to_json(orient='records')
+            parse_res = json.loads(comp_res)
+            cache_results.extend(parse_res)
+            websocket.send(ujson.dumps(parse_res))
 
     cache.set(key, cache_results)
     websocket.send(ujson.dumps({"seq": seqID, "significant": pValFDR.R, "totalTests": pValFDR.N}))
