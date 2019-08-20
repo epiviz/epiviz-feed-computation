@@ -119,7 +119,10 @@ class CorrelationMethy(StatMethod):
 
             result = pd.Series(methy_corr_res)
             result = result.apply(pd.Series)
-            result = result.to_json(orient='records')
-            parse_res = json.loads(result)
+
+            parse_res = result
+
+            # result = result.to_json(orient='records')
+            # parse_res = json.loads(result)
 
         return parse_res

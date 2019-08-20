@@ -134,8 +134,10 @@ class TtestGene(StatMethod):
         # front end assumes that json parse returns string but when takes in a json
         # string ret a str so we turn ttest_result to a json string then to a list for proper behavior
         # turns data into a json string
-        ttest_results = ttest_results.to_json(orient='records')
-        parse_res = json.loads(ttest_results)
+        # ttest_results = ttest_results.to_json(orient='records')
+        # parse_res = json.loads(ttest_results)
+
+        parse_res = ttest_results
 
         logging.info("ttest_gene_result")
 

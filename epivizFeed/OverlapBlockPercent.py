@@ -99,8 +99,10 @@ class OverlapBlock(StatMethod):
                     overlaps.append(overlap_obj)
         block_overlap = pd.Series(overlaps)
         block_overlap = block_overlap.apply(pd.Series)
-        block_overlap = block_overlap.to_json(orient='records')
-        parse_res = json.loads(block_overlap)
+        # block_overlap = block_overlap.to_json(orient='records')
+        # parse_res = json.loads(block_overlap)
+
+        parse_res = block_overlap
 
         logging.info('overlap done!')
         return parse_res

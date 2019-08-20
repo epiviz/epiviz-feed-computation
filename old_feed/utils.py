@@ -70,7 +70,8 @@ def build_obj(comp_type, data_one, data_two, show_chart, attr_one, attr_two,
         'attribute-one': attr_one['name'],
         'attribute-two': attr_two['name'],
         'value': round(value, 2),
-        'pvalue': round(pvalue, 2) if pvalue >= 0.01 else np.format_float_scientific(pvalue, precision=2, unique=True),
+        'pvalue': pvalue,
+        # 'pvalue': round(pvalue, 2) if pvalue >= 0.01 else np.format_float_scientific(pvalue, precision=2, unique=True),
         'data': data,
         'data-source': data_source
     }
@@ -88,7 +89,8 @@ def build_exp_methy_obj(comp_type, data_one, data_two, show_chart, attr_one,
         'attribute-one': attr_one,
         'attribute-two': attr_two,
         'value': round(value, 2),
-        'pvalue': round(pvalue, 2) if pvalue >= 0.01 else np.format_float_scientific(pvalue, precision=2, unique=True),
+        'pvalue': pvalue,
+        # 'pvalue': round(pvalue, 2) if pvalue >= 0.01 else np.format_float_scientific(pvalue, precision=2, unique=True),
         'data': data
     }
     return target_obj
@@ -105,7 +107,8 @@ def build_exp_singlegene_obj(comp_type, data_one, data_two, show_chart, attr_one
         'attribute-one': attr_one['name'],
         'attribute-two': attr_two['name'],
         'value': round(value, 2),
-        'pvalue': round(pvalue, 2) if pvalue >= 0.01 else np.format_float_scientific(pvalue, precision=2, unique=True),
+        'pvalue': pvalue,
+        # 'pvalue': round(pvalue, 2) if pvalue >= 0.01 else np.format_float_scientific(pvalue, precision=2, unique=True),
         'data': data,
         'gene': gene
     }

@@ -104,7 +104,9 @@ class CorrelationExp(StatMethod):
         corr_list = sorted(corr_list, key=lambda x: x['value'], reverse=True)
         corr_res = pd.Series(corr_list)
         corr_res = corr_res.apply(pd.Series)
-        corr_res = corr_res.to_json(orient='records')
-        parse_res = json.loads(corr_res)
+
+        parse_res = corr_res
+        # corr_res = corr_res.to_json(orient='records')
+        # parse_res = json.loads(corr_res)
 
         return parse_res

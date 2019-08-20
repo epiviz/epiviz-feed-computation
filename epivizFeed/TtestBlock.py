@@ -38,8 +38,8 @@ class TtestBlock(StatMethod):
         gene_nonblock_exp = gene_per_nonblock_exp[exp_type]
         t_value, p_value = ttest_ind(gene_block_exp, gene_nonblock_exp, equal_var=False)
 
-        print("block:" + block_type + ", gene:" + exp_type)
-        print(p_value)
+        # print("block:" + block_type + ", gene:" + exp_type)
+        # print(p_value)
 
         if p_value > 0.1:
             return None
@@ -101,8 +101,10 @@ class TtestBlock(StatMethod):
         results = sorted(results, key=lambda x: x['value'], reverse=True)
         ttest_res = pd.Series(results)
         ttest_res = ttest_res.apply(pd.Series)
-        ttest_res = ttest_res.to_json(orient='records')
-        parse_res = json.loads(ttest_res)
+        # ttest_res = ttest_res.to_json(orient='records')
+        # parse_res = json.loads(ttest_res)
+
+        parse_res = ttest_res
 
         logging.info("ttest_block_res")
         return parse_res

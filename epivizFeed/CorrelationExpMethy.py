@@ -216,8 +216,10 @@ class CorrelationExpMethy(StatMethod):
                                 reverse=True)
         corr_result = pd.Series(results)
         corr_result = corr_result.apply(pd.Series)
-        corr_result = corr_result.to_json(orient='records')
-        parse_res = json.loads(corr_result)
+
+        parse_res = corr_result
+        # corr_result = corr_result.to_json(orient='records')
+        # parse_res = json.loads(corr_result)
 
         return parse_res
 
