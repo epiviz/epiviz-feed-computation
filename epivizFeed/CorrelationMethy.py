@@ -12,8 +12,8 @@ from old_feed.data_functions import Methylation, Methylation_diff
 
 class CorrelationMethy(StatMethod):
 
-    def __init__(self, measurements, methy_type):
-        super(CorrelationMethy, self). __init__(measurements)
+    def __init__(self, measurements, methy_type, pval_threshold):
+        super(CorrelationMethy, self). __init__(measurements, pval_threshold)
         self.methylation_types = super(CorrelationMethy, self).get_measurements_self(methy_type)
         self.methy_type = methy_type
 
@@ -106,7 +106,7 @@ class CorrelationMethy(StatMethod):
                     'attr-two': [min(methy_data[type2]), max(methy_data[type2])]
                 }
                 attr = 'methylation' if self.methy_type == 'methy' else 'methylation diff'
-                if correlation_coefficient[1] <= 0.1:
+                if correlation_coefficient[1] <= self.pval_threshold:
                     corr_obj = build_obj('correlation', attr,
                                         attr, True, data_source_one,
                                         data_source_two,

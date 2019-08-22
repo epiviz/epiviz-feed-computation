@@ -9,8 +9,8 @@ from old_feed.data_functions import Gene_data, Block_data
 
 class TtestBlock(StatMethod):
 
-    def __init__(self, measurements):
-        super(TtestBlock, self).__init__(measurements)
+    def __init__(self, measurements, pval_threshold):
+        super(TtestBlock, self).__init__(measurements, pval_threshold)
         self.exp_datasource = super(TtestBlock, self).get_measurements_self("gene")
         self.datasource_types = super(TtestBlock, self).get_measurements_self("block")
 
@@ -41,7 +41,7 @@ class TtestBlock(StatMethod):
         # print("block:" + block_type + ", gene:" + exp_type)
         # print(p_value)
 
-        if p_value > 0.1:
+        if p_value > self.pval_threshold:
             return None
 
         gene_ds = json.loads(pd_expression.loc[pd_expression['id'] == exp_type].to_json(orient='records')[1: -1])

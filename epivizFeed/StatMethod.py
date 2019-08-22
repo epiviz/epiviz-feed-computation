@@ -1,6 +1,7 @@
 class StatMethod(object):
-    def __init__(self, measurements=None):
+    def __init__(self, measurements=None, pval_threshold=0.1):
         self.measurements = measurements
+        self.pval_threshold = pval_threshold
 
     def compute(self, chromosome, start, end):
         print("base class")

@@ -12,8 +12,8 @@ from old_feed.data_functions import Gene_data, Methylation, Methylation_diff
 
 class CorrelationExpMethy(StatMethod):
 
-    def __init__(self, measurements, methy_name):
-        super(CorrelationExpMethy, self). __init__(measurements)
+    def __init__(self, measurements, methy_name, pval_threshold):
+        super(CorrelationExpMethy, self). __init__(measurements, pval_threshold)
         self.datasource_gene_types = super(CorrelationExpMethy, self).get_measurements_self("gene")
         self.datasource_methy_types = super(CorrelationExpMethy, self).get_measurements_self(methy_name)
         self.methy_name = methy_name
@@ -94,7 +94,7 @@ class CorrelationExpMethy(StatMethod):
             'attr-two': [min(methy_mean),
                         max(methy_mean)]
         }
-        # if correlation_coefficient[1] <= 0.1:
+        # if correlation_coefficient[1] <= self.pval_threshold:
         corr_obj = build_exp_methy_obj('correlation', 'expression',
                                     'methylation', True, "Expression " + exp_type.split('___')[0] + '_' + exp_type.split('___')[1], 
                                     "Average Probe level Meth " + methy_type,
@@ -117,7 +117,6 @@ class CorrelationExpMethy(StatMethod):
         return partition_type, group_one, group_two, grouping
 
     def correlation_calc(self, exp_data, methy_mean, tissue_pair):
-
         ret_obj = []
         # use the difference of types (normal and tumor) for the same tissue
         # this need to be changed to accomadate multiple attributes
@@ -135,22 +134,22 @@ class CorrelationExpMethy(StatMethod):
             correlation_coefficient_canc = pearsonr(methy_mean[methy_type_canc], exp_data[exp_type2])
             correlation_coefficient_3 = pearsonr(methy_mean[methy_type_norm], exp_data[exp_type2])
             correlation_coefficient_4 = pearsonr(methy_mean[methy_type_canc], exp_data[exp_type1])
-            if not math.isnan(correlation_coefficient_norm[0]) and correlation_coefficient_norm[1] <= 0.1:
+            if not math.isnan(correlation_coefficient_norm[0]) and correlation_coefficient_norm[1] <= self.pval_threshold:
                 # format the data into list of json objects for plots
                 corr_obj_1 = self.create_corr_obj(exp_data, methy_mean[methy_type_norm], exp_type1, methy_type_norm, correlation_coefficient_norm)
                 ret_obj.append(corr_obj_1)
-            if not math.isnan(correlation_coefficient_canc[1]) and correlation_coefficient_canc[1] <= 0.1:
+            if not math.isnan(correlation_coefficient_canc[1]) and correlation_coefficient_canc[1] <= self.pval_threshold:
                 corr_obj_2 = self.create_corr_obj(exp_data, methy_mean[methy_type_canc], exp_type2, methy_type_canc, correlation_coefficient_canc)
                 ret_obj.append(corr_obj_2)
-            if not math.isnan(correlation_coefficient_3[1]) and correlation_coefficient_3[1] <= 0.1:
+            if not math.isnan(correlation_coefficient_3[1]) and correlation_coefficient_3[1] <= self.pval_threshold:
                 corr_obj_3 = self.create_corr_obj(exp_data, methy_mean[methy_type_norm], exp_type2, methy_type_norm, correlation_coefficient_3)
                 ret_obj.append(corr_obj_3)
-            if not math.isnan(correlation_coefficient_4[1]) and correlation_coefficient_4[1] <= 0.1:
+            if not math.isnan(correlation_coefficient_4[1]) and correlation_coefficient_4[1] <= self.pval_threshold:
                 corr_obj_4 = self.create_corr_obj(exp_data, methy_mean[methy_type_canc], exp_type1, methy_type_canc, correlation_coefficient_4)
                 ret_obj.append(corr_obj_4)
         else:
             correlation_coefficient = pearsonr(methy_mean[tissue_type], expression_diff)
-            if not math.isnan(correlation_coefficient[0]) and correlation_coefficient[1] <= 0.1:
+            if not math.isnan(correlation_coefficient[0]) and correlation_coefficient[1] <= self.pval_threshold:
                 # format the data into list of json objects for plots
                 corr_obj = self.create_corr_diff_obj(expression_diff, methy_mean[tissue_type], tissue_type, correlation_coefficient)
                 ret_obj = [corr_obj]
@@ -180,17 +179,14 @@ class CorrelationExpMethy(StatMethod):
 
         exp_data = Gene_data(start, end, chromosome, measurements=self.datasource_gene_types)
         methy_data = self.get_methy_data(chromosome, start, end)
-
         group_one, group_two = self.partion(part_type, g_one)
         exp_group_one = Gene_data(start, end, chromosome, measurements=group_one.to_dict('records'))
         exp_group_two = Gene_data(start, end, chromosome, measurements=group_two.to_dict('records'))
 
         group_pairs = self.grouping(exp_group_one, exp_group_two, grouping)
-
         # if self.methy_name == 'methy_diff':
         #filter group_pairs with only the same tissue
         group_pairs = filter(self.same_tissue_match, group_pairs)
-            
         results = []
         exp_regions = np.array([exp_data.start, exp_data.end]).transpose()
         down_up = np.ones(exp_regions.shape) * np.array([downstream, -1 * upstream])
@@ -207,10 +203,10 @@ class CorrelationExpMethy(StatMethod):
 
         for tissue_pair in group_pairs:
             corr_obj_res = self.correlation_calc(exp_data, methy_mean, tissue_pair)
-            if self.methy_name == "methy":
-                results.extend(corr_obj_res)
-            else:
-                results.extend(corr_obj_res)
+            # if self.methy_name == "methy":
+            results.extend(corr_obj_res)
+            # else:
+            #     results.extend(corr_obj_res)
 
         results = sorted(results, key=lambda x: abs(x['value']),
                                 reverse=True)

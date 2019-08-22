@@ -12,8 +12,8 @@ from old_feed.data_functions import Gene_data, Methylation
 
 class CorrelationExp(StatMethod):
 
-    def __init__(self, measurements):
-        super(CorrelationExp, self). __init__(measurements)
+    def __init__(self, measurements, pval_threshold):
+        super(CorrelationExp, self). __init__(measurements, pval_threshold)
         self.gene_types = super(CorrelationExp, self).get_measurements_self("gene")
 
     def partion(self, part_type, group_one, group_two=None):

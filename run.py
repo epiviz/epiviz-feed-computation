@@ -1,7 +1,5 @@
 from flask import Flask, Response
-#from old_feed.computation_request import computation_request
 from interface import computational_request
-# from comp_req import comp_req
 from epivizFeed import LondFDR
 from flask_cache import Cache
 from flask_sockets import Sockets
@@ -17,16 +15,35 @@ app = Flask(__name__)
 cache = Cache(app, config={'CACHE_TYPE': 'simple', 'CACHE_DEFAULT_TIMEOUT': 0})
 
 sockets = Sockets(app)
-# socketio = SocketIO(app)
 
-# @socketio.on('get_data_event', namespace='/getdata')
+@sockets.route("/getInfo")
+def info(websocket):
+    with open( os.getcwd() + "/epiviz.json", "r") as config_file:
+        data = ujson.loads(config_file.read())
+        computations = data["computations"]
+        measurements = data["measurements"]
+        info = data["dataSources"]
 
+    mgroups = {}
+    for m in measurements:
+        if m["datasourceGroup"] not in mgroups.keys():
+            mgroups[m["datasourceGroup"]] = []
+        mgroups[m["datasourceGroup"]].append(m["name"])
+        
+    for m in mgroups.keys():
+        mgroups[m] = np.unique(mgroups[m])
+
+    websocket.send(ujson.dumps({"sources": info, "groups": mgroups, "computations": computations}))
+    
 @sockets.route('/getdata')
 def feed(websocket):
     message = ujson.loads(websocket.receive())
     
     with open( os.getcwd() + "/epiviz.json", "r") as config_file:
-        measurements = ujson.loads(config_file.read())
+        data = ujson.loads(config_file.read())
+        computations = data["computations"]
+        measurements = data["measurements"]
+        pval_threshold = data["pval_threshold"]
     
     logging.info(message)
     
@@ -52,9 +69,11 @@ def feed(websocket):
         websocket.send(ujson.dumps({"seq": seqID, "significant": significantCount, "totalTests": len(cached)}))
         return
     
-    results = computational_request(start, end, chromosome, gene_name, measurements=measurements)
+    results = computational_request(start, end, chromosome, gene_name, 
+                    measurements=measurements, computations=computations, pval_threshold=pval_threshold)
     cache_results = []
     logging.info (results)
+
  
     for result in results:
         logging.info ("send back!")
@@ -62,6 +81,9 @@ def feed(websocket):
         logging.info ("\n")
         # emit('returned_results', result)
         significant_result =pd.DataFrame()
+
+        # print(result)
+
 
         if len(result) > 0:
             logging.info("batch is > 1, FDR")
@@ -85,8 +107,5 @@ if __name__ == "__main__":
     from gevent import pywsgi
     from geventwebsocket.handler import WebSocketHandler
     server = pywsgi.WSGIServer(('', 5001), app, handler_class=WebSocketHandler)
-    # data = ujson.dumps(test_measurements())
-    # with open('epiviz.json', 'w') as outfile:
-    #     json.dump(test_measurements(), outfile)
     logging.info("Server Starts!")
     server.serve_forever()

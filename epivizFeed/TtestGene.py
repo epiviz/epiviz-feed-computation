@@ -12,8 +12,8 @@ from old_feed.data_functions import Gene_data
 
 class TtestGene(StatMethod):
 
-    def __init__(self, measurements):
-        super(TtestGene, self).__init__(measurements)
+    def __init__(self, measurements, pval_threshold):
+        super(TtestGene, self).__init__(measurements, pval_threshold)
         self.measurements = measurements
         self.gene_types = super(TtestGene, self).get_measurements_self("gene")
 
