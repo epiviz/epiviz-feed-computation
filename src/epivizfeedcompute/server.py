@@ -1,6 +1,6 @@
 from flask import Flask, Response
-from interface import computational_request
-from epivizFeed import LondFDR
+from .interface import computational_request
+from epivizfeedcompute.stat_modules import LondFDR
 from flask_cache import Cache
 from flask_sockets import Sockets
 import time
@@ -16,9 +16,22 @@ cache = Cache(app, config={'CACHE_TYPE': 'simple', 'CACHE_DEFAULT_TIMEOUT': 0})
 
 sockets = Sockets(app)
 
+def setup_app(file):
+    global app
+    app.config_file = file
+    return app
+
+def start_app(port=5001):
+    global app
+    from gevent import pywsgi
+    from geventwebsocket.handler import WebSocketHandler
+    server = pywsgi.WSGIServer(('', port), app, handler_class=WebSocketHandler)
+    logging.info("Server Starts!")
+    server.serve_forever()
+
 @sockets.route("/getInfo")
 def info(websocket):
-    with open( os.getcwd() + "/epiviz.json", "r") as config_file:
+    with open(app.config_file, "r") as config_file:
         data = ujson.loads(config_file.read())
         computations = data["computations"]
         measurements = data["measurements"]
@@ -39,7 +52,7 @@ def info(websocket):
 def feed(websocket):
     message = ujson.loads(websocket.receive())
     
-    with open( os.getcwd() + "/epiviz.json", "r") as config_file:
+    with open(app.config_file, "r") as config_file:
         data = ujson.loads(config_file.read())
         computations = data["computations"]
         measurements = data["measurements"]
@@ -103,9 +116,9 @@ def feed(websocket):
     cache.set(key, cache_results)
     websocket.send(ujson.dumps({"seq": seqID, "significant": pValFDR.R, "totalTests": pValFDR.N}))
 
-if __name__ == "__main__":
-    from gevent import pywsgi
-    from geventwebsocket.handler import WebSocketHandler
-    server = pywsgi.WSGIServer(('', 5001), app, handler_class=WebSocketHandler)
-    logging.info("Server Starts!")
-    server.serve_forever()
+# if __name__ == "__main__":
+#     from gevent import pywsgi
+#     from geventwebsocket.handler import WebSocketHandler
+#     server = pywsgi.WSGIServer(('', 5001), app, handler_class=WebSocketHandler)
+#     logging.info("Server Starts!")
+#     server.serve_forever()

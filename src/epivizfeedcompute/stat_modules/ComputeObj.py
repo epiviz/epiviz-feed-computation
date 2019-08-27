@@ -1,10 +1,9 @@
-from epivizFeed.TtestBlock import TtestBlock
-from epivizFeed.TtestGene import TtestGene
-from epivizFeed.OverlapBlockPercent import OverlapBlock
-from epivizFeed.CorrelationExpMethy import CorrelationExpMethy
-from epivizFeed.CorrelationExp import CorrelationExp
-from epivizFeed.CorrelationMethy import CorrelationMethy
-
+from .TtestBlock import TtestBlock
+from .TtestGene import TtestGene
+from .OverlapBlockPercent import OverlapBlock
+from .CorrelationExpMethy import CorrelationExpMethy
+from .CorrelationExp import CorrelationExp
+from .CorrelationMethy import CorrelationMethy
 
 class ComputeObj:
 

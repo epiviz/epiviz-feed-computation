@@ -3,11 +3,13 @@ import math
 import logging
 import itertools
 import pandas as pd
+
+from .StatMethod import StatMethod
+
 from scipy.stats import ttest_ind, norm
-from old_feed.requests import get_sample_counts
-from old_feed.utils import build_obj, format_expression_block_data, build_exp_singlegene_obj
-from epivizFeed.StatMethod import StatMethod
-from old_feed.data_functions import Gene_data
+from epivizfeedcompute.old_feed.requests import get_sample_counts
+from epivizfeedcompute.old_feed.utils import build_obj, format_expression_block_data, build_exp_singlegene_obj
+from epivizfeedcompute.old_feed.data_functions import Gene_data
 
 
 class TtestGene(StatMethod):

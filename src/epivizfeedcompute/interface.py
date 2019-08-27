@@ -1,5 +1,5 @@
 import pandas as pd
-from epivizFeed.ComputeObj import ComputeObj
+from epivizfeedcompute.stat_modules import ComputeObj
 
 
 def computational_request(start, end, chromosome, gene_name, measurements=None, computations=None, pval_threshold=None):

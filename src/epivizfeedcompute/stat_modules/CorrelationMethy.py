@@ -3,11 +3,13 @@ import numpy as np
 import math
 import json
 import itertools
+
+from .StatMethod import StatMethod
+
 from scipy.stats.stats import pearsonr, ttest_ind
-from old_feed.utils import build_obj
-from old_feed.UI_functions import format_exp_methy_output
-from epivizFeed.StatMethod import StatMethod
-from old_feed.data_functions import Methylation, Methylation_diff
+from epivizfeedcompute.old_feed.utils import build_obj
+from epivizfeedcompute.old_feed.UI_functions import format_exp_methy_output
+from epivizfeedcompute.old_feed.data_functions import Methylation, Methylation_diff
 
 
 class CorrelationMethy(StatMethod):

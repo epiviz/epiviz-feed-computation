@@ -1,10 +1,12 @@
 import json
 import pandas as pd
 import logging
+
+from .StatMethod import StatMethod
+
 from scipy.stats import ttest_ind
-from old_feed.utils import build_obj, format_expression_block_data
-from epivizFeed.StatMethod import StatMethod
-from old_feed.data_functions import Gene_data, Block_data
+from epivizfeedcompute.old_feed.utils import build_obj, format_expression_block_data
+from epivizfeedcompute.old_feed.data_functions import Gene_data, Block_data
 
 
 class TtestBlock(StatMethod):

@@ -305,10 +305,10 @@ def expression_methy_correlation(exp_data, datasource_gene_types,
 
                 correlation_coefficient = pearsonr(methy_mean[methy_type],
                                                 expression)
-                print tissue_type, methy_type
+                print(tissue_type, methy_type)
                 if math.isnan(correlation_coefficient[0]):
                     continue
-                print correlation_coefficient[0]
+                print(correlation_coefficient[0])
 
                 # format the data into list of json objects for plots
                 data = format_exp_methy_output(expression, methy_mean[
