@@ -9,10 +9,13 @@ from .StatMethod import StatMethod
 
 from epivizfeedcompute.old_feed.utils import build_obj
 from scipy.stats import ttest_ind, fisher_exact, norm
-from epivizfeedcompute.old_feed.data_functions import Block_data
+from epivizfeedcompute.data_functions import Block_data
 
 
 class OverlapBlock(StatMethod):
+    '''
+    Class for computing overlap of differentially methylated regions
+    '''
     def __init__(self, measurements, pval_threshold):
         super(OverlapBlock, self).__init__(measurements, pval_threshold)
         self.data_sources = super(OverlapBlock, self).get_measurements_self("block")
@@ -80,6 +83,18 @@ class OverlapBlock(StatMethod):
         return {key: val for key, val in zip(attributes, attributes_vals)}
 
     def compute(self, chromosome, start, end, additional=None):
+        '''
+        Computes stat function on given gene measurements
+
+        Args: 
+            chromosome (str): chromosome
+            start (int): genomic start
+            end (int): genomic end
+            additional (dict): additional params
+        
+        Returns:
+            dataframe with computed results
+        '''
         block_data = Block_data(start, end, chromosome, measurements=self.data_sources)
         overlaps = []
         if block_data:

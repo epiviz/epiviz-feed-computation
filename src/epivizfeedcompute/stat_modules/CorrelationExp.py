@@ -5,15 +5,16 @@ import json
 import itertools
 
 from .StatMethod import StatMethod
-
 from scipy.stats.stats import pearsonr, ttest_ind
-from epivizfeedcompute.old_feed.utils import build_obj
-from epivizfeedcompute.old_feed.UI_functions import format_exp_methy_output
-from epivizfeedcompute.old_feed.data_functions import Gene_data, Methylation
+from epivizfeedcompute.utils import build_obj
+from epivizfeedcompute.UI_functions import format_exp_methy_output
+from epivizfeedcompute.data_functions import Gene_data, Methylation
 
 
 class CorrelationExp(StatMethod):
-
+    '''
+    Class for Correlation between gene expression 
+    '''
     def __init__(self, measurements, pval_threshold):
         super(CorrelationExp, self). __init__(measurements, pval_threshold)
         self.gene_types = super(CorrelationExp, self).get_measurements_self("gene")
@@ -61,6 +62,18 @@ class CorrelationExp(StatMethod):
         return partition_type, group_one, group_two, grouping
 
     def compute(self, chromosome, start, end, additional=None):
+        '''
+        Computes stat function on given gene measurements
+
+        Args: 
+            chromosome (str): chromosome
+            start (int): genomic start
+            end (int): genomic end
+            additional (dict): additional params
+        
+        Returns:
+            dataframe with computed results
+        '''
         part_type, g_one, g_two, grouping = self.unpack_params(additional)
 
         expression_data = Gene_data(start, end, chromosome, measurements=self.gene_types)

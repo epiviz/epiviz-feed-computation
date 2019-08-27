@@ -7,13 +7,15 @@ import itertools
 from .StatMethod import StatMethod
 
 from scipy.stats.stats import pearsonr
-from epivizfeedcompute.old_feed.utils import build_exp_methy_obj
-from epivizfeedcompute.old_feed.UI_functions import format_exp_methy_output
-from epivizfeedcompute.old_feed.data_functions import Gene_data, Methylation, Methylation_diff
+from epivizfeedcompute.utils import build_exp_methy_obj
+from epivizfeedcompute.UI_functions import format_exp_methy_output
+from epivizfeedcompute.data_functions import Gene_data, Methylation, Methylation_diff
 
 
 class CorrelationExpMethy(StatMethod):
-
+    '''
+    Class for correlation between gene expression methylation
+    '''
     def __init__(self, measurements, methy_name, pval_threshold):
         super(CorrelationExpMethy, self). __init__(measurements, pval_threshold)
         self.datasource_gene_types = super(CorrelationExpMethy, self).get_measurements_self("gene")
@@ -173,6 +175,19 @@ class CorrelationExpMethy(StatMethod):
             return False    
 
     def compute(self, chromosome, start, end, additional=None, downstream=3000, upstream=1000):
+        '''
+        Computes stat function on given gene measurements
+
+        Args: 
+            chromosome (str): chromosome
+            start (int): genomic start
+            end (int): genomic end
+            additional (dict): additional params
+            downstream (int): downstream 3000 base pairs
+            upstream (int): upstream 1000 base pairs
+        Returns:
+            dataframe with computed results
+        '''
         part_type, g_one, g_two, grouping = self.unpack_params(additional)
         if grouping == "all_pairs":
             grouping = True

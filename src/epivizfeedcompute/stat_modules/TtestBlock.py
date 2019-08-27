@@ -5,12 +5,14 @@ import logging
 from .StatMethod import StatMethod
 
 from scipy.stats import ttest_ind
-from epivizfeedcompute.old_feed.utils import build_obj, format_expression_block_data
-from epivizfeedcompute.old_feed.data_functions import Gene_data, Block_data
+from epivizfeedcompute.utils import build_obj, format_expression_block_data
+from epivizfeedcompute.data_functions import Gene_data, Block_data
 
 
 class TtestBlock(StatMethod):
-
+    '''
+    Class for computing ttest of differentially methylated regions
+    '''
     def __init__(self, measurements, pval_threshold):
         super(TtestBlock, self).__init__(measurements, pval_threshold)
         self.exp_datasource = super(TtestBlock, self).get_measurements_self("gene")
@@ -68,6 +70,18 @@ class TtestBlock(StatMethod):
         return 1
 
     def compute(self, chromosome, start, end, additional=None):
+        '''
+        Computes stat function on given gene measurements
+
+        Args: 
+            chromosome (str): chromosome
+            start (int): genomic start
+            end (int): genomic end
+            additional (dict): additional params
+        
+        Returns:
+            dataframe with computed results
+        '''
         exp_data = Gene_data(start, end, chromosome, measurements=self.exp_datasource)
         block_data = Block_data(start, end, chromosome, measurements=self.datasource_types)
         exp_data['index_col'] = exp_data.index

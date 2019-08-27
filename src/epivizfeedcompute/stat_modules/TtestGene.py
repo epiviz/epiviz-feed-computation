@@ -7,13 +7,15 @@ import pandas as pd
 from .StatMethod import StatMethod
 
 from scipy.stats import ttest_ind, norm
-from epivizfeedcompute.old_feed.requests import get_sample_counts
-from epivizfeedcompute.old_feed.utils import build_obj, format_expression_block_data, build_exp_singlegene_obj
-from epivizfeedcompute.old_feed.data_functions import Gene_data
+from epivizfeedcompute.requests import get_sample_counts
+from epivizfeedcompute.utils import build_obj, format_expression_block_data, build_exp_singlegene_obj
+from epivizfeedcompute.data_functions import Gene_data
 
 
 class TtestGene(StatMethod):
-
+    '''
+    Class for computing ttest on gene expressions 
+    '''
     def __init__(self, measurements, pval_threshold):
         super(TtestGene, self).__init__(measurements, pval_threshold)
         self.measurements = measurements
@@ -103,6 +105,18 @@ class TtestGene(StatMethod):
         return partition_type, group_one, group_two, grouping
 
     def compute(self, chromosome, start, end, additional=None):
+        '''
+        Computes stat function on given gene measurements
+
+        Args: 
+            chromosome (str): chromosome
+            start (int): genomic start
+            end (int): genomic end
+            additional (dict): additional params
+        
+        Returns:
+            dataframe with computed results
+        '''
         part_type, g_one, g_two, grouping = self.unpack_params(additional)
         if grouping == "all_pairs":
             grouping = True
