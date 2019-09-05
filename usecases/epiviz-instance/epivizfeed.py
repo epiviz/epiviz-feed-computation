@@ -3,6 +3,6 @@ import os
 
 if __name__ == "__main__":
 
-    app = setup_app(os.getcwd() + "/nsegil.json")
+    app = setup_app(os.getcwd() + "/epiviz.json")
     app.start_app()
     

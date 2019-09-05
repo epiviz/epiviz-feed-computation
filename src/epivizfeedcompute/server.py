@@ -1,8 +1,13 @@
-from flask import Flask, Response
 from .interface import computational_request
 from epivizfeedcompute.stat_modules import LondFDR
+from epivizfileserver.measurements import WebServerMeasurement
+from epivizfileserver.client import EpivizClient
+
+from flask import Flask, Response
 from flask_cache import Cache
 from flask_sockets import Sockets
+from gevent import pywsgi
+from geventwebsocket.handler import WebSocketHandler
 import time
 import ujson
 import logging
@@ -16,15 +21,36 @@ cache = Cache(app, config={'CACHE_TYPE': 'simple', 'CACHE_DEFAULT_TIMEOUT': 0})
 
 sockets = Sockets(app)
 
-def setup_app(file):
+def setup_app(server, file = None):
     global app
     app.config_file = file
+    app.server = server
+    app.measurements = []
+
+    with open(app.config_file, "r") as config_file:
+        data = ujson.loads(config_file.read())
+        app.computations = data["computations"]
+        app.info = data["dataSources"]
+        app.pval_threshold = data["pval_threshold"]
+
+        if data.measurements is not None:
+            measurements = data["measurements"]
+
+            for m in measurements: 
+                app.measurements.append(
+                    WebServerMeasurement(m['type'], m['id'], m['name'], app.server, 
+                    m['datasourceId'], m['datasourceGroup'], m['annotation'], m['metadata']
+                    )
+                )
+        else:
+            ec = EpivizClient(server)
+            m = ec.get_measurements()
+            app.measurements = m
+
     return app
 
 def start_app(port=5001):
     global app
-    from gevent import pywsgi
-    from geventwebsocket.handler import WebSocketHandler
     server = pywsgi.WSGIServer(('', port), app, handler_class=WebSocketHandler)
     logging.info("Server Starts!")
     server.serve_forever()
@@ -35,7 +61,7 @@ def info(websocket):
         data = ujson.loads(config_file.read())
         computations = data["computations"]
         measurements = data["measurements"]
-        info = data["dataSources"]
+        pval_threshold = data["pval_threshold"]
 
     mgroups = {}
     for m in measurements:
@@ -52,11 +78,11 @@ def info(websocket):
 def feed(websocket):
     message = ujson.loads(websocket.receive())
     
-    with open(app.config_file, "r") as config_file:
-        data = ujson.loads(config_file.read())
-        computations = data["computations"]
-        measurements = data["measurements"]
-        pval_threshold = data["pval_threshold"]
+    # with open(app.config_file, "r") as config_file:
+    #     data = ujson.loads(config_file.read())
+    #     computations = data["computations"]
+    #     measurements = data["measurements"]
+    #     pval_threshold = data["pval_threshold"]
     
     logging.info(message)
     
@@ -83,7 +109,7 @@ def feed(websocket):
         return
     
     results = computational_request(start, end, chromosome, gene_name, 
-                    measurements=measurements, computations=computations, pval_threshold=pval_threshold)
+                    measurements=app.measurements, computations=app.computations, pval_threshold=app.pval_threshold)
     cache_results = []
     logging.info (results)
 
