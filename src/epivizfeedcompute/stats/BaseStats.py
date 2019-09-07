@@ -21,6 +21,14 @@ class BaseStats(object):
         # 3. Calculate Test
         raise Exception("NotImplementedException")
 
+    def get_transform_data(measurements):
+        data = []
+
+        for m in measurements:
+            data.append(m.get_data(chr, start, end)[m.mid])
+
+        return tuple(data)
+
     def toDataFrame(self, results):
         measurement1 = [r['measurements'][0].name for r in results] 
         measurement2 = [r['measurements'][1].name for r in results] 

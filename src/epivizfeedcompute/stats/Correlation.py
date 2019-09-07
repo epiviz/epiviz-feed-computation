@@ -3,10 +3,13 @@ from .BaseStats import BaseStats
 from itertools import combinations
 from scipy.stats.stats import pearsonr
 
-class CorrelationSignal(BaseStats):
+class Correlation(BaseStats):
     def __init__(self, measurements, pval_threshold):
-        super(CorrelationSignal, self). __init__(measurements, pval_threshold)
+        super(Correlation, self).__init__(measurements, pval_threshold)
         self.measurements = self.filter(measurements)
+
+    def compute_stat(data1, data2, params=None):
+        return pearsonr(data1, data2)
 
     def compute(self, chr, start, end, params):
 
@@ -17,15 +20,16 @@ class CorrelationSignal(BaseStats):
         results = []
 
         for (m1, m2) in msets:
-            corr, pvalue = pearsonr(methy_data[type1], methy_data[type2])
+            data1, data2 = self.get_transform_data([m1, m2])
+            corr, pvalue = self.compute_stat(data1, data2)
 
-            if pval <= pval_threshold:
+            if pvalue <= self.pval_threshold:
                 results.append(
                     {
                         'measurements': (m1, m2),
                         'test': 'correlation',
                         'value': corr,
-                        'pvalue': pval
+                        'pvalue': pvalue
                     }
                 )
 
