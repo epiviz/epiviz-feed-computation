@@ -8,7 +8,7 @@ class Correlation(BaseStats):
         super(Correlation, self).__init__(measurements, pval_threshold)
         self.measurements = self.filter(measurements)
 
-    def compute_stat(data1, data2, params=None):
+    def compute_stat(self, data1, data2, params=None):
         return pearsonr(data1, data2)
 
     def compute(self, chr, start, end, params):

@@ -8,7 +8,7 @@ class CorrelationGeneSignal(BaseStats):
         super(Correlation, self).__init__(measurements, pval_threshold)
         self.measurements = self.filter(measurements)
 
-    def get_transform_data(measurements):
+    def get_transform_data(self, measurements):
         data = super(Correlation, self).get_transform_data(measurements)
 
         mean = []
