@@ -10,7 +10,7 @@ class TtestBlock(BaseStats):
         self.measurements = self.filter(measurements)
 
      def get_transform_data(self, measurements):
-        data = super(Correlation, self).get_transform_data(measurements)
+        data = super(TtestBlock, self).get_transform_data(measurements)
         block = []
         non_block = []
         for index, row in data[0].iterrows():
