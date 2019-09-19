@@ -11,7 +11,7 @@ class TtestBlock(BaseStats):
     def filter_measurements(self, params):
         filtered = []
         for m in self.measurements:
-            if m.datatype == params.datatype:
+            if m.datatype == "expression" or m.datatype == "peak":
                 filtered.append(m)
         return filtered
     

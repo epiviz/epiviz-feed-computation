@@ -1,15 +1,8 @@
-import numpy as np
-import pandas as pd
 import logging
 import math
-import json
 import itertools
-from epivizFeed.utils import build_obj
 from scipy.stats import fisher_exact
-from epivizFeed.StatMethod import StatMethod
-from epivizFeed.data_functions import Block_data
 from .BaseStats import BaseStats
-
 
 class OverlapBlock(BaseStats):
 
