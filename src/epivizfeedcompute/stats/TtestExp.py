@@ -9,8 +9,14 @@ class TtestExp(BaseStats):
     '''
     def __init__(self, measurements, pval_threshold):
         super(TtestGene, self).__init__(measurements, pval_threshold)
-        self.measurements = self.filter(measurements)
-
+        self.measurements = measurements
+    def filter_measurements(self, params):
+        filtered = []
+        for m in self.measurements:
+            if m.datatype == params.datatype:
+                filtered.append(m)
+        return filtered
+   
     def compute_stat(self, data1, data2, params=None):
         variance_threshold = 0.05 * 0.95
         var_one = math.max(variance_threshold, (data1 * (1 - data1)))
@@ -21,6 +27,8 @@ class TtestExp(BaseStats):
         return ttest_value, p_value
 
     def compute(self, chr, start, end, params):
+        self.measurements = self.filter(params)
+        
         msets = combinations(self.measurements, 2)
         results = []
         

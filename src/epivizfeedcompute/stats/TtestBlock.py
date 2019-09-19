@@ -7,8 +7,14 @@ class TtestBlock(BaseStats):
 
     def __init__(self, measurements):
         super(TtestBlock, self).__init__(measurements)
-        self.measurements = self.filter(measurements)
-
+        self.measurements = measurements
+    def filter_measurements(self, params):
+        filtered = []
+        for m in self.measurements:
+            if m.datatype == params.datatype:
+                filtered.append(m)
+        return filtered
+    
      def get_transform_data(self, measurements):
         data = super(TtestBlock, self).get_transform_data(measurements)
         block = []
@@ -25,6 +31,7 @@ class TtestBlock(BaseStats):
         return ttest_ind(data1, data2, equal_var=False)
 
     def compute(self, chr, start, end, params):
+        self.measurements = self.filter(params)
         msets = combinations(self.measurements, 2)
         results = []
         

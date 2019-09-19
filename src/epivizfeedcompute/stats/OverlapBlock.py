@@ -15,9 +15,15 @@ class OverlapBlock(BaseStats):
 
     def __init__(self, measurements):
         super(OverlapBlock, self).__init__(measurements)
-        self.measurements = self.filter(measurements)
-
-     def get_transform_data(self, measurements, params=None):
+        self.measurements = measurements
+    def filter_measurements(self, params):
+        filtered = []
+        for m in self.measurements:
+            if m.datatype == params.datatype:
+                filtered.append(m)
+        return filtered
+        
+    def get_transform_data(self, measurements, params=None):
         data = super(OverlapBlock, self).get_transform_data(measurements)
         start = params["start"]
         end = params["end"]
@@ -63,10 +69,10 @@ class OverlapBlock(BaseStats):
         return ([d1[0], d1[1]/d1_sum], [d2[0], d2[1]/d2_sum])
    
     def compute_stat(self, data1, data2, params=None):
-        
         return fisher_exact(np.array([data1, data2]))
 
     def compute(self, chr, start, end, params):
+        self.measurements = self.filter(params)
         msets = combinations(self.measurements, 2)
         results = []
         

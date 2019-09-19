@@ -1,14 +1,12 @@
 {
    "pval_threshold": 0.1,
    "computations": [
-      "ttest_block_expression",
+      "ttest_block_exp",
       "block_overlap_percent",
-      "expression_methydiff_correlation",
-      "expression_methy_correlation",
-      "ttest_expression_per_gene",
-      "methy_diff_correlation",
-      "methy_correlation",
-      "expression_correlation"
+      "expression_signal_correlation",
+      "ttest_exp_per_gene",
+      "correlation_signal",
+      "correlation_exp"
    ],
    "dataSources": [
       "Annotation data from the UCSC genome browser for hg19",
@@ -24,6 +22,7 @@
          "datasourceGroup": "gene_expression_barcode_subtype",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "expression",
          "defaultChartType": "scatterplot",
          "annotation": null,
          "metadata": [
@@ -38,6 +37,7 @@
          "datasourceGroup": "gene_expression_barcode_subtype",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "expression",
          "defaultChartType": "scatterplot",
          "annotation": null,
          "metadata": [
@@ -52,6 +52,7 @@
          "datasourceGroup": "gene_expression_barcode_subtype",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "expression",
          "defaultChartType": "scatterplot",
          "annotation": null,
          "metadata": [
@@ -66,6 +67,7 @@
          "datasourceGroup": "gene_expression_barcode_subtype",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "expression",
          "defaultChartType": "scatterplot",
          "annotation": null,
          "metadata": [
@@ -80,6 +82,7 @@
          "datasourceGroup": "gene_expression_barcode_subtype",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "expression",
          "defaultChartType": "scatterplot",
          "annotation": null,
          "metadata": [
@@ -94,6 +97,7 @@
          "datasourceGroup": "gene_expression_barcode_subtype",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "expression",
          "defaultChartType": "scatterplot",
          "annotation": null,
          "metadata": [
@@ -108,6 +112,7 @@
          "datasourceGroup": "gene_expression_barcode_subtype",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "expression",
          "defaultChartType": "scatterplot",
          "annotation": null,
          "metadata": [
@@ -122,6 +127,7 @@
          "datasourceGroup": "gene_expression_barcode_subtype",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "expression",
          "defaultChartType": "scatterplot",
          "annotation": null,
          "metadata": [
@@ -136,6 +142,7 @@
          "datasourceGroup": "timp2014_breast_blocks",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "peak",
          "defaultChartType": "block",
          "annotation": null,
          "metadata": [
@@ -150,6 +157,7 @@
          "datasourceGroup": "timp2014_colon_blocks",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "peak",
          "defaultChartType": "block",
          "annotation": null,
          "metadata": [
@@ -164,6 +172,7 @@
          "datasourceGroup": "timp2014_thyroid_blocks",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "peak",
          "defaultChartType": "block",
          "annotation": null,
          "metadata": [
@@ -178,6 +187,7 @@
          "datasourceGroup": "timp2014_lung_blocks",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "peak",
          "defaultChartType": "block",
          "annotation": null,
          "metadata": [
@@ -192,6 +202,7 @@
          "datasourceGroup": "timp2014_collapsed_diff",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "signal",
          "defaultChartType": "line",
          "annotation": null,
          "metadata": [
@@ -206,6 +217,7 @@
          "datasourceGroup": "timp2014_collapsed_diff",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "signal",
          "defaultChartType": "line",
          "annotation": null,
          "metadata": [
@@ -220,6 +232,7 @@
          "datasourceGroup": "timp2014_collapsed_diff",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "signal",
          "defaultChartType": "line",
          "annotation": null,
          "metadata": [
@@ -234,6 +247,7 @@
          "datasourceGroup": "timp2014_collapsed_diff",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "signal",
          "defaultChartType": "line",
          "annotation": null,
          "metadata": [
@@ -248,6 +262,7 @@
          "datasourceGroup": "timp2014_probelevel_beta",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "signal",
          "defaultChartType": "line",
          "annotation": null,
          "metadata": []
@@ -260,6 +275,7 @@
          "datasourceGroup": "timp2014_probelevel_beta",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "signal",
          "defaultChartType": "line",
          "annotation": null,
          "metadata": []
@@ -272,6 +288,7 @@
          "datasourceGroup": "timp2014_probelevel_beta",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "signal",
          "defaultChartType": "line",
          "annotation": null,
          "metadata": []
@@ -284,6 +301,7 @@
          "datasourceGroup": "timp2014_probelevel_beta",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "signal",
          "defaultChartType": "line",
          "annotation": null,
          "metadata": []
@@ -296,6 +314,7 @@
          "datasourceGroup": "timp2014_probelevel_beta",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "signal",
          "defaultChartType": "line",
          "annotation": null,
          "metadata": []
@@ -308,6 +327,7 @@
          "datasourceGroup": "timp2014_probelevel_beta",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "signal",
          "defaultChartType": "line",
          "annotation": null,
          "metadata": []
@@ -320,6 +340,7 @@
          "datasourceGroup": "timp2014_probelevel_beta",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "signal",
          "defaultChartType": "line",
          "annotation": null,
          "metadata": []
@@ -332,6 +353,7 @@
          "datasourceGroup": "timp2014_probelevel_beta",
          "dataprovider": "umd",
          "formula": null,
+         "datatype": "signal",
          "defaultChartType": "line",
          "annotation": null,
          "metadata": []

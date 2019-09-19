@@ -6,15 +6,22 @@ from scipy.stats.stats import pearsonr
 class Correlation(BaseStats):
     def __init__(self, measurements, pval_threshold):
         super(Correlation, self).__init__(measurements, pval_threshold)
-        self.measurements = self.filter(measurements)
+        self.measurements = measurements
 
+    def filter_measurements(self, params):
+        filtered = []
+        for m in self.measurements:
+            if m.datatype == params.datatype:
+                filtered.append(m)
+        return filtered
+        
     def compute_stat(self, data1, data2, params=None):
         return pearsonr(data1, data2)
 
     def compute(self, chr, start, end, params):
 
         ## filter measurements first
-
+        self.measurements = self.filter_measurements(params)
         # group measurements - assuming all pairs here
         msets = combinations(self.measurements, 2)
         results = []

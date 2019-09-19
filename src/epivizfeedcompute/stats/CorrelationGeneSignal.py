@@ -6,8 +6,14 @@ from scipy.stats.stats import pearsonr
 class CorrelationGeneSignal(BaseStats):
     def __init__(self, measurements, pval_threshold):
         super(Correlation, self).__init__(measurements, pval_threshold)
-        self.measurements = self.filter(measurements)
-
+        self.measurements = measurements
+    def filter_measurements(self, params):
+        filtered = []
+        for m in self.measurements:
+            if m.datatype == "expression" or m.datatype == "signal":
+                filtered.append(m)
+        return filtered
+    
     def get_transform_data(self, measurements):
         data = super(Correlation, self).get_transform_data(measurements)
 
@@ -23,6 +29,7 @@ class CorrelationGeneSignal(BaseStats):
 
         
     def compute(self, chr, start, end, params, upstream=1000, downstream=3000):
+        self.measurements = self.filter(self.measurements)
         self.upstream = upstream
         self.downstream = downstream
         return super(Correlation, self).compute(chr, start, end, params)
