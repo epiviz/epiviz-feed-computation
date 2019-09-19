@@ -29,44 +29,45 @@ class OverlapBlock(BaseStats):
         end = params["end"]
         b_one_ind = 0
         b_two_ind = 0
-        d1 = (0,0)
-        d2 = (0,0)
-        d1_sum = 0
-        d2_sum = 0
+        data_one = (0,0)
+        data_two = (0,0)
+        data_one_sum = 0
+        data_two_sum = 0
         while b_one_ind < len(data[0]) and b_two_ind < len(data[1]):
-
-            tissue_one_start = max(float(start), data[0]['start'][b_one_ind])
-            tissue_two_start = max(float(start), data[1]['start'][b_two_ind])
-            tissue_one_end = min(float(end), data[0]['end'][b_one_ind])
-            tissue_two_end = min(float(end), data[1]['end'][b_two_ind])
-            # there is an overlap
-            if tissue_one_end < tissue_two_start or tissue_two_end < tissue_one_start:
-                d1[1] += tissue_one_end - tissue_one_start
-                d2[1] += tissue_two_end - tissue_two_start
+            block_one = (max(float(start), data[0]['start'][b_one_ind]), min(float(end), data[0]['end'][b_one_ind]))
+            block_two = (max(float(start), data[1]['start'][b_two_ind]), min(float(end), data[1]['end'][b_two_ind]))
+           
+            # there is no overlap
+            if block_one[1] < block_two[0] or block_two[1] < block_one[0]:
+                data_one[1] += block_one[1] - block_one[0]
+                data_two[1] += block_two[1] - block_two[0]
             else:
-                common_end = min(tissue_two_end, tissue_one_end)
-                common_start = max(tissue_one_start, tissue_two_start)
-                d1[0] += common_end - common_start
-                d2[0] += common_end - common_start
-                if tissue_one_start < tissue_two_start < tissue_two_end < tissue_one_end:
-                    d1[1] += tissue_two_start - tissue_one_start  + tissue_one_end - tissue_two_end 
-                elif tissue_two_start < tissue_one_start < tissue_one_end < tissue_two_end:
-                    d2[1] += tissue_one_start - tissue_two_start  + tissue_two_end - tissue_one_end                        
-                elif tissue_one_end > tissue_two_start:
-                    d1[1] += tissue_two_start - tissue_one_start 
-                elif tissue_two_end > tissue_one_start
-                    d2[1] += tissue_one_start - tissue_two_start 
+                common_end = min(block_two[1], block_one[1])
+                common_start = max(block_one[0], block_two[0])
+                data_one[0] += common_end - common_start
+                data_two[0] += common_end - common_start
+                if block_one[0] < block_two[0] < block_two[1] < block_one[1]:
+                    data_one[1] += block_two[0] - block_one[0]  + block_one[1] - block_two[1] 
+
+                elif block_two[0] < block_one[0] < block_one[1] < block_two[1]:
+                    data_two[1] += block_one[0] - block_two[0]  + block_two[1] - block_one[1]     
+
+                elif block_one[1] > block_two[0]:
+                    data_one[1] += block_two[0] - block_one[0] 
+
+                elif block_two[1] > block_one[0]
+                    data_two[1] += block_one[0] - block_two[0] 
             # block tissue two is larger
-            if tissue_two_start >= tissue_one_end or tissue_two_end > tissue_one_end:
+            if block_two[0] >= block_one[1] or block_two[1] > block_one[1]:
                 b_one_ind += 1
-                d1_sum += tissue_one_end - tissue_one_start
+                data_one_sum += block_one[1] - block_one[0]
             
             # block tissue one is larger
-            if tissue_one_start >= tissue_two_end or tissue_two_end <= tissue_one_end:
+            if block_one[0] >= block_two[1] or block_two[1] <= block_one[1]:
                 b_two_ind += 1
-                d2_sum += tissue_two_end - tissue_two_start
+                data_two_sum += block_two[1] - block_two[0]
 
-        return ([d1[0], d1[1]/d1_sum], [d2[0], d2[1]/d2_sum])
+        return ([data_one[0], data_one[1]/data_one_sum], [data_two[0], data_two[1]/data_two_sum])
    
     def compute_stat(self, data1, data2, params=None):
         return fisher_exact(np.array([data1, data2]))
