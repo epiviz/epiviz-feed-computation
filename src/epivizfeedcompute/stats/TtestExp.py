@@ -16,7 +16,18 @@ class TtestExp(BaseStats):
             if m.datatype == params.datatype:
                 filtered.append(m)
         return filtered
-   
+    def group_measurements(self, annotation):
+        groups = {}
+        if annotation == None:
+            return combinations(self.measurements, 2)
+        else:
+            for m in self.measurements:
+                if m.annotation[annotation] in groups:
+                    groups[annotation].append(m)
+                else:
+                    groups[annotation] = [m]
+            return combinations(groups, len(groups.keys()))
+    
     def compute_stat(self, data1, data2, params=None):
         variance_threshold = 0.05 * 0.95
         var_one = math.max(variance_threshold, (data1 * (1 - data1)))
@@ -29,7 +40,7 @@ class TtestExp(BaseStats):
     def compute(self, chr, start, end, params):
         self.measurements = self.filter(params)
         
-        msets = combinations(self.measurements, 2)
+        msets = self.group_measurements(params.annotation)
         results = []
         
         for (m1, m2) in msets:

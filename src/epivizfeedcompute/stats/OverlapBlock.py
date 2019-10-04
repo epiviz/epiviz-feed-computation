@@ -29,16 +29,14 @@ class OverlapBlock(BaseStats):
         while b_one_ind < len(data[0]) and b_two_ind < len(data[1]):
             block_one = (max(float(start), data[0]['start'][b_one_ind]), min(float(end), data[0]['end'][b_one_ind]))
             block_two = (max(float(start), data[1]['start'][b_two_ind]), min(float(end), data[1]['end'][b_two_ind]))
-           
             # there is no overlap
             if block_one[1] < block_two[0] or block_two[1] < block_one[0]:
                 data_one[1] += block_one[1] - block_one[0]
                 data_two[1] += block_two[1] - block_two[0]
             else:
-                common_end = min(block_two[1], block_one[1])
-                common_start = max(block_one[0], block_two[0])
-                data_one[0] += common_end - common_start
-                data_two[0] += common_end - common_start
+                data_one[0] += min(block_two[1], block_one[1]) - max(block_one[0], block_two[0])
+                data_two[0] += min(block_two[1], block_one[1]) - max(block_one[0], block_two[0])
+
                 if block_one[0] < block_two[0] < block_two[1] < block_one[1]:
                     data_one[1] += block_two[0] - block_one[0]  + block_one[1] - block_two[1] 
 
@@ -47,16 +45,13 @@ class OverlapBlock(BaseStats):
 
                 elif block_one[1] > block_two[0]:
                     data_one[1] += block_two[0] - block_one[0] 
-
-                elif block_two[1] > block_one[0]
+                else 
                     data_two[1] += block_one[0] - block_two[0] 
             # block tissue two is larger
             if block_two[0] >= block_one[1] or block_two[1] > block_one[1]:
                 b_one_ind += 1
                 data_one_sum += block_one[1] - block_one[0]
-            
-            # block tissue one is larger
-            if block_one[0] >= block_two[1] or block_two[1] <= block_one[1]:
+            else:
                 b_two_ind += 1
                 data_two_sum += block_two[1] - block_two[0]
 
@@ -65,9 +60,21 @@ class OverlapBlock(BaseStats):
     def compute_stat(self, data1, data2, params=None):
         return fisher_exact(np.array([data1, data2]))
 
+    def group_measurements(self, annotation):
+        groups = {}
+        if annotation == None:
+            return combinations(self.measurements, 2)
+        else:
+            for m in self.measurements:
+                if m.annotation[annotation] in groups:
+                    groups[annotation].append(m)
+                else:
+                    groups[annotation] = [m]
+            return combinations(groups, len(groups.keys()))
+    
     def compute(self, chr, start, end, params):
         self.measurements = self.filter(params)
-        msets = combinations(self.measurements, 2)
+        msets = self.group_measurements(params.annotation)
         results = []
         
         for (m1, m2) in msets:

@@ -18,12 +18,24 @@ class Correlation(BaseStats):
     def compute_stat(self, data1, data2, params=None):
         return pearsonr(data1, data2)
 
+    def group_measurements(self, annotation):
+        groups = {}
+        if annotation == None:
+            return combinations(self.measurements, 2)
+        else:
+            for m in self.measurements:
+                if m.annotation[annotation] in groups:
+                    groups[annotation].append(m)
+                else:
+                    groups[annotation] = [m]
+            return combinations(groups, len(groups.keys()))
+            
     def compute(self, chr, start, end, params):
 
         ## filter measurements first
         self.measurements = self.filter_measurements(params)
         # group measurements - assuming all pairs here
-        msets = combinations(self.measurements, 2)
+        msets = self.group_measurements(params.annotation)
         results = []
 
         for (m1, m2) in msets:
