@@ -80,9 +80,9 @@ class OverlapBlock(BaseStats):
         Stat method
 
         Args:
-        redo
-            data1 (dict): holds a datatype field specifying the required datatype
-            data2 (dict): holds a datatype field specifying the required datatype
+        
+            data1 (dict): data in group 1
+            data2 (dict): data in group 2
         Returns:
             oddsratio and pvalue
         '''
@@ -111,8 +111,8 @@ class OverlapBlock(BaseStats):
     
     def compute(self, chr, start, end, params):
         '''
-        Computes stat method
-
+        
+        Computes statistical method on the given measurement
         Args:
             chr (str): chromosome
             start (int): genomic start

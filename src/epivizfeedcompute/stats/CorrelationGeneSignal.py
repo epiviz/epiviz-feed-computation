@@ -46,8 +46,8 @@ class CorrelationGeneSignal(BaseStats):
         
     def compute(self, chr, start, end, params, upstream=1000, downstream=3000):
         '''
-        Computes stat method
-
+        Computes statistical method on the given measurement
+        
         Args:
             chr (str): chromosome
             start (int): genomic start
