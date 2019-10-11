@@ -9,6 +9,16 @@ class TtestBlock(BaseStats):
         super(TtestBlock, self).__init__(measurements)
         self.measurements = measurements
     def filter_measurements(self, params):
+        '''
+        Filters measurements for measurements with datatype needed by the current class
+
+        Args:
+            params (dict): holds a datatype field specifying the required datatype
+        
+        Returns:
+            filtered measurments
+        '''
+        
         filtered = []
         for m in self.measurements:
             if m.datatype == "expression" or m.datatype == "peak":
@@ -16,6 +26,14 @@ class TtestBlock(BaseStats):
         return filtered
     
      def get_transform_data(self, measurements):
+        '''
+        Gets transform data
+        Args: 
+            measurements (list): list of measurements
+        Returns:
+            tuple of transformed data
+        '''
+        
         data = super(TtestBlock, self).get_transform_data(measurements)
         block = []
         non_block = []
@@ -26,6 +44,14 @@ class TtestBlock(BaseStats):
                 non_block.append(row[measurements[0].mid])
         return (block, non_block)
     def group_measurements(self, annotation):
+        '''
+        Groups measurement based on annotation if supplied. Otherwise preforms all pairs matching
+        Args:
+            annotation (str): specifies the grouping 
+        Returns:
+            all pairs between the two groups
+        '''
+        
         groups = {}
         if annotation == None:
             return combinations(self.measurements, 2)
@@ -38,10 +64,32 @@ class TtestBlock(BaseStats):
             return combinations(groups, len(groups.keys()))
     
     def compute_stat(self, data1, data2, params=None):
+        '''
+        Stat method
+
+        Args:
+        redo
+            data1 (dict): holds a datatype field specifying the required datatype
+            data2 (dict): holds a datatype field specifying the required datatype
+        Returns:
+            ttest value and pvalue
+        '''
         
         return ttest_ind(data1, data2, equal_var=False)
 
     def compute(self, chr, start, end, params):
+        '''
+        Computes stat method
+
+        Args:
+            chr (str): chromosome
+            start (int): genomic start
+            end (int): genomic end
+            params (dict): additional params contains annotations and datatype field
+        Returns:
+            dataframe of results
+            
+        '''
         self.measurements = self.filter(params)
         msets = self.group_measurements(params.annotation)
         results = []

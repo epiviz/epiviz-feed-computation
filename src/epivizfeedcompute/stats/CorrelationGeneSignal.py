@@ -8,6 +8,15 @@ class CorrelationGeneSignal(BaseStats):
         super(Correlation, self).__init__(measurements, pval_threshold)
         self.measurements = measurements
     def filter_measurements(self, params):
+        '''
+        Filters measurements for measurements with datatype needed by the current class
+
+        Args:
+            params (dict): holds a datatype field specifying the required datatype
+        
+        Returns:
+            filtered measurments
+        '''
         filtered = []
         for m in self.measurements:
             if m.datatype == "expression" or m.datatype == "signal":
@@ -15,6 +24,13 @@ class CorrelationGeneSignal(BaseStats):
         return filtered
     
     def get_transform_data(self, measurements):
+        '''
+        Gets transform data
+        Args: 
+            measurements (list): list of measurements
+        Returns:
+            tuple transformed data
+        '''
         data = super(Correlation, self).get_transform_data(measurements)
 
         mean = []
@@ -29,6 +45,20 @@ class CorrelationGeneSignal(BaseStats):
 
         
     def compute(self, chr, start, end, params, upstream=1000, downstream=3000):
+        '''
+        Computes stat method
+
+        Args:
+            chr (str): chromosome
+            start (int): genomic start
+            end (int): genomic end
+            params (dict): additional params contains annotations and datatype field
+            upstream (int): number of base pairs upstream
+            downstream (int): number of base pairs downstream
+        Returns:
+            dataframe of results
+            
+        '''
         self.measurements = self.filter(self.measurements)
         self.upstream = upstream
         self.downstream = downstream

@@ -10,6 +10,16 @@ class OverlapBlock(BaseStats):
         super(OverlapBlock, self).__init__(measurements)
         self.measurements = measurements
     def filter_measurements(self, params):
+        '''
+        Filters measurements for measurements with datatype needed by the current class
+
+        Args:
+            params (dict): holds a datatype field specifying the required datatype
+        
+        Returns:
+            filtered measurments
+        '''
+        
         filtered = []
         for m in self.measurements:
             if m.datatype == params.datatype:
@@ -17,6 +27,14 @@ class OverlapBlock(BaseStats):
         return filtered
         
     def get_transform_data(self, measurements, params=None):
+        '''
+        Gets transform data
+        Args: 
+            measurements (list): list of measurements
+        Returns:
+            tuple of transformed data
+        '''
+        
         data = super(OverlapBlock, self).get_transform_data(measurements)
         start = params["start"]
         end = params["end"]
@@ -58,9 +76,28 @@ class OverlapBlock(BaseStats):
         return ([data_one[0], data_one[1]/data_one_sum], [data_two[0], data_two[1]/data_two_sum])
    
     def compute_stat(self, data1, data2, params=None):
+        '''
+        Stat method
+
+        Args:
+        redo
+            data1 (dict): holds a datatype field specifying the required datatype
+            data2 (dict): holds a datatype field specifying the required datatype
+        Returns:
+            oddsratio and pvalue
+        '''
+        
         return fisher_exact(np.array([data1, data2]))
 
     def group_measurements(self, annotation):
+        '''
+        Groups measurement based on annotation if supplied. Otherwise preforms all pairs matching
+        Args:
+            annotation (str): specifies the grouping 
+        Returns:
+            all pairs between the two groups
+        '''
+        
         groups = {}
         if annotation == None:
             return combinations(self.measurements, 2)
@@ -73,6 +110,18 @@ class OverlapBlock(BaseStats):
             return combinations(groups, len(groups.keys()))
     
     def compute(self, chr, start, end, params):
+        '''
+        Computes stat method
+
+        Args:
+            chr (str): chromosome
+            start (int): genomic start
+            end (int): genomic end
+            params (dict): additional params contains annotations and datatype field
+        Returns:
+            dataframe of results
+            
+        '''
         self.measurements = self.filter(params)
         msets = self.group_measurements(params.annotation)
         results = []

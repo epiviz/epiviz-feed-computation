@@ -5,10 +5,25 @@ from scipy.stats.stats import pearsonr
 
 class Correlation(BaseStats):
     def __init__(self, measurements, pval_threshold):
+        '''
+        Correlation class initialization
+        Args: 
+            measurements (list): list of measurements
+            pval_threshold (double): p value threshold
+        '''
         super(Correlation, self).__init__(measurements, pval_threshold)
         self.measurements = measurements
 
     def filter_measurements(self, params):
+        '''
+        Filters measurements for measurements with datatype needed by the current class
+
+        Args:
+            params (dict): holds a datatype field specifying the required datatype
+        
+        Returns:
+            filtered measurments
+        '''
         filtered = []
         for m in self.measurements:
             if m.datatype == params.datatype:
@@ -16,9 +31,27 @@ class Correlation(BaseStats):
         return filtered
         
     def compute_stat(self, data1, data2, params=None):
+        '''
+        Stat method
+
+        Args:
+        redo
+            data1 (dict): holds a datatype field specifying the required datatype
+            data2 (dict): holds a datatype field specifying the required datatype
+        Returns:
+            pearsonr coefficent and pvalue
+        '''
+        
         return pearsonr(data1, data2)
 
     def group_measurements(self, annotation):
+        '''
+        Groups measurement based on annotation if supplied. Otherwise preforms all pairs matching
+        Args:
+            annotation (str): specifies the grouping 
+        Returns:
+            all pairs between the two groups
+        '''
         groups = {}
         if annotation == None:
             return combinations(self.measurements, 2)
@@ -31,10 +64,20 @@ class Correlation(BaseStats):
             return combinations(groups, len(groups.keys()))
             
     def compute(self, chr, start, end, params):
+        '''
+        Computes stat method
 
-        ## filter measurements first
+        Args:
+            chr (str): chromosome
+            start (int): genomic start
+            end (int): genomic end
+            params (dict): additional params contains annotations and datatype field
+        Returns:
+            dataframe of results
+            
+        '''
+
         self.measurements = self.filter_measurements(params)
-        # group measurements - assuming all pairs here
         msets = self.group_measurements(params.annotation)
         results = []
 

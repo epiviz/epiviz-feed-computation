@@ -11,12 +11,30 @@ class TtestExp(BaseStats):
         super(TtestGene, self).__init__(measurements, pval_threshold)
         self.measurements = measurements
     def filter_measurements(self, params):
+        '''
+        Filters measurements for measurements with datatype needed by the current class
+
+        Args:
+            params (dict): holds a datatype field specifying the required datatype
+        
+        Returns:
+            filtered measurments
+        '''
+        
         filtered = []
         for m in self.measurements:
             if m.datatype == params.datatype:
                 filtered.append(m)
         return filtered
     def group_measurements(self, annotation):
+        '''
+        Groups measurement based on annotation if supplied. Otherwise preforms all pairs matching
+        Args:
+            annotation (str): specifies the grouping 
+        Returns:
+            all pairs between the two groups
+        '''
+        
         groups = {}
         if annotation == None:
             return combinations(self.measurements, 2)
@@ -29,6 +47,16 @@ class TtestExp(BaseStats):
             return combinations(groups, len(groups.keys()))
     
     def compute_stat(self, data1, data2, params=None):
+        '''
+        Stat method
+
+        Args:
+        redo
+            data1 (dict): holds a datatype field specifying the required datatype
+            data2 (dict): holds a datatype field specifying the required datatype
+        Returns:
+            ttest value and pvalue
+        '''
         variance_threshold = 0.05 * 0.95
         var_one = math.max(variance_threshold, (data1 * (1 - data1)))
         var_two = math.max(variance_threshold, (data2 * (1 - data2)))
@@ -38,6 +66,18 @@ class TtestExp(BaseStats):
         return ttest_value, p_value
 
     def compute(self, chr, start, end, params):
+        '''
+        Computes stat method
+
+        Args:
+            chr (str): chromosome
+            start (int): genomic start
+            end (int): genomic end
+            params (dict): additional params contains annotations and datatype field
+        Returns:
+            dataframe of results
+            
+        '''
         self.measurements = self.filter(params)
         
         msets = self.group_measurements(params.annotation)
