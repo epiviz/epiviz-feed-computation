@@ -27,10 +27,24 @@ class Correlation(BaseStats):
         '''
         filtered = []
         for m in self.measurements:
-            if m["datatype"] == params["datatype"]:
+            if m.datatype == params["datatype"]:
                 filtered.append(m)
         return filtered
+    def get_transform_data(self,measurements, chr, start, end, params = None):
+        '''
+        Gets transform data
+        Args: 
+            measurements (list): list of measurements
+        Returns:
+            tuple transformed data
+        '''
+        data = []
+
+        for m in measurements:
+            data.append(m.get_data(chr, start, end)[0][m.mid])
         
+        return tuple(data)
+
     def compute_stat(self, data1, data2, params=None):
         '''
         Stat method
@@ -82,7 +96,7 @@ class Correlation(BaseStats):
         results = []
 
         for (m1, m2) in msets:
-            data1, data2 = self.get_transform_data([m1, m2])
+            data1, data2 = self.get_transform_data([m1, m2], chr, start, end, params)
             corr, pvalue = self.compute_stat(data1, data2)
 
             if pvalue <= self.pval_threshold:

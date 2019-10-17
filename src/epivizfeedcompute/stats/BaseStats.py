@@ -27,7 +27,7 @@ class BaseStats(object):
         # 3. Calculate Test
         raise Exception("NotImplementedException")
 
-    def get_transform_data(self,measurements):
+    def get_transform_data(self,measurements, chr, start, end, params = None):
         '''
         Gets transform data
         Args: 
@@ -38,8 +38,8 @@ class BaseStats(object):
         data = []
 
         for m in measurements:
-            data.append(m.get_data(chr, start, end)[m.mid])
-
+            temp = m.get_data(chr, start, end)
+            data.append(m.get_data(chr, start, end)[0])
         return tuple(data)
 
     def toDataFrame(self, results):
@@ -55,13 +55,12 @@ class BaseStats(object):
         measurement2 = [r['measurements'][1].name for r in results] 
         value = [r['value'] for r in results] 
         pvalue = [r['pvalue'] for r in results] 
-
         return pd.DataFrame(
             data = {
-                measurement1 : measurement1,
-                measurement2 : measurement2,
-                value : value,
-                pvalue : pvalue
+                "measurement1" : measurement1,
+                "measurement2" : measurement2,
+                "value" : value,
+                "pvalue" : pvalue
             }
         )
 

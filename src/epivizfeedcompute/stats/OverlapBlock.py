@@ -1,5 +1,6 @@
 import logging
 import math
+import numpy as np
 import itertools
 from scipy.stats import fisher_exact
 from .BaseStats import BaseStats
@@ -22,11 +23,11 @@ class OverlapBlock(BaseStats):
         '''
         filtered = []
         for m in self.measurements:
-            if m["datatype"] == params["datatype"]:
+            if m.datatype == params["datatype"]:
                 filtered.append(m)
         return filtered
         
-    def get_transform_data(self, measurements, params=None):
+    def get_transform_data(self, measurements, chr, start,end,params=None):
         '''
         Gets transform data
         Args: 
@@ -35,13 +36,11 @@ class OverlapBlock(BaseStats):
             tuple of transformed data
         '''
         
-        data = super(OverlapBlock, self).get_transform_data(measurements)
-        start = params["start"]
-        end = params["end"]
+        data = super(OverlapBlock, self).get_transform_data(measurements, chr, start, end, params=params)
         b_one_ind = 0
         b_two_ind = 0
-        data_one = (0,0)
-        data_two = (0,0)
+        data_one = [0,0]
+        data_two = [0,0]
         data_one_sum = 0
         data_two_sum = 0
         while b_one_ind < len(data[0]) and b_two_ind < len(data[1]):
@@ -103,7 +102,7 @@ class OverlapBlock(BaseStats):
             return itertools.combinations(self.measurements, 2)
         else:
             for m in self.measurements:
-                if m["annotation"][annotation] in groups:
+                if m.annotation[annotation] in groups:
                     groups[annotation].append(m)
                 else:
                     groups[annotation] = [m]
@@ -127,8 +126,9 @@ class OverlapBlock(BaseStats):
         results = []
         
         for (m1, m2) in msets:
-            data1, data2 = self.get_transform_data([m1, m2])
+            data1, data2 = self.get_transform_data([m1, m2], chr, start,end)
             value, pvalue = self.compute_stat(data1, data2)
+            print(value, pvalue)
             if pvalue <= self.pval_threshold:
                 results.append(
                     {
@@ -140,5 +140,4 @@ class OverlapBlock(BaseStats):
                 )
 
         sorted_results = sorted(results, key=lambda x: x['value'], reverse=True)
-
         return self.toDataFrame(sorted_results)
