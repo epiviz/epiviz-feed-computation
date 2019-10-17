@@ -7,6 +7,7 @@ class CorrelationGeneSignal(BaseStats):
     def __init__(self, measurements, pval_threshold):
         super(Correlation, self).__init__(measurements, pval_threshold)
         self.measurements = measurements
+        self.pval_threshold = pval_threshold
     def filter_measurements(self, params):
         '''
         Filters measurements for measurements with datatype needed by the current class
@@ -59,7 +60,7 @@ class CorrelationGeneSignal(BaseStats):
             dataframe of results
             
         '''
-        self.measurements = self.filter(self.measurements)
+        self.measurements = self.filter_measurements(self.measurements)
         self.upstream = upstream
         self.downstream = downstream
         return super(Correlation, self).compute(chr, start, end, params)

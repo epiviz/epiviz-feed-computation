@@ -1,6 +1,6 @@
 from .BaseStats import BaseStats
 
-from itertools import combinations
+import itertools 
 from scipy.stats.stats import pearsonr
 
 class Correlation(BaseStats):
@@ -13,6 +13,7 @@ class Correlation(BaseStats):
         '''
         super(Correlation, self).__init__(measurements, pval_threshold)
         self.measurements = measurements
+        self.pval_threshold = pval_threshold
 
     def filter_measurements(self, params):
         '''
@@ -26,7 +27,7 @@ class Correlation(BaseStats):
         '''
         filtered = []
         for m in self.measurements:
-            if m.datatype == params.datatype:
+            if m["datatype"] == params["datatype"]:
                 filtered.append(m)
         return filtered
         
@@ -53,14 +54,14 @@ class Correlation(BaseStats):
         '''
         groups = {}
         if annotation == None:
-            return combinations(self.measurements, 2)
+            return itertools.combinations(self.measurements, 2)
         else:
             for m in self.measurements:
                 if m.annotation[annotation] in groups:
                     groups[annotation].append(m)
                 else:
                     groups[annotation] = [m]
-            return combinations(groups, len(groups.keys()))
+            return itertools.combinations(groups, len(groups.keys()))
             
     def compute(self, chr, start, end, params):
         '''
@@ -77,7 +78,7 @@ class Correlation(BaseStats):
         '''
 
         self.measurements = self.filter_measurements(params)
-        msets = self.group_measurements(params.annotation)
+        msets = self.group_measurements(params["annotation"])
         results = []
 
         for (m1, m2) in msets:

@@ -8,8 +8,10 @@ class TtestExp(BaseStats):
     Class for computing ttest on gene expressions 
     '''
     def __init__(self, measurements, pval_threshold):
-        super(TtestGene, self).__init__(measurements, pval_threshold)
+        super(TtestExp, self).__init__(measurements, pval_threshold)
         self.measurements = measurements
+        self.pval_threshold = pval_threshold
+
     def filter_measurements(self, params):
         '''
         Filters measurements for measurements with datatype needed by the current class
@@ -23,7 +25,7 @@ class TtestExp(BaseStats):
         
         filtered = []
         for m in self.measurements:
-            if m.datatype == params.datatype:
+            if m["datatype"] == params["datatype"]:
                 filtered.append(m)
         return filtered
     def group_measurements(self, annotation):
@@ -37,14 +39,14 @@ class TtestExp(BaseStats):
         
         groups = {}
         if annotation == None:
-            return combinations(self.measurements, 2)
+            return itertools.combinations(self.measurements, 2)
         else:
             for m in self.measurements:
-                if m.annotation[annotation] in groups:
+                if m["annotation"][annotation] in groups:
                     groups[annotation].append(m)
                 else:
                     groups[annotation] = [m]
-            return combinations(groups, len(groups.keys()))
+            return itertools.combinations(groups, len(groups.keys()))
     
     def compute_stat(self, data1, data2, params=None):
         '''
@@ -77,13 +79,13 @@ class TtestExp(BaseStats):
             dataframe of results
             
         '''
-        self.measurements = self.filter(params)
+        self.measurements = self.filter_measurements(params)
         
-        msets = self.group_measurements(params.annotation)
+        msets = self.group_measurements(params["annotation"])
         results = []
         
         for (m1, m2) in msets:
-            params = {"sample_count_normal": m1.annotation["sample_count"], "sample_count_tumor": m2.annotation["sample_count"]}
+            params = {"sample_count_normal": m1["annotation"]["sample_count"], "sample_count_tumor": m2["annotation"]["sample_count"]}
             data1, data2 = self.get_transform_data([m1, m2])
             for i in range(len(data1)):
                 value, pvalue = self.compute_stat(data1[i], data2[i], params)

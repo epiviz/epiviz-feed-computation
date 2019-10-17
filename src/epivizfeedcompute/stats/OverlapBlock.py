@@ -6,9 +6,10 @@ from .BaseStats import BaseStats
 
 class OverlapBlock(BaseStats):
 
-    def __init__(self, measurements):
-        super(OverlapBlock, self).__init__(measurements)
+    def __init__(self, measurements, pval_threshold):
+        super(OverlapBlock, self).__init__(measurements, pval_threshold)
         self.measurements = measurements
+        self.pval_threshold = pval_threshold
     def filter_measurements(self, params):
         '''
         Filters measurements for measurements with datatype needed by the current class
@@ -19,10 +20,9 @@ class OverlapBlock(BaseStats):
         Returns:
             filtered measurments
         '''
-        
         filtered = []
         for m in self.measurements:
-            if m.datatype == params.datatype:
+            if m["datatype"] == params["datatype"]:
                 filtered.append(m)
         return filtered
         
@@ -63,7 +63,7 @@ class OverlapBlock(BaseStats):
 
                 elif block_one[1] > block_two[0]:
                     data_one[1] += block_two[0] - block_one[0] 
-                else 
+                else: 
                     data_two[1] += block_one[0] - block_two[0] 
             # block tissue two is larger
             if block_two[0] >= block_one[1] or block_two[1] > block_one[1]:
@@ -100,10 +100,10 @@ class OverlapBlock(BaseStats):
         
         groups = {}
         if annotation == None:
-            return combinations(self.measurements, 2)
+            return itertools.combinations(self.measurements, 2)
         else:
             for m in self.measurements:
-                if m.annotation[annotation] in groups:
+                if m["annotation"][annotation] in groups:
                     groups[annotation].append(m)
                 else:
                     groups[annotation] = [m]
@@ -122,8 +122,8 @@ class OverlapBlock(BaseStats):
             dataframe of results
             
         '''
-        self.measurements = self.filter(params)
-        msets = self.group_measurements(params.annotation)
+        self.measurements = self.filter_measurements(params)
+        msets = self.group_measurements(params["annotation"])
         results = []
         
         for (m1, m2) in msets:

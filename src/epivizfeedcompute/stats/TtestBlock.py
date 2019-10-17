@@ -5,9 +5,11 @@ from .BaseStats import BaseStats
 
 class TtestBlock(BaseStats):
 
-    def __init__(self, measurements):
+    def __init__(self, measurements, pval_threshold):
         super(TtestBlock, self).__init__(measurements)
         self.measurements = measurements
+        self.pval_threshold = pval_threshold
+
     def filter_measurements(self, params):
         '''
         Filters measurements for measurements with datatype needed by the current class
@@ -25,7 +27,7 @@ class TtestBlock(BaseStats):
                 filtered.append(m)
         return filtered
     
-     def get_transform_data(self, measurements):
+    def get_transform_data(self, measurements):
         '''
         Gets transform data
         Args: 
@@ -38,11 +40,12 @@ class TtestBlock(BaseStats):
         block = []
         non_block = []
         for index, row in data[0].iterrows():
-            if data[1].where(((row.start <= data[1].start) & (data[1].start <= row.end)) | ((row.start <= data[1].end) & (data[1].end <= row.end)):
+            if data[1].where(((row.start <= data[1].start) and (data[1].start <= row.end)) or ((row.start <= data[1].end) and (data[1].end <= row.end))):
                 block.append(row[measurements[0].mid])
             else:
                 non_block.append(row[measurements[0].mid])
         return (block, non_block)
+
     def group_measurements(self, annotation):
         '''
         Groups measurement based on annotation if supplied. Otherwise preforms all pairs matching
@@ -89,8 +92,10 @@ class TtestBlock(BaseStats):
             dataframe of results
             
         '''
-        self.measurements = self.filter(params)
+        self.measurements = self.filter_measurements(params)
+        
         msets = self.group_measurements(params.annotation)
+        
         results = []
         
         for (m1, m2) in msets:
