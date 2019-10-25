@@ -24,7 +24,7 @@ class TtestBlock(BaseStats):
         filtered = []
 
         for m in self.measurements:
-            if m.annotation["datatype"] == "expression" or m.datatype == "peak":
+            if m.annotation["datatype"] == "expression" or m.annotation["datatype"] == "peak":
                 filtered.append(m)
         
         return filtered

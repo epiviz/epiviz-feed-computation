@@ -22,7 +22,7 @@ class CorrelationGeneSignal(Correlation):
         '''
         filtered = []
         for m in self.measurements:
-            if m.annotation["datatype"] == "expression" or m.datatype == "signal":
+            if m.annotation["datatype"] == "expression" or m.annotation["datatype"] == "signal":
                 filtered.append(m)
         return filtered
     
@@ -41,9 +41,11 @@ class CorrelationGeneSignal(Correlation):
         for m in measurements:
             data.append(m.get_data(chr, start, end)[0])
             mids.append(m.mid)
-
+        print(data[1])
         for index, row in data[0].iterrows():
+            print(row)
             mean.append(data[1].where(((row.start - self.upstream <= data[1].start) & (data[1].start <= row.end + self.downstream)) | ((row.start - self.upstream <= data[1].end) & (data[1].end <= row.end + self.downstream))).mean().fillna(0))
+        print(pd.DataFrame(mean))
         return (data[0][mids[0]], pd.DataFrame(mean)[mids[1]])
         
     def group_measurements(self, annotation):

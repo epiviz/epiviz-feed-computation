@@ -16,16 +16,17 @@ with open(config_file, "r") as config_file:
     if data["measurements"] is not None:
         measurements = data["measurements"]
         for m in measurements: 
-            config_measurements.append(
-                WebServerMeasurement(m['type'], m['id'], m['name'], "http://54.157.53.251/api/", 
-                m['datasourceId'], m['datasourceGroup'], m['annotation'], m['metadata']
-                )
-            )
+            tm = WebServerMeasurement(m['type'], m['id'], m['name'],  "http://54.157.53.251/api/", 
+                    m['datasourceId'], m['datasourceGroup'], m['annotation'], m['metadata'])
+            if tm.annotation is None:
+                tm.annotation = {}
+            tm.annotation["datatype"] = m["datatype"]
+            config_measurements.append(tm)
 #ESR1 chr6: 150204511 - 157531913
 #ATOH7 chr10: 63661013 - 71027315
-chrom = "chr10"
-start = 63661013
-end = 71027315
+chrom = "chr6"
+start = 150204511
+end = 157531913
 # filter for overlap measuremnets
 overlap_measurements = [m for m in config_measurements if m.mid in ["colon___normal", "timp2014_colon_blocks"] ]
 for m in overlap_measurements:
@@ -36,8 +37,8 @@ for m in overlap_measurements:
 
 def test_ttest_block():
     # create instance of the class
-    test = TtestBlock.TtestBlock(overlap_measurements, 0.05)
-    result = test.compute(chrom, start, end, {"datatype": "expression", "annotation":None})
+    test = TtestBlock(overlap_measurements, 0.05)
+    result = test.compute(chrom, start, end, {"datatype": ["expression", "peak"], "annotation":None})
     print(result)
     assert len(result)
 test_ttest_block()

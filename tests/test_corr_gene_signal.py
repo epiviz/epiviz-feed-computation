@@ -33,10 +33,11 @@ for m in overlap_measurements:
         m.datatype = 'expression'
     else:
         m.datatype = 'signal'
+print(overlap_measurements)
 def test_corr_gene_signal():
     # create instance of the class
-    test = CorrelationGeneSignal.CorrelationGeneSignal(overlap_measurements, 0.05)
-    result = test.compute(chrom, start, end, {"datatype": "expression", "annotation":None})
+    test = CorrelationGeneSignal(overlap_measurements, 0.05)
+    result = test.compute(chrom, start, end, {"datatype": ["expression", "signal"], "annotation":None})
     print(result)
     assert len(result)
 test_corr_gene_signal()
