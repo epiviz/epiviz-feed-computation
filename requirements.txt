@@ -16,7 +16,7 @@
 # scipy==1.0
 
 Flask
-Flask-Cache
+flask_caching
 Flask-Sockets
 Flask-SQLAlchemy
 gevent
