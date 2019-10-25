@@ -105,12 +105,7 @@ class TtestBlock(BaseStats):
             
         '''
         self.measurements = self.filter_measurements(params)
-<<<<<<< HEAD
-        
-        msets = self.group_measurements(params["annotation"])
-=======
         msets = self.group_measurements(params.annotation)
->>>>>>> 84db794589f2c03d7d3fd05e2663326f345d0180
         results = []
         
         for (m1, m2) in msets:
