@@ -1,6 +1,7 @@
 import math
 import logging
 import itertools
+from scipy.stats import  norm
 from .BaseStats import BaseStats
 
 class TtestExp(BaseStats):
@@ -25,9 +26,24 @@ class TtestExp(BaseStats):
         
         filtered = []
         for m in self.measurements:
-            if m["datatype"] == params["datatype"]:
+            if m.datatype == params["datatype"]:
                 filtered.append(m)
         return filtered
+    def get_transform_data(self,measurements, chr, start, end, params = None):
+        '''
+        Gets transform data
+        Args: 
+            measurements (list): list of measurements
+        Returns:
+            tuple transformed data
+        '''
+        data = []
+
+        for m in measurements:
+            data.append(m.get_data(chr, start, end)[0][m.mid])
+        
+        return tuple(data)
+
     def group_measurements(self, annotation):
         '''
         Groups measurement based on annotation if supplied. Otherwise preforms all pairs matching
@@ -42,7 +58,7 @@ class TtestExp(BaseStats):
             return itertools.combinations(self.measurements, 2)
         else:
             for m in self.measurements:
-                if m["annotation"][annotation] in groups:
+                if m.annotation[annotation] in groups:
                     groups[annotation].append(m)
                 else:
                     groups[annotation] = [m]
@@ -59,8 +75,8 @@ class TtestExp(BaseStats):
             ttest value and pvalue
         '''
         variance_threshold = 0.05 * 0.95
-        var_one = math.max(variance_threshold, (data1 * (1 - data1)))
-        var_two = math.max(variance_threshold, (data2 * (1 - data2)))
+        var_one = max(variance_threshold, (data1 * (1 - data1)))
+        var_two = max(variance_threshold, (data2 * (1 - data2)))
         denominator = math.sqrt(var_one / params["sample_count_normal"] + var_two / params["sample_count_tumor"])
         ttest_value = (data1 - data2) / denominator
         p_value = 1 - norm.cdf(abs(ttest_value))
@@ -85,8 +101,10 @@ class TtestExp(BaseStats):
         results = []
         
         for (m1, m2) in msets:
-            params = {"sample_count_normal": m1["annotation"]["sample_count"], "sample_count_tumor": m2["annotation"]["sample_count"]}
-            data1, data2 = self.get_transform_data([m1, m2])
+            
+            params = {"sample_count_normal": m1.annotation["sample_count"], "sample_count_tumor": m2.annotation["sample_count"]}
+            data1, data2 = self.get_transform_data([m1, m2],chr, start, end)
+            print(data1)
             for i in range(len(data1)):
                 value, pvalue = self.compute_stat(data1[i], data2[i], params)
                 if pvalue <= self.pval_threshold:

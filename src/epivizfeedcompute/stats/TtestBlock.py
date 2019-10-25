@@ -1,4 +1,5 @@
 import logging
+import itertools
 from scipy.stats import ttest_ind
 from .BaseStats import BaseStats
 
@@ -6,7 +7,7 @@ from .BaseStats import BaseStats
 class TtestBlock(BaseStats):
 
     def __init__(self, measurements, pval_threshold):
-        super(TtestBlock, self).__init__(measurements)
+        super(TtestBlock, self).__init__(measurements, pval_threshold)
         self.measurements = measurements
         self.pval_threshold = pval_threshold
 
@@ -25,9 +26,10 @@ class TtestBlock(BaseStats):
         for m in self.measurements:
             if m.datatype == "expression" or m.datatype == "peak":
                 filtered.append(m)
+                print(m)
         return filtered
     
-    def get_transform_data(self, measurements):
+    def get_transform_data(self, measurements, chr, start, end, params = None):
         '''
         Gets transform data
         Args: 
@@ -36,7 +38,8 @@ class TtestBlock(BaseStats):
             tuple of transformed data
         '''
         
-        data = super(TtestBlock, self).get_transform_data(measurements)
+        data = super(TtestBlock, self).get_transform_data(measurements, chr, start, end)
+        print(data)
         block = []
         non_block = []
         for index, row in data[0].iterrows():
@@ -57,14 +60,21 @@ class TtestBlock(BaseStats):
         
         groups = {}
         if annotation == None:
-            return combinations(self.measurements, 2)
+            for m in self.measurements:
+                if m.datatype in groups:
+                    groups[m.datatype].append(m)
+                else:
+                    groups[m.datatype] = [m]
+            #sorts items by datatype
+            groups = sorted(groups.items(), key = lambda kv:kv[0])
+            return itertools.product(groups[0][1], groups[1][1])
         else:
             for m in self.measurements:
                 if m.annotation[annotation] in groups:
                     groups[annotation].append(m)
                 else:
                     groups[annotation] = [m]
-            return combinations(groups, len(groups.keys()))
+            return itertools.combinations(groups, len(groups.keys()))
     
     def compute_stat(self, data1, data2, params=None):
         '''
@@ -94,12 +104,12 @@ class TtestBlock(BaseStats):
         '''
         self.measurements = self.filter_measurements(params)
         
-        msets = self.group_measurements(params.annotation)
-        
+        msets = self.group_measurements(params["annotation"])
         results = []
         
         for (m1, m2) in msets:
-            data1, data2 = self.get_transform_data([m1, m2])
+            data1, data2 = self.get_transform_data([m1, m2], chr, start, end)
+            print(data2)
             value, pvalue = self.compute_stat(data1, data2)
             if pvalue <= self.pval_threshold:
                 results.append(

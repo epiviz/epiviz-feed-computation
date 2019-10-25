@@ -22,17 +22,21 @@ with open(config_file, "r") as config_file:
                 )
             )
 #ESR1 chr6: 150204511 - 157531913
-chrom = "chr6"
-start = 150204511
-end = 157531913
+#POU4F3 chr5: 141380234 - 147695481
+chrom = "chr5"
+start = 141380234
+end = 147695481
 # filter for overlap measuremnets
-overlap_measurements = [m for m in config_measurements if m.mid in ["colon___normal", "colon___tumor"] ]
+overlap_measurements = [m for m in config_measurements if m.mid in ["colon___normal", "colon___tumor", "colon_normal", "colon_cancer"] ]
 for m in overlap_measurements:
-    m.datatype = 'expression'
-def test_corr():
+    if m.mid in ["colon___normal", "colon___tumor"]:
+        m.datatype = 'expression'
+    else:
+        m.datatype = 'signal'
+def test_corr_gene_signal():
     # create instance of the class
-    test = Correlation.Correlation(overlap_measurements, 0.05)
+    test = CorrelationGeneSignal.CorrelationGeneSignal(overlap_measurements, 0.05)
     result = test.compute(chrom, start, end, {"datatype": "expression", "annotation":None})
     print(result)
     assert len(result)
-test_corr()
+test_corr_gene_signal()

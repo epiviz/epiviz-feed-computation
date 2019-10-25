@@ -29,10 +29,15 @@ end = 157531913
 overlap_measurements = [m for m in config_measurements if m.mid in ["colon___normal", "colon___tumor"] ]
 for m in overlap_measurements:
     m.datatype = 'expression'
-def test_corr():
+    if m.mid == "colon___normal":
+        m.annotation = {"sample_count": 16}
+    else:
+        m.annotation = {"sample_count": 486}
+        
+def test_ttest_exp():
     # create instance of the class
-    test = Correlation.Correlation(overlap_measurements, 0.05)
+    test = TtestExp.TtestExp(overlap_measurements, 0.05)
     result = test.compute(chrom, start, end, {"datatype": "expression", "annotation":None})
     print(result)
     assert len(result)
-test_corr()
+test_ttest_exp()

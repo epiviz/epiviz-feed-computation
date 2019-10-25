@@ -5,37 +5,7 @@ from epivizfileserver.measurements import WebServerMeasurement
 sys.path.insert(0,'C:/Users/Kyle/Documents/Python Scripts/Envs/research_epiviz/efeedcomputation/src/epivizfeedcompute')
 
 from stats import BaseStats, TtestBlock, TtestExp, Correlation, CorrelationGeneSignal, OverlapBlock
-# __author__ = "Jayaram Kancherla"
-# __copyright__ = "Jayaram Kancherla"
-# __license__ = "mit"​
-# overlap_measurements = [
-#     {
-#         "id": "breast___normal",
-#         "name": "Expression breast_normal",
-#         "type": "feature",
-#         "datasourceId": "gene_expression_barcode_subtype",
-#         "datasourceGroup": "gene_expression_barcode_subtype",
-#         "dataprovider": "umd",
-#         "formula": None,
-#         "datatype": "expression",
-#         "defaultChartType": "scatterplot",
-#         "annotation": None,
-#         "metadata": ["probe"]
-#     },
-#     {
-#         "id": "breast___tumor",
-#         "name": "Expression breast_tumor",
-#         "type": "feature",
-#         "datasourceId": "gene_expression_barcode_subtype",
-#         "datasourceGroup": "gene_expression_barcode_subtype",
-#         "dataprovider": "umd",
-#         "formula": None,
-#         "datatype": "expression",
-#         "defaultChartType": "scatterplot",
-#         "annotation": None,
-#         "metadata": ["probe"]
-#     }
-# ]
+
 config_file = os.getcwd() + "/config.json"
 config_measurements = []
 with open(config_file, "r") as config_file:
@@ -51,24 +21,19 @@ with open(config_file, "r") as config_file:
                 m['datasourceId'], m['datasourceGroup'], m['annotation'], m['metadata']
                 )
             )
-chrom = "chr11"
-start = 1
-end = 1235623
+#ESR1 chr6: 150204511 - 157531913
+chrom = "chr6"
+start = 150204511
+end = 157531913
 # filter for overlap measuremnets
 overlap_measurements = [m for m in config_measurements if m.mid in ["breast___normal", "breast___tumor"] ]
 print(overlap_measurements)
 for m in overlap_measurements:
     m.datatype = 'peak'
-def test_ttest():
-    # create instance of the class
-    test = Correlation.Correlation(overlap_measurements, 0.05)
-    result = test.compute(chrom, start, end, {"datatype": "peak", "annotation":None})
-    print(result)
-    assert result
 def test_overlap():
     # create instance of the class
     test = OverlapBlock.OverlapBlock(overlap_measurements, 0.05)
     result = test.compute(chrom, start, end, {"datatype": "peak", "annotation":None})
     print(result)
-    assert result
+    assert len(result)
 test_overlap()

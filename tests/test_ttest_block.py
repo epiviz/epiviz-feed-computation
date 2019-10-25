@@ -22,17 +22,22 @@ with open(config_file, "r") as config_file:
                 )
             )
 #ESR1 chr6: 150204511 - 157531913
-chrom = "chr6"
-start = 150204511
-end = 157531913
+#ATOH7 chr10: 63661013 - 71027315
+chrom = "chr10"
+start = 63661013
+end = 71027315
 # filter for overlap measuremnets
-overlap_measurements = [m for m in config_measurements if m.mid in ["colon___normal", "colon___tumor"] ]
+overlap_measurements = [m for m in config_measurements if m.mid in ["colon___normal", "timp2014_colon_blocks"] ]
 for m in overlap_measurements:
-    m.datatype = 'expression'
-def test_corr():
+    if m.mid in ["colon___normal"]:
+        m.datatype = 'expression'
+    else:
+        m.datatype = 'peak'
+
+def test_ttest_block():
     # create instance of the class
-    test = Correlation.Correlation(overlap_measurements, 0.05)
+    test = TtestBlock.TtestBlock(overlap_measurements, 0.05)
     result = test.compute(chrom, start, end, {"datatype": "expression", "annotation":None})
     print(result)
     assert len(result)
-test_corr()
+test_ttest_block()
