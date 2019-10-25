@@ -1,12 +1,7 @@
 {
    "pval_threshold": 0.1,
    "computations": [
-      "ttest_block_exp",
-      "block_overlap_percent",
-      "expression_signal_correlation",
-      "ttest_exp_per_gene",
-      "correlation_signal",
-      "correlation_exp"
+      "Correlation", "CorrelationGeneSignal", "OverlapBlock"
    ],
    "dataSources": [
       "Annotation data from the UCSC genome browser for hg19",
