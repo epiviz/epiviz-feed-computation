@@ -1,10 +1,10 @@
 from .interface import computational_request
-from epivizfeedcompute.stat_modules import LondFDR
+from .stats import LondFDR
 from epivizfileserver.measurements import WebServerMeasurement
 from epivizfileserver.client import EpivizClient
 
 from flask import Flask, Response
-from flask_cache import Cache
+from flask_caching import Cache
 from flask_sockets import Sockets
 from gevent import pywsgi
 from geventwebsocket.handler import WebSocketHandler
@@ -33,15 +33,16 @@ def setup_app(server, file = None):
         app.info = data["dataSources"]
         app.pval_threshold = data["pval_threshold"]
 
-        if data.measurements is not None:
+        if data["measurements"] is not None:
             measurements = data["measurements"]
 
             for m in measurements: 
-                app.measurements.append(
-                    WebServerMeasurement(m['type'], m['id'], m['name'], app.server, 
-                    m['datasourceId'], m['datasourceGroup'], m['annotation'], m['metadata']
-                    )
-                )
+                tm = WebServerMeasurement(m['type'], m['id'], m['name'], app.server, 
+                    m['datasourceId'], m['datasourceGroup'], m['annotation'], m['metadata'])
+                if tm.annotation is None:
+                    tm.annotation = {}
+                tm.annotation["datatype"] = m["datatype"]
+                app.measurements.append(tm)
         else:
             ec = EpivizClient(server)
             m = ec.get_measurements()
@@ -78,6 +79,7 @@ def info(websocket):
 def feed(websocket):
     message = ujson.loads(websocket.receive())
     
+    message = ujson.loads(websocket.receive())
     # with open(app.config_file, "r") as config_file:
     #     data = ujson.loads(config_file.read())
     #     computations = data["computations"]
