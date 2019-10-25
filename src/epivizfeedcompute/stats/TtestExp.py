@@ -76,14 +76,9 @@ class TtestExp(BaseStats):
             ttest value and pvalue
         '''
         variance_threshold = 0.05 * 0.95
-<<<<<<< HEAD
-        var_one = max(variance_threshold, (data1 * (1 - data1)))
-        var_two = max(variance_threshold, (data2 * (1 - data2)))
-=======
         var_one = math.max(variance_threshold, (data1 * (1 - data1)))
         var_two = math.max(variance_threshold, (data2 * (1 - data2)))
 
->>>>>>> 84db794589f2c03d7d3fd05e2663326f345d0180
         denominator = math.sqrt(var_one / params["sample_count_normal"] + var_two / params["sample_count_tumor"])
         ttest_value = (data1 - data2) / denominator
         

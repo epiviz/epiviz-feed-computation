@@ -110,7 +110,7 @@ def feed(websocket):
         websocket.send(ujson.dumps({"seq": seqID, "significant": significantCount, "totalTests": len(cached)}))
         return
     
-    results = computational_request(start, end, chromosome, gene_name, 
+    results = computational_request(chromosome, start, end, gene_name, 
                     measurements=app.measurements, computations=app.computations, pval_threshold=app.pval_threshold)
     cache_results = []
     logging.info (results)
