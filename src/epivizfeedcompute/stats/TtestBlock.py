@@ -21,12 +21,12 @@ class TtestBlock(BaseStats):
         Returns:
             filtered measurments
         '''
-        
         filtered = []
+
         for m in self.measurements:
-            if m.datatype == "expression" or m.datatype == "peak":
+            if m.annotation["datatype"] == "expression" or m.datatype == "peak":
                 filtered.append(m)
-                print(m)
+        
         return filtered
     
     def get_transform_data(self, measurements, chr, start, end, params = None):
@@ -42,11 +42,13 @@ class TtestBlock(BaseStats):
         print(data)
         block = []
         non_block = []
+
         for index, row in data[0].iterrows():
             if data[1].where(((row.start <= data[1].start) and (data[1].start <= row.end)) or ((row.start <= data[1].end) and (data[1].end <= row.end))):
                 block.append(row[measurements[0].mid])
             else:
                 non_block.append(row[measurements[0].mid])
+        
         return (block, non_block)
 
     def group_measurements(self, annotation):
@@ -57,8 +59,8 @@ class TtestBlock(BaseStats):
         Returns:
             all pairs between the two groups
         '''
-        
         groups = {}
+        
         if annotation == None:
             for m in self.measurements:
                 if m.datatype in groups:
@@ -89,7 +91,7 @@ class TtestBlock(BaseStats):
         
         return ttest_ind(data1, data2, equal_var=False)
 
-    def compute(self, chr, start, end, params):
+    def compute(self, chr, start, end, params=None):
         '''
         
         Computes statistical method on the given measurement
@@ -103,8 +105,12 @@ class TtestBlock(BaseStats):
             
         '''
         self.measurements = self.filter_measurements(params)
+<<<<<<< HEAD
         
         msets = self.group_measurements(params["annotation"])
+=======
+        msets = self.group_measurements(params.annotation)
+>>>>>>> 84db794589f2c03d7d3fd05e2663326f345d0180
         results = []
         
         for (m1, m2) in msets:

@@ -23,11 +23,12 @@ class TtestExp(BaseStats):
         Returns:
             filtered measurments
         '''
-        
         filtered = []
+        
         for m in self.measurements:
             if m.datatype == params["datatype"]:
                 filtered.append(m)
+        
         return filtered
     def get_transform_data(self,measurements, chr, start, end, params = None):
         '''
@@ -52,8 +53,8 @@ class TtestExp(BaseStats):
         Returns:
             all pairs between the two groups
         '''
-        
         groups = {}
+        
         if annotation == None:
             return itertools.combinations(self.measurements, 2)
         else:
@@ -75,14 +76,21 @@ class TtestExp(BaseStats):
             ttest value and pvalue
         '''
         variance_threshold = 0.05 * 0.95
+<<<<<<< HEAD
         var_one = max(variance_threshold, (data1 * (1 - data1)))
         var_two = max(variance_threshold, (data2 * (1 - data2)))
+=======
+        var_one = math.max(variance_threshold, (data1 * (1 - data1)))
+        var_two = math.max(variance_threshold, (data2 * (1 - data2)))
+
+>>>>>>> 84db794589f2c03d7d3fd05e2663326f345d0180
         denominator = math.sqrt(var_one / params["sample_count_normal"] + var_two / params["sample_count_tumor"])
         ttest_value = (data1 - data2) / denominator
+        
         p_value = 1 - norm.cdf(abs(ttest_value))
         return ttest_value, p_value
 
-    def compute(self, chr, start, end, params):
+    def compute(self, chr, start, end, params=None):
         '''
         
         Computes statistical method on the given measurement

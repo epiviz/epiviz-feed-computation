@@ -6,11 +6,11 @@ from scipy.stats import fisher_exact
 from .BaseStats import BaseStats
 
 class OverlapBlock(BaseStats):
-
     def __init__(self, measurements, pval_threshold):
         super(OverlapBlock, self).__init__(measurements, pval_threshold)
         self.measurements = measurements
         self.pval_threshold = pval_threshold
+
     def filter_measurements(self, params):
         '''
         Filters measurements for measurements with datatype needed by the current class
@@ -22,9 +22,11 @@ class OverlapBlock(BaseStats):
             filtered measurments
         '''
         filtered = []
+
         for m in self.measurements:
-            if m.datatype == params["datatype"]:
+            if m.annotation["datatype"] == params["datatype"]:
                 filtered.append(m)
+        
         return filtered
         
     def get_transform_data(self, measurements, chr, start,end,params=None):
@@ -37,12 +39,14 @@ class OverlapBlock(BaseStats):
         '''
         
         data = super(OverlapBlock, self).get_transform_data(measurements, chr, start, end, params=params)
+        
         b_one_ind = 0
         b_two_ind = 0
         data_one = [0,0]
         data_two = [0,0]
         data_one_sum = 0
         data_two_sum = 0
+        
         while b_one_ind < len(data[0]) and b_two_ind < len(data[1]):
             block_one = (max(float(start), data[0]['start'][b_one_ind]), min(float(end), data[0]['end'][b_one_ind]))
             block_two = (max(float(start), data[1]['start'][b_two_ind]), min(float(end), data[1]['end'][b_two_ind]))
@@ -96,8 +100,8 @@ class OverlapBlock(BaseStats):
         Returns:
             all pairs between the two groups
         '''
-        
         groups = {}
+        
         if annotation == None:
             return itertools.combinations(self.measurements, 2)
         else:
@@ -108,7 +112,7 @@ class OverlapBlock(BaseStats):
                     groups[annotation] = [m]
             return combinations(groups, len(groups.keys()))
     
-    def compute(self, chr, start, end, params):
+    def compute(self, chr, start, end, params=None):
         '''
         
         Computes statistical method on the given measurement

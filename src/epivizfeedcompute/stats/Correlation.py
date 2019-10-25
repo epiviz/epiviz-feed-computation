@@ -26,10 +26,13 @@ class Correlation(BaseStats):
             filtered measurments
         '''
         filtered = []
+
         for m in self.measurements:
-            if m.datatype == params["datatype"]:
+            if m.annotation["datatype"] == params["datatype"]:
                 filtered.append(m)
+        
         return filtered
+
     def get_transform_data(self,measurements, chr, start, end, params = None):
         '''
         Gets transform data
@@ -67,6 +70,7 @@ class Correlation(BaseStats):
             all pairs between the two groups
         '''
         groups = {}
+        
         if annotation == None:
             return itertools.combinations(self.measurements, 2)
         else:
@@ -77,7 +81,7 @@ class Correlation(BaseStats):
                     groups[annotation] = [m]
             return itertools.combinations(groups, len(groups.keys()))
             
-    def compute(self, chr, start, end, params):
+    def compute(self, chr, start, end, params=None):
         '''
         Computes statistical method on the given measurement
 
@@ -98,7 +102,7 @@ class Correlation(BaseStats):
         for (m1, m2) in msets:
             data1, data2 = self.get_transform_data([m1, m2], chr, start, end, params)
             corr, pvalue = self.compute_stat(data1, data2)
-
+            
             if pvalue <= self.pval_threshold:
                 results.append(
                     {
