@@ -20,11 +20,12 @@ class TtestBlock(BaseStats):
         Returns:
             filtered measurments
         '''
-        
         filtered = []
+
         for m in self.measurements:
-            if m.datatype == "expression" or m.datatype == "peak":
+            if m.annotation["datatype"] == "expression" or m.datatype == "peak":
                 filtered.append(m)
+        
         return filtered
     
     def get_transform_data(self, measurements):
@@ -39,11 +40,13 @@ class TtestBlock(BaseStats):
         data = super(TtestBlock, self).get_transform_data(measurements)
         block = []
         non_block = []
+
         for index, row in data[0].iterrows():
             if data[1].where(((row.start <= data[1].start) and (data[1].start <= row.end)) or ((row.start <= data[1].end) and (data[1].end <= row.end))):
                 block.append(row[measurements[0].mid])
             else:
                 non_block.append(row[measurements[0].mid])
+        
         return (block, non_block)
 
     def group_measurements(self, annotation):
@@ -54,8 +57,8 @@ class TtestBlock(BaseStats):
         Returns:
             all pairs between the two groups
         '''
-        
         groups = {}
+        
         if annotation == None:
             return combinations(self.measurements, 2)
         else:
@@ -79,7 +82,7 @@ class TtestBlock(BaseStats):
         
         return ttest_ind(data1, data2, equal_var=False)
 
-    def compute(self, chr, start, end, params):
+    def compute(self, chr, start, end, params=None):
         '''
         
         Computes statistical method on the given measurement
@@ -93,9 +96,7 @@ class TtestBlock(BaseStats):
             
         '''
         self.measurements = self.filter_measurements(params)
-        
         msets = self.group_measurements(params.annotation)
-        
         results = []
         
         for (m1, m2) in msets:

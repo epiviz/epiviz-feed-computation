@@ -8,6 +8,7 @@ class CorrelationGeneSignal(BaseStats):
         super(Correlation, self).__init__(measurements, pval_threshold)
         self.measurements = measurements
         self.pval_threshold = pval_threshold
+        
     def filter_measurements(self, params):
         '''
         Filters measurements for measurements with datatype needed by the current class
@@ -20,7 +21,7 @@ class CorrelationGeneSignal(BaseStats):
         '''
         filtered = []
         for m in self.measurements:
-            if m.datatype == "expression" or m.datatype == "signal":
+            if m.annotation["datatype"] == "expression" or m.datatype == "signal":
                 filtered.append(m)
         return filtered
     
@@ -45,7 +46,7 @@ class CorrelationGeneSignal(BaseStats):
         # for index, row in data[0].iterrows():
 
         
-    def compute(self, chr, start, end, params, upstream=1000, downstream=3000):
+    def compute(self, chr, start, end, params=None, upstream=1000, downstream=3000):
         '''
         Computes statistical method on the given measurement
         
