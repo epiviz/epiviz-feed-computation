@@ -39,7 +39,6 @@ class BaseStats(object):
 
         for m in measurements:
             data.append(m.get_data(chr, start, end)[0])
-        
         return tuple(data)
 
     def toDataFrame(self, results):

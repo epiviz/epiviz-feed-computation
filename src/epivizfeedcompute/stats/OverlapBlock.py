@@ -24,7 +24,7 @@ class OverlapBlock(BaseStats):
         filtered = []
 
         for m in self.measurements:
-            if m.annotation["datatype"] == params["datatype"]:
+            if m.datatype == params["datatype"]:
                 filtered.append(m)
         
         return filtered
@@ -37,16 +37,14 @@ class OverlapBlock(BaseStats):
         Returns:
             tuple of transformed data
         '''
-        
         data = super(OverlapBlock, self).get_transform_data(measurements, chr, start, end, params=params)
-        
+        print(data)
         b_one_ind = 0
         b_two_ind = 0
         data_one = [0,0]
         data_two = [0,0]
         data_one_sum = 0
         data_two_sum = 0
-        
         while b_one_ind < len(data[0]) and b_two_ind < len(data[1]):
             block_one = (max(float(start), data[0]['start'][b_one_ind]), min(float(end), data[0]['end'][b_one_ind]))
             block_two = (max(float(start), data[1]['start'][b_two_ind]), min(float(end), data[1]['end'][b_two_ind]))
@@ -54,10 +52,12 @@ class OverlapBlock(BaseStats):
             if block_one[1] < block_two[0] or block_two[1] < block_one[0]:
                 data_one[1] += block_one[1] - block_one[0]
                 data_two[1] += block_two[1] - block_two[0]
+            
+                print("here")
             else:
                 data_one[0] += min(block_two[1], block_one[1]) - max(block_one[0], block_two[0])
                 data_two[0] += min(block_two[1], block_one[1]) - max(block_one[0], block_two[0])
-
+                
                 if block_one[0] < block_two[0] < block_two[1] < block_one[1]:
                     data_one[1] += block_two[0] - block_one[0]  + block_one[1] - block_two[1] 
 
@@ -75,8 +75,17 @@ class OverlapBlock(BaseStats):
             else:
                 b_two_ind += 1
                 data_two_sum += block_two[1] - block_two[0]
-
-        return ([data_one[0], data_one[1]/data_one_sum], [data_two[0], data_two[1]/data_two_sum])
+        
+        b_one = [0, 0]
+        b_two = [0, 0]
+        if len(data[0]) > 0:
+            b_one =[data_one[0],  data_one[1]]
+#            b_one =[data_one[0],  data_one[1]/data_one_sum]
+        if len(data[1]) > 0:
+            b_two = [data_two[0], data_two[1]]
+#            b_two = [data_two[0], data_two[1]/data_two_sum]
+        print((b_one, b_two))
+        return (b_one, b_two)
    
     def compute_stat(self, data1, data2, params=None):
         '''
@@ -130,6 +139,7 @@ class OverlapBlock(BaseStats):
         results = []
         
         for (m1, m2) in msets:
+        
             data1, data2 = self.get_transform_data([m1, m2], chr, start,end)
             value, pvalue = self.compute_stat(data1, data2)
             print(value, pvalue)

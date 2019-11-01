@@ -24,13 +24,13 @@ with open(config_file, "r") as config_file:
             config_measurements.append(tm)
 #ESR1 chr6: 150204511 - 157531913
 #ATOH7 chr10: 63661013 - 71027315
-chrom = "chr6"
-start = 150204511
-end = 157531913
+chrom = "chr10"
+start = 63661013
+end = 71027315
 # filter for overlap measuremnets
-overlap_measurements = [m for m in config_measurements if m.mid in ["colon___normal", "timp2014_colon_blocks"] ]
+overlap_measurements = [m for m in config_measurements if m.mid in ["lung___tumor", "timp2014_lung_blocks"] ]
 for m in overlap_measurements:
-    if m.mid in ["colon___normal"]:
+    if m.mid in ["lung___tumor"]:
         m.datatype = 'expression'
     else:
         m.datatype = 'peak'

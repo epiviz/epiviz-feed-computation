@@ -1,5 +1,6 @@
 import logging
 import itertools
+import pandas as pd
 from scipy.stats import ttest_ind
 from .BaseStats import BaseStats
 
@@ -39,16 +40,29 @@ class TtestBlock(BaseStats):
         '''
         
         data = super(TtestBlock, self).get_transform_data(measurements, chr, start, end)
-        print(data)
         block = []
         non_block = []
+        out_block = data[0]
+        for index, row in data[1].iterrows():
+            in_block = data[0].where(((row.start <= data[0].start) & (data[0].start <= row.end)) | ((row.start <= data[0].end) & (data[0].end <= row.end))).dropna()
 
-        for index, row in data[0].iterrows():
-            if data[1].where(((row.start <= data[1].start) and (data[1].start <= row.end)) or ((row.start <= data[1].end) and (data[1].end <= row.end))):
-                block.append(row[measurements[0].mid])
-            else:
-                non_block.append(row[measurements[0].mid])
+            out_curr_block = data[0].where(((row.start > data[0].start) | (data[0].start > row.end)) & ((row.start > data[0].end) | (data[0].end > row.end))).dropna()
+            cols_to_use = curr_out.columns.difference(out_curr_block.columns)
+            out_block = pd.merge(out_block, out_curr_block[cols_to_use], left_index=True, right_index=True)
+            if len(in_block) > 0:
+                block += in_block[measurements[0].mid].tolist()
         
+        if len(out_block) > 0:
+            non_block += out_block[measurements[0].mid].tolist()
+        
+            #       
+            # for i, data_one_row in data[0].iterrows():    
+            #     if (row.start <= data_one_row.start and data_one_row.start <= row.end) or (row.start <= data_one_row.end and data_one_row.end <= row.end):
+            #         block.append(row[measurements[0].mid])
+            #         in_block = True
+            # if not in_block: 
+            #     non_block.append(row[measurements[0].mid])
+        print((block, non_block))
         return (block, non_block)
 
     def group_measurements(self, annotation):
@@ -105,13 +119,13 @@ class TtestBlock(BaseStats):
             
         '''
         self.measurements = self.filter_measurements(params)
-        msets = self.group_measurements(params.annotation)
+        msets = self.group_measurements(params["annotation"])
         results = []
         
         for (m1, m2) in msets:
             data1, data2 = self.get_transform_data([m1, m2], chr, start, end)
-            print(data2)
             value, pvalue = self.compute_stat(data1, data2)
+            print((value, pvalue))
             if pvalue <= self.pval_threshold:
                 results.append(
                     {
