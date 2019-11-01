@@ -53,7 +53,6 @@ class OverlapBlock(BaseStats):
                 data_one[1] += block_one[1] - block_one[0]
                 data_two[1] += block_two[1] - block_two[0]
             
-                print("here")
             else:
                 data_one[0] += min(block_two[1], block_one[1]) - max(block_one[0], block_two[0])
                 data_two[0] += min(block_two[1], block_one[1]) - max(block_one[0], block_two[0])
@@ -84,7 +83,6 @@ class OverlapBlock(BaseStats):
         if len(data[1]) > 0:
             b_two = [data_two[0], data_two[1]]
 #            b_two = [data_two[0], data_two[1]/data_two_sum]
-        print((b_one, b_two))
         return (b_one, b_two)
    
     def compute_stat(self, data1, data2, params=None):
@@ -119,7 +117,7 @@ class OverlapBlock(BaseStats):
                     groups[annotation].append(m)
                 else:
                     groups[annotation] = [m]
-            return combinations(groups, len(groups.keys()))
+            return itertools.combinations(groups, len(groups.keys()))
     
     def compute(self, chr, start, end, params=None):
         '''

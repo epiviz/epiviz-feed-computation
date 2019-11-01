@@ -62,7 +62,6 @@ class TtestBlock(BaseStats):
             #         in_block = True
             # if not in_block: 
             #     non_block.append(row[measurements[0].mid])
-        print((block, non_block))
         return (block, non_block)
 
     def group_measurements(self, annotation):
@@ -125,7 +124,6 @@ class TtestBlock(BaseStats):
         for (m1, m2) in msets:
             data1, data2 = self.get_transform_data([m1, m2], chr, start, end)
             value, pvalue = self.compute_stat(data1, data2)
-            print((value, pvalue))
             if pvalue <= self.pval_threshold:
                 results.append(
                     {
