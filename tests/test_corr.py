@@ -29,9 +29,10 @@ end = 157531913
 overlap_measurements = [m for m in config_measurements if m.mid in ["colon___normal", "colon___tumor"] ]
 for m in overlap_measurements:
     m.datatype = 'expression'
+    print(m.get_data(chrom, start, end))
 def test_corr():
     # create instance of the class
-    test = Correlation.Correlation(overlap_measurements, 0.05)
+    test = Correlation(overlap_measurements, 0.05)
     result = test.compute(chrom, start, end, {"datatype": "expression", "annotation":None})
     print(result)
     assert len(result)

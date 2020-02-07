@@ -1,0 +1,375 @@
+{
+   "pval_threshold": 0.1,
+   "computations": [
+      "ttest_block_exp",
+      "block_overlap_percent",
+      "expression_signal_correlation",
+      "ttest_exp_per_gene",
+      "correlation_signal",
+      "correlation_exp"
+   ],
+   "dataSources": [
+      "Annotation data from the UCSC genome browser for hg19",
+      "DNA methylation data and hypomethylation block regions were obtained from Timp et al (doi: 10.1186/s13073-014-0061-y)",
+      "Affymetrix hgu133plus2 expression data were obtained from the Gene Expression Barcode project (doi: 10.1093/nar/gkt1204)"
+   ],
+   "measurements": [
+      {
+         "id": "breast___normal",
+         "name": "Expression breast_normal",
+         "type": "feature",
+         "datasourceId": "gene_expression_barcode_subtype",
+         "datasourceGroup": "gene_expression_barcode_subtype",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "expression",
+         "defaultChartType": "scatterplot",
+         "annotation": null,
+         "metadata": [
+            "probe"
+         ]
+      },
+      {
+         "id": "breast___tumor",
+         "name": "Expression breast_tumor",
+         "type": "feature",
+         "datasourceId": "gene_expression_barcode_subtype",
+         "datasourceGroup": "gene_expression_barcode_subtype",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "expression",
+         "defaultChartType": "scatterplot",
+         "annotation": null,
+         "metadata": [
+            "probe"
+         ]
+      },
+      {
+         "id": "colon___normal",
+         "name": "Expression colon_normal",
+         "type": "feature",
+         "datasourceId": "gene_expression_barcode_subtype",
+         "datasourceGroup": "gene_expression_barcode_subtype",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "expression",
+         "defaultChartType": "scatterplot",
+         "annotation": null,
+         "metadata": [
+            "probe"
+         ]
+      },
+      {
+         "id": "colon___tumor",
+         "name": "Expression colon_tumor",
+         "type": "feature",
+         "datasourceId": "gene_expression_barcode_subtype",
+         "datasourceGroup": "gene_expression_barcode_subtype",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "expression",
+         "defaultChartType": "scatterplot",
+         "annotation": null,
+         "metadata": [
+            "probe"
+         ]
+      },
+      {
+         "id": "lung___normal",
+         "name": "Expression lung_normal",
+         "type": "feature",
+         "datasourceId": "gene_expression_barcode_subtype",
+         "datasourceGroup": "gene_expression_barcode_subtype",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "expression",
+         "defaultChartType": "scatterplot",
+         "annotation": null,
+         "metadata": [
+            "probe"
+         ]
+      },
+      {
+         "id": "lung___tumor",
+         "name": "Expression lung_tumor",
+         "type": "feature",
+         "datasourceId": "gene_expression_barcode_subtype",
+         "datasourceGroup": "gene_expression_barcode_subtype",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "expression",
+         "defaultChartType": "scatterplot",
+         "annotation": null,
+         "metadata": [
+            "probe"
+         ]
+      },
+      {
+         "id": "thyroid___normal",
+         "name": "Expression thyroid_normal",
+         "type": "feature",
+         "datasourceId": "gene_expression_barcode_subtype",
+         "datasourceGroup": "gene_expression_barcode_subtype",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "expression",
+         "defaultChartType": "scatterplot",
+         "annotation": null,
+         "metadata": [
+            "probe"
+         ]
+      },
+      {
+         "id": "thyroid___tumor",
+         "name": "Expression thyroid_tumor",
+         "type": "feature",
+         "datasourceId": "gene_expression_barcode_subtype",
+         "datasourceGroup": "gene_expression_barcode_subtype",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "expression",
+         "defaultChartType": "scatterplot",
+         "annotation": null,
+         "metadata": [
+            "probe"
+         ]
+      },
+      {
+         "id": "timp2014_breast_blocks",
+         "name": "breast blocks",
+         "type": "feature",
+         "datasourceId": "timp2014_breast_blocks",
+         "datasourceGroup": "timp2014_breast_blocks",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "peak",
+         "defaultChartType": "block",
+         "annotation": null,
+         "metadata": [
+            "probe"
+         ]
+      },
+      {
+         "id": "timp2014_colon_blocks",
+         "name": "colon blocks",
+         "type": "feature",
+         "datasourceId": "timp2014_colon_blocks",
+         "datasourceGroup": "timp2014_colon_blocks",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "peak",
+         "defaultChartType": "block",
+         "annotation": null,
+         "metadata": [
+            "probe"
+         ]
+      },
+      {
+         "id": "timp2014_thyroid_blocks",
+         "name": "thyroid blocks",
+         "type": "feature",
+         "datasourceId": "timp2014_thyroid_blocks",
+         "datasourceGroup": "timp2014_thyroid_blocks",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "peak",
+         "defaultChartType": "block",
+         "annotation": null,
+         "metadata": [
+            "probe"
+         ]
+      },
+      {
+         "id": "timp2014_lung_blocks",
+         "name": "lung blocks",
+         "type": "feature",
+         "datasourceId": "timp2014_lung_blocks",
+         "datasourceGroup": "timp2014_lung_blocks",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "peak",
+         "defaultChartType": "block",
+         "annotation": null,
+         "metadata": [
+            "probe"
+         ]
+      },
+      {
+         "id": "breast",
+         "name": "Collapsed Methylation Diff breast",
+         "type": "feature",
+         "datasourceId": "timp2014_collapsed_diff",
+         "datasourceGroup": "timp2014_collapsed_diff",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "signal",
+         "defaultChartType": "line",
+         "annotation": null,
+         "metadata": [
+            "probe"
+         ]
+      },
+      {
+         "id": "colon",
+         "name": "Collapsed Methylation Diff colon",
+         "type": "feature",
+         "datasourceId": "timp2014_collapsed_diff",
+         "datasourceGroup": "timp2014_collapsed_diff",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "signal",
+         "defaultChartType": "line",
+         "annotation": null,
+         "metadata": [
+            "probe"
+         ]
+      },
+      {
+         "id": "thyroid",
+         "name": "Collapsed Methylation Diff thyroid",
+         "type": "feature",
+         "datasourceId": "timp2014_collapsed_diff",
+         "datasourceGroup": "timp2014_collapsed_diff",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "signal",
+         "defaultChartType": "line",
+         "annotation": null,
+         "metadata": [
+            "probe"
+         ]
+      },
+      {
+         "id": "lung",
+         "name": "Collapsed Methylation Diff lung",
+         "type": "feature",
+         "datasourceId": "timp2014_collapsed_diff",
+         "datasourceGroup": "timp2014_collapsed_diff",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "signal",
+         "defaultChartType": "line",
+         "annotation": null,
+         "metadata": [
+            "probe"
+         ]
+      },
+      {
+         "id": "breast_normal",
+         "name": " Average Probe level Meth breast_normal",
+         "type": "feature",
+         "datasourceId": "timp2014_probelevel_beta",
+         "datasourceGroup": "timp2014_probelevel_beta",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "signal",
+         "defaultChartType": "line",
+         "annotation": null,
+         "metadata": []
+      },
+      {
+         "id": "breast_cancer",
+         "name": " Average Probe level Meth breast_cancer",
+         "type": "feature",
+         "datasourceId": "timp2014_probelevel_beta",
+         "datasourceGroup": "timp2014_probelevel_beta",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "signal",
+         "defaultChartType": "line",
+         "annotation": null,
+         "metadata": []
+      },
+      {
+         "id": "colon_normal",
+         "name": " Average Probe level Meth colon_normal",
+         "type": "feature",
+         "datasourceId": "timp2014_probelevel_beta",
+         "datasourceGroup": "timp2014_probelevel_beta",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "signal",
+         "defaultChartType": "line",
+         "annotation": null,
+         "metadata": []
+      },
+      {
+         "id": "colon_cancer",
+         "name": " Average Probe level Meth colon_cancer",
+         "type": "feature",
+         "datasourceId": "timp2014_probelevel_beta",
+         "datasourceGroup": "timp2014_probelevel_beta",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "signal",
+         "defaultChartType": "line",
+         "annotation": null,
+         "metadata": []
+      },
+      {
+         "id": "lung_normal",
+         "name": " Average Probe level Meth lung_normal",
+         "type": "feature",
+         "datasourceId": "timp2014_probelevel_beta",
+         "datasourceGroup": "timp2014_probelevel_beta",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "signal",
+         "defaultChartType": "line",
+         "annotation": null,
+         "metadata": []
+      },
+      {
+         "id": "lung_cancer",
+         "name": " Average Probe level Meth lung_cancer",
+         "type": "feature",
+         "datasourceId": "timp2014_probelevel_beta",
+         "datasourceGroup": "timp2014_probelevel_beta",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "signal",
+         "defaultChartType": "line",
+         "annotation": null,
+         "metadata": []
+      },
+      {
+         "id": "thyroid_normal",
+         "name": " Average Probe level Meth thyroid_normal",
+         "type": "feature",
+         "datasourceId": "timp2014_probelevel_beta",
+         "datasourceGroup": "timp2014_probelevel_beta",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "signal",
+         "defaultChartType": "line",
+         "annotation": null,
+         "metadata": []
+      },
+      {
+         "id": "thyroid_cancer",
+         "name": " Average Probe level Meth thyroid_cancer",
+         "type": "feature",
+         "datasourceId": "timp2014_probelevel_beta",
+         "datasourceGroup": "timp2014_probelevel_beta",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "signal",
+         "defaultChartType": "line",
+         "annotation": null,
+         "metadata": []
+      },
+      {
+         "id": "cpg_islands",
+         "name": "cpg_islands",
+         "type": "range",
+         "datasourceId": "cpg_islands",
+         "datasourceGroup": "cpg_islands",
+         "dataprovider": "umd",
+         "formula": null,
+         "datatype": "peak",
+         "defaultChartType": "block",
+         "annotation": null,
+         "metadata": []
+      }
+   ]
+}
