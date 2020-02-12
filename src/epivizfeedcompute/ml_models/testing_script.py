@@ -1,6 +1,7 @@
 import sys
 import os
 import ujson
+import time
 from epivizfileserver.measurements import WebServerMeasurement
 sys.path.insert(0,'C:/Users/Kyle/Documents/Python Scripts/Envs/research_epiviz/efeedcomputation/src/epivizfeedcompute')
 
@@ -26,9 +27,9 @@ with open(config_file, "r") as config_file:
             
 #ESR1 chr6: 150204511 - 157531913
 # chr1: 0 - 1170420
-chrom = "chr6"
-start = 150204511
-end = 157531913
+chrom = "chr1"
+start = 1
+end = 20000
 # filter for overlap measuremnets
 overlap_measurements = [m for m in config_measurements if m.mid in [ "lung_cancer", "lung___tumor", "cpg_islands"] ]
 for m in overlap_measurements:
@@ -42,7 +43,27 @@ for m in overlap_measurements:
 
 def test_model():
     # create instance of the class
+    # create instance of the class
+    # orig_stdout = sys.stdout
+    e = end
+    # f = open('predictBenchmarks.txt', 'w')
+    # sys.stdout = f
+    st = time.time()
     test = EpivizModel(overlap_measurements, '.\epiviz_model_1.model', helper_functions.get_data)
-    result = test.predict(chrom,start,end,{})
-    assert len(result)
+    result = test.predict(chrom,start,e,{})
+    print("{}bp time:{}".format(e-start, time.time()-st))
+    e*=10
+    result = test.predict(chrom,start,e,{})
+    print("{}bp time:{}".format(e-start, time.time()-start))
+    e*=10
+    result = test.predict(chrom,start,e,{})
+    print("{}bp time:{}".format(e-start, time.time()-start))
+    e*=10
+    result = test.predict(chrom,start,e,{})
+    print("{}bp time:{}".format(e-start, time.time()-start))
+    # sys.stdout = orig_stdout
+    # f.close() 
+    # test = EpivizModel(overlap_measurements, '.\epiviz_model_1.model', helper_functions.get_data)
+    # result = test.predict(chrom,start,end,{})
+    # assert len(result)
 test_model()

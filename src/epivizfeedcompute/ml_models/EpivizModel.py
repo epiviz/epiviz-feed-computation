@@ -19,6 +19,7 @@ class EpivizModel(BaseModel):
         return self.preprocess_function(self.measurements, chr, start, end)
 
     def predict(self, chr, start, end, params):
+        print(self.measurements)
         X = self.preprocess( chr, start, end)
         return self.model.predict(X) 
 
