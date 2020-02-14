@@ -10,12 +10,20 @@ from .BaseModel import BaseModel
 
 class ModelManager(BaseModel):
 
-    def __init__ (self, measurements):
+    def __init__ (self, measurements, pval_threshold):
         self.models = {}
+        self.preprocess_functions = {}
         self.measurements = measurements
 
-    def Add(self, modelName, model):
-        self.models[modelName] = model
+    def Add(self, modelName, model, preprocess_function):
+        self.models[modelName] = BaseModel(self.measurements, model, preprocess_function)
+        self.preprocess_functions[modelName] = preprocess_function
 
-    def Query(chr, start, end, modelName):
-        return self.models[modelName].predict(chr, start, end)
+    def Query(chr, start, end, modelName, preprocess_function):
+        return self.models[modelName].predict(chr, start, end, preprocess_function)
+    
+    def compute(self, chr, start, end, params=None):
+        # run predict on all models
+        modelNames = self.models.keys()
+        for name in modelNames:
+            yield Query(chr, start, end, preprocess_functions[name])

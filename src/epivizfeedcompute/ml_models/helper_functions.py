@@ -6,7 +6,6 @@ def split_n_buckets(dataframe, n):
         dataframe = [0 for i in range(n)]
     means = []
     dfs = np.array_split(dataframe, n,axis = 0) 
-#     print(dfs)
     for i in range(n):
         means.append(np.mean(dfs[i]))
     return means
@@ -19,8 +18,6 @@ def get_data(measurements, chr, start, end, params=None, upstream=1000, downstre
             mid = m.mid
         elif m.datatype == "peak":
             cpg_islands = m.get_data(chr, start, end)[0]
-    print("signal_data")
-    print(signal_data)
     in_gene = split_n_buckets(signal_data.where((((start <= signal_data.start) & (signal_data.start <= end)) | ((start <= signal_data.end) & (signal_data.end <= end))) & (chr == signal_data.chr)).dropna()[mid].tolist(), 20)
     upstream = split_n_buckets(signal_data.where((((start - upstream<= signal_data.start) & (signal_data.start <= end)) | ((start - upstream <= signal_data.end) & (signal_data.end <= end))) & (chr == signal_data.chr)).dropna()[mid].tolist(), 10)
     downstream = split_n_buckets(signal_data.where((((start <= signal_data.start) & (signal_data.start <= end + downstream)) | ((start <= signal_data.end) & (signal_data.end <= end + downstream))) & (chr == signal_data.chr)).dropna()[mid].tolist(), 10)

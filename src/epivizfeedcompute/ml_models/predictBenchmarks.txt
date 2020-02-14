@@ -1,1 +1,5 @@
-{}
+running predict on 20000bp time:0.6419980525970459
+running predict on 200000bp time:0.13500046730041504
+running predict on 2000000bp time:0.22499966621398926
+running predict on 20000000bp time:0.6427855491638184
+running predict on 200000000bp time:1.927997350692749

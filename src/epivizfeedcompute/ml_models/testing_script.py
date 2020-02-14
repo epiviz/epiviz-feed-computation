@@ -44,25 +44,32 @@ for m in overlap_measurements:
 def test_model():
     # create instance of the class
     # create instance of the class
-    # orig_stdout = sys.stdout
+    orig_stdout = sys.stdout
     e = end
-    # f = open('predictBenchmarks.txt', 'w')
-    # sys.stdout = f
+    f = open('predictBenchmarks.txt', 'w')
+    sys.stdout = f
     st = time.time()
     test = EpivizModel(overlap_measurements, '.\epiviz_model_1.model', helper_functions.get_data)
     result = test.predict(chrom,start,e,{})
-    print("{}bp time:{}".format(e-start, time.time()-st))
+    print("running predict on {}bp time:{}".format(e-start +1, time.time()-st))
     e*=10
+    st = time.time()
     result = test.predict(chrom,start,e,{})
-    print("{}bp time:{}".format(e-start, time.time()-start))
+    print("running predict on {}bp time:{}".format(e-start+1, time.time()-st))
     e*=10
+    st = time.time()
     result = test.predict(chrom,start,e,{})
-    print("{}bp time:{}".format(e-start, time.time()-start))
+    print("running predict on {}bp time:{}".format(e-start+1, time.time()-st))
     e*=10
+    st = time.time()
     result = test.predict(chrom,start,e,{})
-    print("{}bp time:{}".format(e-start, time.time()-start))
-    # sys.stdout = orig_stdout
-    # f.close() 
+    print("running predict on {}bp time:{}".format(e-start+1, time.time()-st))
+    e*=10
+    st = time.time()
+    result = test.predict(chrom,start,e,{})
+    print("running predict on {}bp time:{}".format(e-start+1, time.time()-st))
+    sys.stdout = orig_stdout
+    f.close() 
     # test = EpivizModel(overlap_measurements, '.\epiviz_model_1.model', helper_functions.get_data)
     # result = test.predict(chrom,start,end,{})
     # assert len(result)
