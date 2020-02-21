@@ -22,9 +22,12 @@ class BaseModel():
         return self.model.predict(X) 
 
     def train(self, train_function, data):
-        raise Exception("NotImplementedException")
-    
+        return self.model.train_function(data)
     def buildModel(self, file, filetype):
-        raise Exception("NotImplementedException")
+        if filetype == "json":
+            self.model = model_from_json(file)
+        else:
+            config = model.get_config()
+            self.model = Model.from_config(config)
 
     

@@ -6,6 +6,7 @@ from epivizfileserver.measurements import WebServerMeasurement
 sys.path.insert(0,'C:/Users/Kyle/Documents/Python Scripts/Envs/research_epiviz/efeedcomputation/src/epivizfeedcompute')
 
 from EpivizModel import EpivizModel
+from ModelManager import ModelManager
 import helper_functions
 
 config_file = os.getcwd() + "/config.json"
@@ -41,36 +42,43 @@ for m in overlap_measurements:
         m.datatype = 'signal'
     # print(m.get_data(chrom, start, end))
 
-def test_model():
+# def test_model():
     # create instance of the class
     # create instance of the class
-    orig_stdout = sys.stdout
-    e = end
-    f = open('predictBenchmarks.txt', 'w')
-    sys.stdout = f
-    st = time.time()
-    test = EpivizModel(overlap_measurements, '.\epiviz_model_1.model', helper_functions.get_data)
-    result = test.predict(chrom,start,e,{})
-    print("running predict on {}bp time:{}".format(e-start +1, time.time()-st))
-    e*=10
-    st = time.time()
-    result = test.predict(chrom,start,e,{})
-    print("running predict on {}bp time:{}".format(e-start+1, time.time()-st))
-    e*=10
-    st = time.time()
-    result = test.predict(chrom,start,e,{})
-    print("running predict on {}bp time:{}".format(e-start+1, time.time()-st))
-    e*=10
-    st = time.time()
-    result = test.predict(chrom,start,e,{})
-    print("running predict on {}bp time:{}".format(e-start+1, time.time()-st))
-    e*=10
-    st = time.time()
-    result = test.predict(chrom,start,e,{})
-    print("running predict on {}bp time:{}".format(e-start+1, time.time()-st))
-    sys.stdout = orig_stdout
-    f.close() 
+    # orig_stdout = sys.stdout
+    # e = end
+    # f = open('predictBenchmarks.txt', 'w')
+    # sys.stdout = f
+    # st = time.time()
     # test = EpivizModel(overlap_measurements, '.\epiviz_model_1.model', helper_functions.get_data)
-    # result = test.predict(chrom,start,end,{})
-    # assert len(result)
-test_model()
+    # result = test.predict(chrom,start,e,{})
+    # print("running predict on {}bp time:{}".format(e-start +1, time.time()-st))
+    # e*=10
+    # st = time.time()
+    # result = test.predict(chrom,start,e,{})
+    # print("running predict on {}bp time:{}".format(e-start+1, time.time()-st))
+    # e*=10
+    # st = time.time()
+    # result = test.predict(chrom,start,e,{})
+    # print("running predict on {}bp time:{}".format(e-start+1, time.time()-st))
+    # e*=10
+    # st = time.time()
+    # result = test.predict(chrom,start,e,{})
+    # print("running predict on {}bp time:{}".format(e-start+1, time.time()-st))
+    # e*=10
+    # st = time.time()
+    # result = test.predict(chrom,start,e,{})
+    # print("running predict on {}bp time:{}".format(e-start+1, time.time()-st))
+    # sys.stdout = orig_stdout
+    # f.close() 
+def test_ModelManager():
+    chrom = "chr1"
+    start = 1
+    end = 200000
+    manager = ModelManager(overlap_measurements, 0.05)
+    manager.Add("model1",".\epiviz_model_1.model",helper_functions.get_data)
+    manager.Query(chrom, start,end, "model1")
+    test = EpivizModel(overlap_measurements, '.\epiviz_model_1.model', helper_functions.get_data)
+    result = test.predict(chrom,start,end,{})
+    assert len(result)
+test_ModelManager()
