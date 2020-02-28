@@ -5,7 +5,7 @@ import numpy as np
 from keras.models import Sequential, load_model
 from keras.layers import Dense, Dropout, Activation, Flatten, Conv1D, MaxPooling1D
 from keras.layers.core import Reshape
-from BaseModel import BaseModel
+from .BaseModel import BaseModel
 
 class ModelManager(BaseModel):
 

@@ -53,6 +53,7 @@ def setup_app(server, file = None):
 def start_app(port=5001):
     global app
     server = pywsgi.WSGIServer(('', port), app, handler_class=WebSocketHandler)
+    # print(app.config_file)
     logging.info("Server Starts!")
     server.serve_forever()
 
@@ -150,3 +151,4 @@ def feed(websocket):
 #     server = pywsgi.WSGIServer(('', 5001), app, handler_class=WebSocketHandler)
 #     logging.info("Server Starts!")
 #     server.serve_forever()
+start_app()

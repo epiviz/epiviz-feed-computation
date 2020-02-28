@@ -1,6 +1,5 @@
 import tensorflow as tf
 import keras
-import helper_functions
 import pandas as pd
 import numpy as np
 from keras.models import Sequential, load_model
