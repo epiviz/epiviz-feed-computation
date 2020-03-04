@@ -24,7 +24,7 @@ class OverlapBlock(BaseStats):
         filtered = []
 
         for m in self.measurements:
-            if m.datatype == params["datatype"]:
+            if m.annotation["datatype"] == params["datatype"]:
                 filtered.append(m)
         
         return filtered

@@ -4,6 +4,7 @@ import os
 if __name__ == "__main__":
 
     app = setup_app(server="http://54.157.53.251/api/", file=os.getcwd() + "/epiviz.json")
+    # print(app.measurements)
     # app.start_app()
     start_app()
     

@@ -54,6 +54,7 @@ def start_app(port=5001):
     global app
     server = pywsgi.WSGIServer(('', port), app, handler_class=WebSocketHandler)
     logging.info("Server Starts!")
+    print("server starts")
     server.serve_forever()
 
 @sockets.route("/getInfo")
@@ -78,8 +79,8 @@ def info(websocket):
 @sockets.route('/getdata')
 def feed(websocket):
     message = ujson.loads(websocket.receive())
-    
-    message = ujson.loads(websocket.receive())
+    print(message)
+    # message = ujson.loads(websocket.receive())
     # with open(app.config_file, "r") as config_file:
     #     data = ujson.loads(config_file.read())
     #     computations = data["computations"]
@@ -114,6 +115,7 @@ def feed(websocket):
                     measurements=app.measurements, computations=app.computations, pval_threshold=app.pval_threshold)
     cache_results = []
     logging.info (results)
+    # print(results)
 
  
     for result in results:
@@ -136,6 +138,7 @@ def feed(websocket):
             
             pval_sci = [np.format_float_scientific(x, precision=10) for x in pvalues]
             result["pvalue"] = pval_sci
+            print(result)
             comp_res = result.to_json(orient='records')
             parse_res = json.loads(comp_res)
             cache_results.extend(parse_res)
@@ -143,6 +146,11 @@ def feed(websocket):
 
     cache.set(key, cache_results)
     websocket.send(ujson.dumps({"seq": seqID, "significant": pValFDR.R, "totalTests": pValFDR.N}))
+
+
+def wrap_result(res):
+    return None
+
 
 # if __name__ == "__main__":
 #     from gevent import pywsgi
