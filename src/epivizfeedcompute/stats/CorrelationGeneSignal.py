@@ -56,10 +56,10 @@ class CorrelationGeneSignal(Correlation):
         groups = {}
         if annotation == None:
             for m in self.measurements:
-                if m.datatype in groups:
-                    groups[m.datatype].append(m)
+                if m.annotation["datatype"] in groups:
+                    groups[m.annotation["datatype"]].append(m)
                 else:
-                    groups[m.datatype] = [m]
+                    groups[m.annotation["datatype"]] = [m]
             #sorts items by datatype
             groups = sorted(groups.items(), key = lambda kv:kv[0])
             return itertools.product(groups[0][1], groups[1][1])

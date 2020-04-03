@@ -1,7 +1,9 @@
 {
    "pval_threshold": 0.1,
    "computations": [
-      "Correlation", "CorrelationGeneSignal", "OverlapBlock"
+   ],
+   "models":[
+      "EpivizModel"
    ],
    "dataSources": [
       "Annotation data from the UCSC genome browser for hg19",

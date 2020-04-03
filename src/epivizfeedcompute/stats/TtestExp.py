@@ -26,7 +26,7 @@ class TtestExp(BaseStats):
         filtered = []
         
         for m in self.measurements:
-            if m.datatype == params["datatype"]:
+            if m.annotation["datatype"] == params["datatype"]:
                 filtered.append(m)
         
         return filtered
@@ -115,7 +115,8 @@ class TtestExp(BaseStats):
                             'measurements': (m1, m2),
                             'test': 'ttest',
                             'value': value,
-                            'pvalue': pvalue
+                            'pvalue': pvalue,
+                            'type': 'computation'
                         }
                     )
 

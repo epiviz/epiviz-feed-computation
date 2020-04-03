@@ -7,7 +7,7 @@ from keras.layers import Dense, Dropout, Activation, Flatten, Conv1D, MaxPooling
 from keras.layers.core import Reshape
 from .BaseModel import BaseModel
 
-class ModelManager(BaseModel):
+class ModelManager():
 
     def __init__ (self, measurements, pval_threshold):
         self.models = {}
@@ -19,7 +19,13 @@ class ModelManager(BaseModel):
         self.preprocess_functions[modelName] = preprocess_function
 
     def Query(self, chr, start, end, modelName):
-        return self.models[modelName].predict(chr, start, end, {})
+        pred_vals = self.models[modelName].predict(chr, start, end, {})
+        result = {
+                            'model': modelName,
+                            'value': pred_vals,
+                            'type': 'ml_model'
+        }
+        return result
     
     def compute(self, chr, start, end, params=None):
         # run predict on all models

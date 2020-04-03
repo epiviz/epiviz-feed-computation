@@ -3,7 +3,7 @@ from .stats import LondFDR
 from epivizfileserver.measurements import WebServerMeasurement
 from epivizfileserver.client import EpivizClient
 
-from flask import Flask, Response
+from flask import Flask, Response, g
 from flask_caching import Cache
 from flask_sockets import Sockets
 from gevent import pywsgi
@@ -15,18 +15,20 @@ import os
 import pandas as pd
 import json
 import numpy as np
+import sys
 
 app = Flask(__name__)
 cache = Cache(app, config={'CACHE_TYPE': 'simple', 'CACHE_DEFAULT_TIMEOUT': 0})
-
+f = {"a" :2}
 sockets = Sockets(app)
 
 def setup_app(server, file = None):
-    global app
+    
+    f["a"] =1
     app.config_file = file
+    sys.stdout.flush()
     app.server = server
     app.measurements = []
-
     with open(app.config_file, "r") as config_file:
         data = ujson.loads(config_file.read())
         app.computations = data["computations"]
@@ -47,18 +49,39 @@ def setup_app(server, file = None):
             ec = EpivizClient(server)
             m = ec.get_measurements()
             app.measurements = m
+    print(app.computations,flush=True)
+    print(app.measurements,flush=True)
+
 
     return app
 
 def start_app(port=5001):
-    global app
     server = pywsgi.WSGIServer(('', port), app, handler_class=WebSocketHandler)
-    # print(app.config_file)
+    print("hello", flush=True)
+    print(app.computations,flush=True)
+    print(app.measurements,flush=True)
+
     logging.info("Server Starts!")
     server.serve_forever()
 
 @sockets.route("/getInfo")
 def info(websocket):
+    # print(app.config_file)
+    # # with open(app.config_file, "r") as config_file:
+    # #     data = ujson.loads(config_file.read())
+    # #     computations = data["computations"]
+    # #     measurements = data["measurements"]
+    # #     pval_threshold = data["pval_threshold"]
+    # mgroups = {}
+    # for m in app.measurements:
+    #     if m["datasourceGroup"] not in mgroups.keys():
+    #         mgroups[m["datasourceGroup"]] = []
+    #     mgroups[m["datasourceGroup"]].append(m["name"])
+        
+    # for m in mgroups.keys():
+    #     mgroups[m] = np.unique(mgroups[m])
+
+    # websocket.send(ujson.dumps({"sources": info, "groups": mgroups, "computations": computations}))
     with open(app.config_file, "r") as config_file:
         data = ujson.loads(config_file.read())
         computations = data["computations"]
@@ -72,15 +95,14 @@ def info(websocket):
         mgroups[m["datasourceGroup"]].append(m["name"])
         
     for m in mgroups.keys():
-        mgroups[m] = np.unique(mgroups[m])
+        mgroups[m] = list(np.unique(mgroups[m]))
 
-    websocket.send(ujson.dumps({"sources": info, "groups": mgroups, "computations": computations}))
+    websocket.send(ujson.dumps({"sources": app.info, "groups": mgroups, "computations": computations}))
     
 @sockets.route('/getdata')
 def feed(websocket):
     message = ujson.loads(websocket.receive())
     
-    message = ujson.loads(websocket.receive())
     # with open(app.config_file, "r") as config_file:
     #     data = ujson.loads(config_file.read())
     #     computations = data["computations"]
@@ -151,4 +173,4 @@ def feed(websocket):
 #     server = pywsgi.WSGIServer(('', 5001), app, handler_class=WebSocketHandler)
 #     logging.info("Server Starts!")
 #     server.serve_forever()
-start_app()
+# start_app()

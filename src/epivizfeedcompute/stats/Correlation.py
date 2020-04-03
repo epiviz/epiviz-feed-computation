@@ -109,7 +109,8 @@ class Correlation(BaseStats):
                         'measurements': (m1, m2),
                         'test': 'correlation',
                         'value': corr,
-                        'pvalue': pvalue
+                        'pvalue': pvalue,
+                        'type': 'computation'
                     }
                 )
 
