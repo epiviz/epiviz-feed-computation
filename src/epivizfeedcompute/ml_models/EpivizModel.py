@@ -1,12 +1,12 @@
 import tensorflow as tf
 import keras
-import helper_functions
+from .helper_functions import get_data, split_n_buckets
 import pandas as pd
 import numpy as np
 from keras.models import Sequential, load_model
 from keras.layers import Dense, Dropout, Activation, Flatten, Conv1D, MaxPooling1D
 from keras.layers.core import Reshape
-from BaseModel import BaseModel
+from .BaseModel import BaseModel
 
 class EpivizModel(BaseModel):
 

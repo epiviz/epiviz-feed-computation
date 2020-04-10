@@ -31,4 +31,4 @@ class ModelManager():
         # run predict on all models
         modelNames = self.models.keys()
         for name in modelNames:
-            yield Query(chr, start, end, preprocess_functions[name])
+            yield self.Query(chr, start, end, name)

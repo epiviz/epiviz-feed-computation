@@ -34,6 +34,7 @@ def setup_app(server, file = None):
         app.computations = data["computations"]
         app.info = data["dataSources"]
         app.pval_threshold = data["pval_threshold"]
+        app.models = data["models"]
 
         if data["measurements"] is not None:
             measurements = data["measurements"]
@@ -49,8 +50,8 @@ def setup_app(server, file = None):
             ec = EpivizClient(server)
             m = ec.get_measurements()
             app.measurements = m
-    print(app.computations,flush=True)
-    print(app.measurements,flush=True)
+    # print(app.computations,flush=True)
+    # print(app.measurements,flush=True)
 
 
     return app
@@ -58,8 +59,8 @@ def setup_app(server, file = None):
 def start_app(port=5001):
     server = pywsgi.WSGIServer(('', port), app, handler_class=WebSocketHandler)
     print("hello", flush=True)
-    print(app.computations,flush=True)
-    print(app.measurements,flush=True)
+    # print(app.computations,flush=True)
+    # print(app.measurements,flush=True)
 
     logging.info("Server Starts!")
     server.serve_forever()
@@ -87,6 +88,7 @@ def info(websocket):
         computations = data["computations"]
         measurements = data["measurements"]
         pval_threshold = data["pval_threshold"]
+        models = data["models"]
 
     mgroups = {}
     for m in measurements:
@@ -97,7 +99,7 @@ def info(websocket):
     for m in mgroups.keys():
         mgroups[m] = list(np.unique(mgroups[m]))
 
-    websocket.send(ujson.dumps({"sources": app.info, "groups": mgroups, "computations": computations}))
+    websocket.send(ujson.dumps({"sources": app.info, "groups": mgroups, "computations": computations, "models": models}))
     
 @sockets.route('/getdata')
 def feed(websocket):
@@ -134,7 +136,7 @@ def feed(websocket):
         return
     
     results = computational_request(chromosome, start, end, gene_name, 
-                    measurements=app.measurements, computations=app.computations, pval_threshold=app.pval_threshold)
+                    measurements=app.measurements, computations=app.computations, models = app.models, pval_threshold=app.pval_threshold)
     cache_results = []
     logging.info (results)
 
