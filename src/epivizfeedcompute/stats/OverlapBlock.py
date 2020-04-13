@@ -38,7 +38,6 @@ class OverlapBlock(BaseStats):
             tuple of transformed data
         '''
         data = super(OverlapBlock, self).get_transform_data(measurements, chr, start, end, params=params)
-        print(data)
         b_one_ind = 0
         b_two_ind = 0
         data_one = [0,0]
@@ -140,7 +139,6 @@ class OverlapBlock(BaseStats):
         
             data1, data2 = self.get_transform_data([m1, m2], chr, start,end)
             value, pvalue = self.compute_stat(data1, data2)
-            print(value, pvalue)
             if pvalue <= self.pval_threshold:
                 results.append(
                     {

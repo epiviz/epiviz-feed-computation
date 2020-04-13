@@ -12,11 +12,11 @@ def split_n_buckets(dataframe, n):
 
 def get_data(measurements, chr, start, end, params=None, upstream=1000, downstream=3000):
     for m in measurements:
-        if m.datatype == "signal":
+        if m.annotation["datatype"] == "signal":
             signal_data = m.get_data(chr, start, end)[0]
           
             mid = m.mid
-        elif m.datatype == "peak":
+        elif m.annotation["datatype"] == "peak":
             cpg_islands = m.get_data(chr, start, end)[0]
     in_gene = split_n_buckets(signal_data.where((((start <= signal_data.start) & (signal_data.start <= end)) | ((start <= signal_data.end) & (signal_data.end <= end))) & (chr == signal_data.chr)).dropna()[mid].tolist(), 20)
     upstream = split_n_buckets(signal_data.where((((start - upstream<= signal_data.start) & (signal_data.start <= end)) | ((start - upstream <= signal_data.end) & (signal_data.end <= end))) & (chr == signal_data.chr)).dropna()[mid].tolist(), 10)

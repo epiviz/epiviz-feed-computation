@@ -8,6 +8,9 @@ from keras.layers.core import Reshape
 
 class BaseModel():
     def __init__ (self, measurements, model_path, preprocess_function):
+        
+        # Could be any dot-separated package/module name or a "Requirement"
+        
         self.model = load_model(model_path)
         self.measurements = measurements
         self.preprocess_function = preprocess_function

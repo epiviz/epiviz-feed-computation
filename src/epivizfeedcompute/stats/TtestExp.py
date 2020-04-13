@@ -106,7 +106,6 @@ class TtestExp(BaseStats):
             
             params = {"sample_count_normal": m1.annotation["sample_count"], "sample_count_tumor": m2.annotation["sample_count"]}
             data1, data2 = self.get_transform_data([m1, m2],chr, start, end)
-            print(data1)
             for i in range(len(data1)):
                 value, pvalue = self.compute_stat(data1[i], data2[i], params)
                 if pvalue <= self.pval_threshold:
