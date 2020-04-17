@@ -3,7 +3,7 @@ from .stats import Correlation, CorrelationGeneSignal, OverlapBlock, TtestBlock,
 from .ml_models import ModelManager
 from .ml_models import helper_functions
 
-def computational_request(chr, start, end, gene_name, measurements, computations=None, models=None, pval_threshold=None):
+def computational_request(chr, start, end, gene_name, measurements, computations=None, model_params=None, pval_threshold=None):
     if computations is None:
         computations = ["Correlation", "CorrelationGeneSignal", "OverlapBlock", "TtestBlock", "TtestExp", "ModelManager"]
     
@@ -11,9 +11,9 @@ def computational_request(chr, start, end, gene_name, measurements, computations
         compObj = eval(comp)(measurements, pval_threshold)
         yield compObj.compute(chr, start, end, params={"datatype": "expression", "annotation":None})
 
-    model_params = ["model1", "epiviz_model_1.model", helper_functions.get_data]
     modelObj = eval("ModelManager")(measurements, pval_threshold)
-    for model in models:
-        modelObj.Add(model_params[0], model_params[1], model_params[2])
+    for model_param in model_params:
+        getDataFunc = getattr(helper_functions, model_param[2])
+        modelObj.Add(model_param[0], model_param[1], getDataFunc)
 
     yield modelObj.compute(chr, start, end)

@@ -35,6 +35,7 @@ def setup_app(server, file = None):
         app.info = data["dataSources"]
         app.pval_threshold = data["pval_threshold"]
         app.models = data["models"]
+        app.model_params = data["modelParams"]
 
         if data["measurements"] is not None:
             measurements = data["measurements"]
@@ -89,6 +90,7 @@ def info(websocket):
         measurements = data["measurements"]
         pval_threshold = data["pval_threshold"]
         models = data["models"]
+        model_params = data["model_params"]
 
     mgroups = {}
     for m in measurements:
@@ -136,7 +138,7 @@ def feed(websocket):
         return
     
     results = computational_request(chromosome, start, end, gene_name, 
-                    measurements=app.measurements, computations=app.computations, models = app.models, pval_threshold=app.pval_threshold)
+                    measurements=app.measurements, computations=app.computations, model_params = app.model_params, pval_threshold=app.pval_threshold)
     cache_results = []
     logging.info (results)
 

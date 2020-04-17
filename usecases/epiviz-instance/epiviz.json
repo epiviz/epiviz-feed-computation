@@ -6,6 +6,9 @@
    "models":[
       "EpivizModel"
    ],
+   "modelParams":[
+      ["model1", "epiviz_model_1.model", "get_data"]
+   ],
    "dataSources": [
       "Annotation data from the UCSC genome browser for hg19",
       "DNA methylation data and hypomethylation block regions were obtained from Timp et al (doi: 10.1186/s13073-014-0061-y)",

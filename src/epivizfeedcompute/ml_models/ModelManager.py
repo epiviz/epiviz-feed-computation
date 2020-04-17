@@ -33,4 +33,5 @@ class ModelManager():
         results = []
         for name in modelNames:
             results.append(self.Query(chr, start, end, name))
+        print(pd.DataFrame(results))
         return pd.DataFrame(results)
