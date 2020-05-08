@@ -52,12 +52,19 @@ class BaseStats(object):
         '''
         measurement1 = [r['measurements'][0].name for r in results] 
         measurement2 = [r['measurements'][1].name for r in results] 
+        measurement1Data = [r['measurements'][0] for r in results] 
+        measurement2Data = [r['measurements'][1] for r in results] 
         value = [r['value'] for r in results] 
         pvalue = [r['pvalue'] for r in results] 
+        test = [r['test'] for r in results]
         return pd.DataFrame(
             data = {
+                "test":test,
                 "measurement1" : measurement1,
                 "measurement2" : measurement2,
+                
+                "measurement1Data" : measurement1Data,
+                "measurement2Data" : measurement2Data,
                 "value" : value,
                 "pvalue" : pvalue
             }

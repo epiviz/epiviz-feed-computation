@@ -113,9 +113,8 @@ class Correlation(BaseStats):
                         'type': 'computation'
                     }
                 )
-
         sorted_results = sorted(results, key=lambda x: x['value'], reverse=True)
-
+    
         return self.toDataFrame(sorted_results)
 
 

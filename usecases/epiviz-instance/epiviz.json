@@ -1,7 +1,7 @@
 {
    "pval_threshold": 0.1,
    "computations": [
-      "ModelManager"
+      "Correlation","CorrelationGeneSignal", "OverlapBlock", "TtestBlock", "TtestExp"
    ],
    "models":[
       "EpivizModel"

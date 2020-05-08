@@ -2,7 +2,7 @@ from .interface import computational_request
 from .stats import LondFDR
 from epivizfileserver.measurements import WebServerMeasurement
 from epivizfileserver.client import EpivizClient
-
+from .utils import formatDataframe
 from flask import Flask, Response, g
 from flask_caching import Cache
 from flask_sockets import Sockets
@@ -141,7 +141,7 @@ def feed(websocket):
                     measurements=app.measurements, computations=app.computations, model_params = app.model_params, pval_threshold=app.pval_threshold)
     cache_results = []
     logging.info (results)
-
+ 
  
     for result in results:
         logging.info ("send back!")
@@ -149,10 +149,7 @@ def feed(websocket):
         logging.info ("\n")
         # emit('returned_results', result)
         significant_result =pd.DataFrame()
-
-        # print(result)
-
-
+        
         if len(result) > 0:
             logging.info("batch is > 1, FDR")
             pvalues = result["pvalue"].tolist()
@@ -163,7 +160,8 @@ def feed(websocket):
             
             pval_sci = [np.format_float_scientific(x, precision=10) for x in pvalues]
             result["pvalue"] = pval_sci
-            comp_res = result.to_json(orient='records')
+            # this is where each I need to convert each row into a build object
+            comp_res = result.apply(formatDataframe,axis=1).to_json(orient='records')
             parse_res = json.loads(comp_res)
             cache_results.extend(parse_res)
             websocket.send(ujson.dumps(parse_res))
