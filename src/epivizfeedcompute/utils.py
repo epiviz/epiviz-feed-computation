@@ -150,5 +150,8 @@ def format_expression_block_data(gene_block_exp, gene_nonblock_exp):
     return res
 
 def formatDataframe(row):
-
-    return build_obj(row.test,row.measurement1.split(' ', 1)[0], row.measurement2.split(' ', 1)[0], True,row.measurement1Data, row.measurement2Data, row.value, row.pvalue)
+    result = build_obj(row.test,row.measurement1.split(' ', 1)[0], row.measurement2.split(' ', 1)[0], True, row.measurement1Data, row.measurement2Data, row.value, row.pvalue)
+    result["adjusted_testing_levels"] = row.adjusted_testing_levels
+    result["significance"] = row.significance
+            
+    return result

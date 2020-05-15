@@ -8,8 +8,6 @@ def computational_request(chr, start, end, gene_name, measurements, computations
         computations = ["Correlation", "CorrelationGeneSignal", "OverlapBlock", "TtestBlock", "TtestExp", "ModelManager"]
     
     for comp in computations:
-        print(comp)
-        print("this is not here")
         compObj = eval(comp)(measurements, pval_threshold)
         yield compObj.compute(chr, start, end, params={"datatype": "expression", "annotation":None})
 
