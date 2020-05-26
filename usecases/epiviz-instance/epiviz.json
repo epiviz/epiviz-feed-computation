@@ -4,10 +4,13 @@
       "Correlation","ModelManager"
    ],
    "models":[
-      "EpivizModel"
+      "lungModel", "breastModel","thyroidModel","colonModel"
    ],
    "modelParams":[
-      ["model1", "epiviz_model_1.model", "get_data"]
+      ["model1", "epiviz_model_lung.model", "get_data", "lung___tumor"],
+      ["model2", "epiviz_model_breast.model", "get_data", "breast___tumor"],
+      ["model3", "epiviz_model_thyroid.model", "get_data", "thyroid___tumor"],
+      ["model4", "epiviz_model_colon.model", "get_data", "colon___tumor"]
    ],
    "dataSources": [
       "Annotation data from the UCSC genome browser for hg19",

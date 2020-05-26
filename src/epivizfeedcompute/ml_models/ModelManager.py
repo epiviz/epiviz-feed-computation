@@ -13,9 +13,9 @@ class ModelManager():
     def __init__ (self, measurements, pval_threshold, MeasurementTypes=None):
         self.models = {}
         self.preprocess_functions = {}
+        self.expectedMeasurements = {}
         self.pval_threshold = pval_threshold
         self.measurements = measurements
-        self.expectedMeasurement = self.query_measurements(measurements, "lung___tumor")
 
     def query_measurements(self, measurements, query=None):
         if query == None:
@@ -55,23 +55,21 @@ class ModelManager():
             }
         )
 
-    def Add(self, modelName, model, preprocess_function):
+    def Add(self, modelName, model, preprocess_function, expected_type):
         self.models[modelName] = BaseModel(self.measurements, model, preprocess_function)
         self.preprocess_functions[modelName] = preprocess_function
+        self.expectedMeasurements[modelName] = self.query_measurements(self.measurements, expected_type)
 
     def Query(self, chr, start, end, modelName):
-        pred_vals = []
-
-        for index ,row in self.expectedMeasurement[0].get_data(chr, start, end)[0].iterrows():
-            print(index)
-            pred_val = self.models[modelName].predict(row.chr, row.start, row.end, {})
-            pred_vals.append(np.ravel(pred_val)[0])
-        # query measurement for expected
+        # it returns an 1x1 2D array
+        pred_val = self.models[modelName].predict(chr, start, end, {})[0][0]
+        exp_meas = self.expectedMeasurements[modelName][0]
+        exp_val = np.mean(np.array(exp_meas.get_data(chr, start, end)[0][exp_meas.mid]))
         result = {
                     
                     'model': modelName,
-                    'value': np.array(pred_vals),
-                    'expected_value': np.array(self.expectedMeasurement[0].get_data(chr, start, end)[0][self.expectedMeasurement[0].mid]),
+                    'value': pred_val,
+                    'expected_value': exp_val,
                     'type': 'ml_model'
         }
         return result
@@ -80,19 +78,19 @@ class ModelManager():
         # run predict on all models
         modelNames = self.models.keys()
         results = []
+        output = pd.DataFrame()
         for name in modelNames:
-            result = self.Query(chr, start, end, name)
-            corr, pvalue = pearsonr(result["expected_value"], result["value"])
-            
-            if pvalue <= self.pval_threshold:
-                results.append(
-                    {
-                        'measurements': (self.expectedMeasurement[0], self.expectedMeasurement[0]),
-                        'test': 'ml models',
-                        'value': corr,
-                        'pvalue': pvalue,
-                        'type': 'ml_model'
-                    }
-                )
+            output = output.append(self.Query(chr, start, end, name),ignore_index=True)
+        corr, pvalue = pearsonr(output["expected_value"], output["value"])
+        if pvalue <= self.pval_threshold:
+            results.append(
+                {
+                    'measurements': (self.expectedMeasurement[0], self.expectedMeasurement[0]),
+                    'test': 'ml models',
+                    'value': corr,
+                    'pvalue': pvalue,
+                    'type': 'ml_model'
+                }
+            )
             # run pearson on expected value
         return self.toDataFrame(results)

@@ -8,12 +8,13 @@ def computational_request(chr, start, end, gene_name, measurements, computations
         computations = ["Correlation", "CorrelationGeneSignal", "OverlapBlock", "TtestBlock", "TtestExp", "ModelManager"]
     
     for comp in computations:
-        compObj = eval(comp)(measurements, pval_threshold)
-        yield compObj.compute(chr, start, end, params={"datatype": "expression", "annotation":None})
+        if comp != "ModelManager":
+            compObj = eval(comp)(measurements, pval_threshold)
+            yield compObj.compute(chr, start, end, params={"datatype": "expression", "annotation":None})
 
     modelObj = eval("ModelManager")(measurements, pval_threshold)
     for model_param in model_params:
         getDataFunc = getattr(helper_functions, model_param[2])
-        modelObj.Add(model_param[0], model_param[1], getDataFunc)
+        modelObj.Add(model_param[0], model_param[1], getDataFunc, model_param[3])
 
     yield modelObj.compute(chr, start, end)

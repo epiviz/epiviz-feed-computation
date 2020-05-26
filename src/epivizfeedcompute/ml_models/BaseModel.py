@@ -20,6 +20,8 @@ class BaseModel():
 
     def predict(self, chr, start, end, params):
         X = self.preprocess(chr, start, end)
+        print(X)
+        print(X.shape)
         return self.model.predict(X) 
 
     def train(self, train_function, data):
