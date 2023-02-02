@@ -20,4 +20,4 @@ scipy==1.0.0
 six==1.11.0
 SQLAlchemy==1.1.14
 ujson==1.35
-Werkzeug==0.12.2
+Werkzeug==0.15.5
